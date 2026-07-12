@@ -1,0 +1,91 @@
+schema_version: "1.0"
+
+preset:
+  id: "autonomous-run-governance"
+  name: "Autonomous Run Governance"
+  version: "0.1.0"
+  description: "Adds permission-bounded, evidence-first governance for autonomous Spec Kit delivery, convergence, resume, closeout, and retrospective learning."
+  author: "Thorsten Hindermann"
+  repository: "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=0.8.3"
+
+provides:
+  templates:
+    - type: "template"
+      name: "constitution-template"
+      file: "templates/constitution-addendum.md"
+      description: "Append autonomous delivery authority and safety governance"
+      strategy: "append"
+
+    - type: "template"
+      name: "spec-template"
+      file: "templates/spec-addendum.md"
+      description: "Append autonomous-run applicability and scope boundaries"
+      strategy: "append"
+
+    - type: "template"
+      name: "plan-template"
+      file: "templates/plan-addendum.md"
+      description: "Append convergence, evidence, validation, and closeout planning"
+      strategy: "append"
+
+    - type: "template"
+      name: "tasks-template"
+      file: "templates/tasks-addendum.md"
+      description: "Append dependency-ordered autonomous delivery tasks"
+      strategy: "append"
+
+    - type: "template"
+      name: "autonomous-run-agent-guidance-addendum-template"
+      file: "templates/agent-file-addendum.md"
+      description: "Standalone portable autonomous-run agent guidance addendum"
+
+    - type: "template"
+      name: "autonomous-runbook-template"
+      file: "templates/autonomous-runbook-template.md"
+      description: "Starter runbook for permission-bounded autonomous Spec Kit delivery"
+
+    - type: "template"
+      name: "autonomous-run-evidence-template"
+      file: "templates/autonomous-run-evidence-template.md"
+      description: "Starter evidence ledger for convergence, validation, and delivery"
+
+    - type: "template"
+      name: "autonomous-run-retrospective-template"
+      file: "templates/autonomous-run-retrospective-template.md"
+      description: "Starter retrospective for portable workflow learning"
+
+    - type: "template"
+      name: "autonomous-run-readiness-checklist-template"
+      file: "templates/autonomous-run-readiness-checklist-template.md"
+      description: "Readiness checklist for local, PR, and merge-and-sync modes"
+
+    - type: "template"
+      name: "autonomous-run-field-validation-summary"
+      file: "templates/field-validation-summary.md"
+      description: "Six-run field validation summary for preset adoption review"
+
+    - type: "command"
+      name: "speckit.autonomous"
+      file: "commands/speckit.autonomous.md"
+      description: "Execute a complete Spec Kit feature under explicit delivery authority"
+
+    - type: "command"
+      name: "speckit.autonomous-retrospective"
+      file: "commands/speckit.autonomous-retrospective.md"
+      description: "Extract and classify reusable learning from a completed autonomous run"
+
+tags:
+  - "autonomous"
+  - "governance"
+  - "spec-kit"
+  - "sdd"
+  - "evidence"
+  - "convergence"
+  - "permissions"
+  - "resume"
+  - "closeout"
+  - "retrospective"
