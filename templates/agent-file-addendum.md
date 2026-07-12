@@ -11,6 +11,9 @@
 - One mutable validation-token transition covers one explicit invocation.
 - Pass repository roots explicitly to helpers and require clean exit, output,
   and error channels.
+- Do not infer that Markdown, status, or evidence changes are test-free. Search
+  for executable validators that consume changed paths, markers, schemas, or
+  state values before skipping tests.
 - Use a causal closeout only for self-invalidating current-head or post-merge
   facts, and keep it single-commit-capable without recursive self-reference.
 - Create no empty feature, retrospective, or closeout pull request.

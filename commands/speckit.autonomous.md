@@ -48,7 +48,11 @@ authority from general autonomy.
    exactly one explicit invocation.
 7. Pass repository roots explicitly to validation helpers. A pass needs the
    expected exit status, required output, and a clean structured/error channel.
-8. Route out-of-scope findings to named follow-up evidence instead of silently
+8. Before classifying a change as documentation- or evidence-only and skipping
+   executable tests, search for validators that read the changed paths, markers,
+   schemas, or status values. Update and run every affected validator in the
+   same change.
+9. Route out-of-scope findings to named follow-up evidence instead of silently
    expanding the feature.
 
 ## Remote Closeout

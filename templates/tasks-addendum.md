@@ -15,6 +15,9 @@
   required output, and structured/error channels.
 - Add trigger-based validation and an explicit disposition for every skipped
   conditional gate.
+- Before a documentation- or evidence-only test skip, add a dependency-search
+  task for executable validators that read changed paths, markers, schemas, or
+  status values; update and run every affected validator in the same slice.
 - Add remote tasks only for explicitly authorized modes. `MergeAndSync` includes
   check/review convergence, branch cleanup, and local/default-branch sync proof.
 - Keep current-head verification before merge. Route self-invalidating and true
