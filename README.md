@@ -1,6 +1,6 @@
 # Autonomous Run Governance Preset
 
-Version: `0.1.0`
+Version: `0.1.1`
 Requires: `spec-kit >= 0.8.3`
 Recommended priority: `70`
 
@@ -14,7 +14,7 @@ It provides:
 - `speckit.autonomous-retrospective` for classified workflow learning
 - Constitution, Spec, Plan, Tasks, and Agent addenda
 - runbook, evidence, retrospective, and readiness-checklist templates
-- six-run field-validation evidence
+- field-validation evidence from six product runs plus audit and closure runs
 
 `LocalImplementation` is the safe default. `PublishPR` and `MergeAndSync`
 require explicit current authorization. Provider bypass is never inferred from
@@ -33,7 +33,7 @@ specify preset add --dev /path/to/autonomous-run-governance --priority 70
 Published install:
 
 ```bash
-specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.1.0.zip --priority 70
+specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.1.1.zip --priority 70
 ```
 
 Validate with `specify preset list`, `specify preset info

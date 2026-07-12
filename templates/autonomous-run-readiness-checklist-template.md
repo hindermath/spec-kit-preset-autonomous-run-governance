@@ -24,6 +24,8 @@
 - [ ] Every mutable validation-token transition maps to one explicit invocation.
 - [ ] Helpers received an explicit repository root.
 - [ ] Exit status, required output, and structured/error channels were inspected.
+- [ ] Changed documentation, evidence, schemas, and status markers were searched
+      for executable validator consumers before any test gate was skipped.
 - [ ] Triggered validation passed; skipped gates have an explicit rationale.
 
 ## Remote Delivery

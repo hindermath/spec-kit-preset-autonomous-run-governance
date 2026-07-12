@@ -53,6 +53,11 @@ helpers. A successful result needs the expected exit status, required output,
 and no fatal structured/error-channel signal. When a mutable token is required,
 one transition covers exactly one invocation.
 
+Do not classify a Markdown, status, schema, or evidence change as test-free
+from its file type alone. Search the repository for executable validators that
+read changed paths, markers, schemas, or state values. Update and run every
+affected validator before recording a skipped executable gate.
+
 ## Delivery and Closeout
 
 Unavailable reviewers remain missing. Equivalent push and review-event checks

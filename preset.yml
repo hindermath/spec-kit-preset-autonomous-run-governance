@@ -3,7 +3,7 @@ schema_version: "1.0"
 preset:
   id: "autonomous-run-governance"
   name: "Autonomous Run Governance"
-  version: "0.1.0"
+  version: "0.1.1"
   description: "Adds permission-bounded, evidence-first governance for autonomous Spec Kit delivery, convergence, resume, closeout, and retrospective learning."
   author: "Thorsten Hindermann"
   repository: "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance"
@@ -66,7 +66,7 @@ provides:
     - type: "template"
       name: "autonomous-run-field-validation-summary"
       file: "templates/field-validation-summary.md"
-      description: "Six-run field validation summary for preset adoption review"
+      description: "Field validation summary for preset adoption and patch review"
 
     - type: "command"
       name: "speckit.autonomous"
