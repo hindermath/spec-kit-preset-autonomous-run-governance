@@ -58,11 +58,22 @@ from its file type alone. Search the repository for executable validators that
 read changed paths, markers, schemas, or state values. Update and run every
 affected validator before recording a skipped executable gate.
 
+Before an authorized commit, stage only the intended candidate, run
+`git diff --cached --check`, and reconcile staged paths with repository status.
+This closes the untracked-file gap in `git diff --check` without absorbing
+unrelated work. In `LocalImplementation`, use an equivalent per-file or
+temporary-index check and restore the prior index state.
+
 ## Delivery and Closeout
 
 Unavailable reviewers remain missing. Equivalent push and review-event checks
 may be classified as duplicate noise; do not cancel without an explicit safe
 concurrency contract.
+
+Map every acceptance-specific gate to the workflow, job, runner or platform,
+and command that executed it. Green status and platform-shaped names are not
+evidence for commands the job did not run. Missing required scope blocks merge;
+a permission or ruleset bypass cannot supply technical proof.
 
 Use one pre-named causal closeout only when committing current-head facts would
 invalidate them or when facts exist only after merge. Keep it evidence-only and

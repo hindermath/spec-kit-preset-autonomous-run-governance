@@ -26,12 +26,20 @@
 - [ ] Exit status, required output, and structured/error channels were inspected.
 - [ ] Changed documentation, evidence, schemas, and status markers were searched
       for executable validator consumers before any test gate was skipped.
+- [ ] The exact intended delivery candidate passed `git diff --cached --check`
+      or an equivalent non-mutating local-only check.
+- [ ] Staged paths were reconciled with untracked and unstaged repository state;
+      unrelated work and any prior local-only index state were preserved.
 - [ ] Triggered validation passed; skipped gates have an explicit rationale.
 
 ## Remote Delivery
 
 - [ ] Remote tasks exist only for the authorized delivery mode.
 - [ ] Required review-context checks pass.
+- [ ] Every acceptance-specific gate maps to the workflow, job, runner or
+      platform, and command that actually executed the required proof.
+- [ ] No green aggregate or platform-named tooling job is credited for
+      acceptance scope that it did not execute.
 - [ ] No actionable review thread remains.
 - [ ] Unavailable reviews are recorded as missing, not successful.
 - [ ] Duplicate event runs are classified without unauthorized cancellation.

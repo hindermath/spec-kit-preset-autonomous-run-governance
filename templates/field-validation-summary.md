@@ -1,8 +1,8 @@
 # Autonomous Run Governance Field Validation
 
-Version `0.1.1` is based on six consecutive product `MergeAndSync` field runs
-plus the Feature-024 audit and Feature-027 closure in `hindermath/TuiVision` on
-2026-07-12.
+Version `0.1.2` is based on six consecutive product `MergeAndSync` field runs,
+the Feature-024 audit, Feature-027 closure, and Feature-025 core-runtime
+hardening in `hindermath/TuiVision` through 2026-07-13.
 
 | Feature | Feature PR | Closeout | Retrospective | Primary learning |
 |---|---:|---:|---:|---|
@@ -14,6 +14,7 @@ plus the Feature-024 audit and Feature-027 closure in `hindermath/TuiVision` on
 | 023 A11Y Framework | #56 | #57 | #58 | one mutable token per invocation and fail-closed helper validation |
 | 024 Conformance Audit | #62 | #63 | #64 | no-empty remediation features and clean structured error channels |
 | 027 Pre-Wave-5 Closure | #66 | #67 | in closeout | executable validator dependency search before evidence-only test skips |
+| 025 Core Runtime Conformance | #69 | #72 | #70 and #71 | exact delivery-candidate integrity and executed acceptance-scope mapping |
 
 Across all runs, required technical checks passed before merge, actionable
 GraphQL review-thread count was zero, and unavailable Copilot quota was recorded

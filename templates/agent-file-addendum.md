@@ -14,6 +14,13 @@
 - Do not infer that Markdown, status, or evidence changes are test-free. Search
   for executable validators that consume changed paths, markers, schemas, or
   state values before skipping tests.
+- Validate the exact intended commit candidate. `git diff --check` does not
+  inspect untracked files; stage only intended paths, run
+  `git diff --cached --check`, reconcile staged paths with repository status,
+  and preserve unrelated work. Restore the prior index in local-only mode.
+- Treat a green check as evidence only for the commands it executed. Map each
+  acceptance gate to its workflow, job, runner or platform, and command before
+  merge. Missing technical scope blocks merge; bypass grants no proof.
 - Use a causal closeout only for self-invalidating current-head or post-merge
   facts, and keep it single-commit-capable without recursive self-reference.
 - Create no empty feature, retrospective, or closeout pull request.

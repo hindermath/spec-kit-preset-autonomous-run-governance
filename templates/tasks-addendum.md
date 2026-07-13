@@ -18,8 +18,15 @@
 - Before a documentation- or evidence-only test skip, add a dependency-search
   task for executable validators that read changed paths, markers, schemas, or
   status values; update and run every affected validator in the same slice.
+- Before commit or push, add a serialized exact-candidate task: stage only the
+  intended paths, run `git diff --cached --check`, reconcile staged paths with
+  repository status, and preserve unrelated work. In local-only mode, use an
+  equivalent per-file or temporary-index check and restore the original index.
 - Add remote tasks only for explicitly authorized modes. `MergeAndSync` includes
   check/review convergence, branch cleanup, and local/default-branch sync proof.
+- Before merge, add an acceptance-scope mapping task for every required gate:
+  record the workflow, job, runner or platform, and command that executed it.
+  Missing technical scope blocks merge and cannot be replaced by bypass.
 - Keep current-head verification before merge. Route self-invalidating and true
   post-merge facts to one pre-named, single-commit-capable closeout.
 - End with a retrospective task; do not add an empty retrospective branch or PR.
