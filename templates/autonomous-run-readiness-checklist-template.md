@@ -31,6 +31,8 @@
 - [ ] Staged paths were reconciled with untracked and unstaged repository state;
       unrelated work and any prior local-only index state were preserved.
 - [ ] Triggered validation passed; skipped gates have an explicit rationale.
+- [ ] Every acceptance gate was declared before implementation in the reviewed
+      gate-requirements artifact with stable ID, scope, and required tokens.
 
 ## Remote Delivery
 
@@ -38,6 +40,14 @@
 - [ ] Required review-context checks pass.
 - [ ] Every acceptance-specific gate maps to the workflow, job, runner or
       platform, and command that actually executed the required proof.
+- [ ] Temporary provider evidence matches the accepted requirements hash and
+      exact current reviewed head, and the installed validator passes.
+- [ ] Every declared gate has exactly one Primary row; Supplemental evidence
+      points to it, and `N/A` includes rationale plus re-evaluation trigger.
+- [ ] Executed commands and runners were read from workflow definitions or logs,
+      not inferred from green aggregate, workflow, job, or platform-shaped names.
+- [ ] Exact-head provider evidence was not committed before merge and therefore
+      did not invalidate its own reviewed-head claim.
 - [ ] No green aggregate or platform-named tooling job is credited for
       acceptance scope that it did not execute.
 - [ ] No actionable review thread remains.

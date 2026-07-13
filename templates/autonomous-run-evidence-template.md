@@ -40,6 +40,22 @@ exit cannot override a fatal structured or error-channel signal.
 | Status reconciliation | `[Pass/Open]` | `[staged/untracked/unstaged boundary]` |
 | Index preservation | `[Pass/N/A/Open]` | `[restored prior state or authorized staged candidate]` |
 
+## Acceptance Gate Contract
+
+| Item | Value |
+|---|---|
+| Requirements artifact | `[reviewed feature path]` |
+| Requirements SHA-256 | `[lowercase hash]` |
+| Temporary evidence snapshot | `[local/provider-artifact path; do not commit before merge]` |
+| Reviewed head | `[full 40- or 64-character Git object ID]` |
+| Validator | `[installed Bash/PowerShell command]` |
+| Validator result | `[Pass/Fail/Open plus exact output]` |
+
+The requirements artifact is declared before implementation. Generate the
+provider evidence after final checks, derive commands and runners from workflow
+definitions or logs, and keep the exact-head snapshot temporary so recording it
+does not create a new, unvalidated head.
+
 ## Remote Delivery
 
 | Item | Result | Evidence |
@@ -47,7 +63,7 @@ exit cannot override a fatal structured or error-channel signal.
 | Push | `[Pass/N/A/Open]` | `[branch/path]` |
 | Pull request | `[Pass/N/A/Open]` | `[URL or rationale]` |
 | Required checks | `[Pass/N/A/Open]` | `[review-context gate]` |
-| Acceptance execution map | `[Pass/N/A/Open]` | `[gate -> workflow/job/runner-or-platform/command]` |
+| Acceptance execution map | `[Pass/N/A/Open]` | `[requirements hash + validated temporary exact-head evidence]` |
 | Actionable threads | `[count/N/A/Open]` | `[provider evidence]` |
 | Unavailable reviews | `[None/limitation]` | `[provider evidence]` |
 | Merge | `[Pass/N/A/Open]` | `[authority and result]` |

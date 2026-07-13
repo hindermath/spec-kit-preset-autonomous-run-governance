@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "requirementsSha256": "replace-with-lowercase-sha256-of-requirements-file",
+  "reviewedHead": "replace-with-full-reviewed-head-sha",
+  "entries": [
+    {
+      "gateId": "replace-with-stable-gate-id",
+      "evidenceRole": "Primary",
+      "applicability": "Applicable",
+      "requiredScope": "Copy the matching requiredScope value.",
+      "headSha": "replace-with-full-reviewed-head-sha",
+      "provider": "replace-with-provider",
+      "runId": "replace-with-immutable-run-id",
+      "workflow": "replace-with-workflow",
+      "job": "replace-with-job",
+      "runnerOrPlatform": "replace-with-runner-or-platform",
+      "executedCommand": "replace-with-command-observed-in-definition-or-log",
+      "result": "Pass",
+      "evidenceReference": "replace-with-immutable-url-or-identifier",
+      "rationale": "",
+      "reevaluationTrigger": "",
+      "supplementalFor": ""
+    }
+  ]
+}

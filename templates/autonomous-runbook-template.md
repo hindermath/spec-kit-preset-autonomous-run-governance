@@ -75,6 +75,23 @@ and command that executed it. Green status and platform-shaped names are not
 evidence for commands the job did not run. Missing required scope blocks merge;
 a permission or ruleset bypass cannot supply technical proof.
 
+Before implementation, create a reviewed gate-requirements JSON artifact from
+the installed template. Use stable gate IDs and declare Applicable gates with
+required command tokens plus any runner or platform tokens. `N/A` gates require
+a rationale and re-evaluation trigger.
+
+After final checks, inspect workflow definitions or job logs and create the
+provider-neutral evidence JSON in a temporary location. Hash the accepted
+requirements, bind every row to the full current reviewed head, and run the
+installed Bash or PowerShell validator. Exactly one Primary row is required per
+gate; explicitly linked Supplemental rows are allowed. Missing, stale,
+contradictory, empty, or token-mismatched evidence blocks merge.
+
+Do not commit the temporary exact-head evidence before merge: that commit would
+create a different head and invalidate its own claim. Record the immutable run
+and validator result through the causal-closeout boundary when a durable
+post-delivery record is required.
+
 Use one pre-named causal closeout only when committing current-head facts would
 invalidate them or when facts exist only after merge. Keep it evidence-only and
 single-commit-capable. Do not require the closeout to write its own provider URL,

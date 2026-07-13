@@ -21,6 +21,14 @@
 - Treat a green check as evidence only for the commands it executed. Map each
   acceptance gate to its workflow, job, runner or platform, and command before
   merge. Missing technical scope blocks merge; bypass grants no proof.
+- Declare acceptance gates in the reviewed requirements JSON before
+  implementation. Before merge, derive commands and runners from workflow
+  definitions or logs, create temporary exact-head evidence, and run the
+  installed Bash or PowerShell validator. Missing or token-mismatched rows fail
+  closed; validator success grants no remote authority.
+- Keep the exact-head provider snapshot temporary. Committing it before merge
+  creates a new head and self-invalidates the proof; use causal closeout for a
+  durable post-delivery record.
 - Use a causal closeout only for self-invalidating current-head or post-merge
   facts, and keep it single-commit-capable without recursive self-reference.
 - Create no empty feature, retrospective, or closeout pull request.
