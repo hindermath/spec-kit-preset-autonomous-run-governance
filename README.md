@@ -1,6 +1,6 @@
 # Autonomous Run Governance Preset
 
-Version: `0.1.1`
+Version: `0.1.2`
 Requires: `spec-kit >= 0.8.3`
 Recommended priority: `70`
 
@@ -33,7 +33,7 @@ specify preset add --dev /path/to/autonomous-run-governance --priority 70
 Published install:
 
 ```bash
-specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.1.1.zip --priority 70
+specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.1.2.zip --priority 70
 ```
 
 Validate with `specify preset list`, `specify preset info

@@ -30,6 +30,16 @@
 One mutable-token transition covers one explicit invocation. A nominal zero
 exit cannot override a fatal structured or error-channel signal.
 
+## Delivery Candidate Integrity
+
+| Check | Result | Evidence |
+|---|---|---|
+| Intended paths | `[Pass/Open]` | `[path inventory]` |
+| Tracked worktree diff | `[Pass/Open]` | `git diff --check` |
+| Exact staged candidate | `[Pass/N/A/Open]` | `git diff --cached --check or local-only equivalent` |
+| Status reconciliation | `[Pass/Open]` | `[staged/untracked/unstaged boundary]` |
+| Index preservation | `[Pass/N/A/Open]` | `[restored prior state or authorized staged candidate]` |
+
 ## Remote Delivery
 
 | Item | Result | Evidence |
@@ -37,6 +47,7 @@ exit cannot override a fatal structured or error-channel signal.
 | Push | `[Pass/N/A/Open]` | `[branch/path]` |
 | Pull request | `[Pass/N/A/Open]` | `[URL or rationale]` |
 | Required checks | `[Pass/N/A/Open]` | `[review-context gate]` |
+| Acceptance execution map | `[Pass/N/A/Open]` | `[gate -> workflow/job/runner-or-platform/command]` |
 | Actionable threads | `[count/N/A/Open]` | `[provider evidence]` |
 | Unavailable reviews | `[None/limitation]` | `[provider evidence]` |
 | Merge | `[Pass/N/A/Open]` | `[authority and result]` |

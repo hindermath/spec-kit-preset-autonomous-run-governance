@@ -3,7 +3,7 @@ schema_version: "1.0"
 preset:
   id: "autonomous-run-governance"
   name: "Autonomous Run Governance"
-  version: "0.1.1"
+  version: "0.1.2"
   description: "Adds permission-bounded, evidence-first governance for autonomous Spec Kit delivery, convergence, resume, closeout, and retrospective learning."
   author: "Thorsten Hindermann"
   repository: "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance"
