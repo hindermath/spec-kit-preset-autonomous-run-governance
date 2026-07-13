@@ -27,6 +27,15 @@
 - Before merge, add an acceptance-scope mapping task for every required gate:
   record the workflow, job, runner or platform, and command that executed it.
   Missing technical scope blocks merge and cannot be replaced by bypass.
+- Before implementation, add a serialized task to create the accepted
+  gate-requirements JSON from the installed template. Give each gate a stable ID,
+  Applicable or `N/A` state, exact scope, command tokens, optional runner or
+  platform tokens, and any required rationale plus re-evaluation trigger.
+- After final remote checks, add a serialized task to create temporary exact-head
+  gate evidence, derive commands and runners from definitions or logs, and run
+  the installed Bash or PowerShell validator. Missing rows, stale heads,
+  duplicate Primary rows, unmatched tokens, and unowned Supplemental rows block
+  merge. Do not commit the temporary evidence and thereby self-invalidate it.
 - Keep current-head verification before merge. Route self-invalidating and true
   post-merge facts to one pre-named, single-commit-capable closeout.
 - End with a retrospective task; do not add an empty retrospective branch or PR.

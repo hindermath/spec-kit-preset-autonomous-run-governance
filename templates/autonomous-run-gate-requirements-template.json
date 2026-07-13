@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "gates": [
+    {
+      "gateId": "replace-with-stable-gate-id",
+      "applicability": "Applicable",
+      "requiredScope": "Describe the technical proof that must execute before delivery.",
+      "requiredCommandTokens": [
+        "replace-with-required-command-token"
+      ],
+      "requiredRunnerOrPlatformTokens": [],
+      "rationale": "",
+      "reevaluationTrigger": ""
+    }
+  ]
+}

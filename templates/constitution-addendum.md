@@ -15,5 +15,8 @@
 - Unavailable reviewers remain missing reviews. Provider bypass requires
   separate explicit authority and repository policy; it is never a preset
   default.
+- Every Applicable acceptance gate is declared before implementation and must
+  pass machine-checkable exact-head execution mapping before merge. Green names,
+  aggregate status, approval, or bypass are not technical evidence.
 - Workflow learning separates correctness/evidence fixes from efficiency
   preferences and rejects project-specific behavior from portable governance.

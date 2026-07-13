@@ -60,6 +60,15 @@ authority from general autonomy.
    restore the original index state.
 10. Route out-of-scope findings to named follow-up evidence instead of silently
    expanding the feature.
+11. Before implementation, resolve the preset's gate-requirements template and
+   declare every acceptance gate in a reviewed feature artifact. Applicable
+   gates name required command tokens and any runner or platform tokens; `N/A`
+   gates name their rationale and re-evaluation trigger.
+12. Before merge, generate provider-neutral gate evidence for the exact current
+   reviewed head in a temporary location and run the installed Bash or
+   PowerShell gate validator. Every declared gate needs exactly one Primary row;
+   supplemental rows must point to that primary evidence. Missing, stale,
+   contradictory, empty, or token-mismatched evidence blocks merge.
 
 ## Remote Closeout
 
@@ -72,6 +81,16 @@ Before merge, map every acceptance-specific gate to the workflow, job, runner
 or platform, and command that actually executed it. A green aggregate or a
 platform-named job proves only its executed scope. Missing required proof
 blocks merge and cannot be replaced by a permission or ruleset bypass.
+
+Derive `executedCommand` and `runnerOrPlatform` from the workflow definition or
+job log, not from a check, workflow, or job name. The read-only validator checks
+the accepted requirements hash, full reviewed head, gate completeness,
+Applicable/N/A boundaries, required command and runner tokens, and Primary versus
+Supplemental evidence. Its successful exit grants no remote authority.
+
+Keep exact-head provider evidence temporary during the merge decision. Committing
+that evidence would create a new head and invalidate its own reviewed-head claim.
+Use the existing causal-closeout boundary for post-delivery facts.
 
 Use one pre-named causal closeout only when current-head or post-merge facts
 cannot be committed without invalidating themselves. Keep it evidence-only and

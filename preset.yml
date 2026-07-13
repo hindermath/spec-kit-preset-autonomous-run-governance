@@ -3,7 +3,7 @@ schema_version: "1.0"
 preset:
   id: "autonomous-run-governance"
   name: "Autonomous Run Governance"
-  version: "0.1.2"
+  version: "0.1.3"
   description: "Adds permission-bounded, evidence-first governance for autonomous Spec Kit delivery, convergence, resume, closeout, and retrospective learning."
   author: "Thorsten Hindermann"
   repository: "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance"
@@ -52,6 +52,16 @@ provides:
       name: "autonomous-run-evidence-template"
       file: "templates/autonomous-run-evidence-template.md"
       description: "Starter evidence ledger for convergence, validation, and delivery"
+
+    - type: "template"
+      name: "autonomous-run-gate-requirements-template"
+      file: "templates/autonomous-run-gate-requirements-template.json"
+      description: "Machine-readable acceptance gates declared before delivery"
+
+    - type: "template"
+      name: "autonomous-run-gate-evidence-template"
+      file: "templates/autonomous-run-gate-evidence-template.json"
+      description: "Machine-readable exact-head execution evidence for acceptance gates"
 
     - type: "template"
       name: "autonomous-run-retrospective-template"

@@ -1,0 +1,43 @@
+.TH VALIDATE-AUTONOMOUS-GATE-EVIDENCE 1 "2026-07-14" "autonomous-run-governance 0.1.3" "User Commands"
+.SH NAME
+validate-autonomous-gate-evidence \- validate exact-head autonomous delivery gates
+.SH SYNOPSIS
+.B validate-autonomous-gate-evidence.sh
+.BR --requirements " FILE "
+.BR --evidence " FILE "
+.BR --head " SHA"
+.SH DESCRIPTION
+Validates a reviewed gate-requirements JSON file against a provider-neutral
+execution-evidence JSON file for one full Git object ID. The command checks the
+requirements hash, complete gate coverage, Applicable and N/A boundaries,
+required command and runner tokens, and Primary versus Supplemental evidence.
+.PP
+The command is read-only. Success grants no commit, push, pull-request, merge,
+bypass, cancellation, secret, or provider-administration authority.
+.SH OPTIONS
+.TP
+.B --requirements FILE
+Accepted gate requirements declared before delivery.
+.TP
+.B --evidence FILE
+Temporary exact-head execution evidence derived from workflow definitions or
+job logs.
+.TP
+.B --head SHA
+Expected full 40- or 64-character hexadecimal Git object ID.
+.TP
+.B -h, --help
+Show command help.
+.SH EXIT STATUS
+Zero means the machine-checkable contract passed. One means evidence validation
+failed. Two means invocation or dependency setup failed.
+.SH NOTES
+The Bash variant requires Python 3 or Python for strict JSON parsing. On Windows,
+use validate-autonomous-gate-evidence.ps1 with PowerShell 7. Keep provider
+evidence temporary before merge because committing it creates a new head and
+self-invalidates the reviewed-head claim.
+.PP
+Dot-source the PowerShell script to make the equivalent advanced function
+Test-AutonomousGateEvidence available in the current session.
+.SH SEE ALSO
+specify(1), git(1)
