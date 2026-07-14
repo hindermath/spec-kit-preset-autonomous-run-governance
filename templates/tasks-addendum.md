@@ -33,7 +33,9 @@
   platform tokens, and any required rationale plus re-evaluation trigger.
 - After final remote checks, add a serialized task to create temporary exact-head
   gate evidence, derive commands and runners from definitions or logs, and run
-  the installed Bash or PowerShell validator. Missing rows, stale heads,
+  the installed validator through `bash <validator.sh>` or
+  `pwsh -NoProfile -File <validator.ps1>` because installed mode bits are not a
+  portable contract. Missing rows, stale heads,
   duplicate Primary rows, unmatched tokens, and unowned Supplemental rows block
   merge. Do not commit the temporary evidence and thereby self-invalidate it.
 - Keep current-head verification before merge. Route self-invalidating and true

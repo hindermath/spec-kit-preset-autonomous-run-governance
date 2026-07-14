@@ -65,8 +65,9 @@ authority from general autonomy.
    gates name required command tokens and any runner or platform tokens; `N/A`
    gates name their rationale and re-evaluation trigger.
 12. Before merge, generate provider-neutral gate evidence for the exact current
-   reviewed head in a temporary location and run the installed Bash or
-   PowerShell gate validator. Every declared gate needs exactly one Primary row;
+   reviewed head in a temporary location and run the installed validator through
+   `bash <validator.sh>` or `pwsh -NoProfile -File <validator.ps1>`; installers
+   may not preserve executable mode bits. Every gate needs exactly one Primary row;
    supplemental rows must point to that primary evidence. Missing, stale,
    contradictory, empty, or token-mismatched evidence blocks merge.
 

@@ -1,8 +1,8 @@
-.TH VALIDATE-AUTONOMOUS-GATE-EVIDENCE 1 "2026-07-14" "autonomous-run-governance 0.1.3" "User Commands"
+.TH VALIDATE-AUTONOMOUS-GATE-EVIDENCE 1 "2026-07-14" "autonomous-run-governance 0.1.4" "User Commands"
 .SH NAME
-validate-autonomous-gate-evidence \- validate exact-head autonomous delivery gates
+validate-autonomous-gate-evidence \- validate exact-head delivery gates
 .SH SYNOPSIS
-.B validate-autonomous-gate-evidence.sh
+.B bash validate-autonomous-gate-evidence.sh
 .BR --requirements " FILE "
 .BR --evidence " FILE "
 .BR --head " SHA"
@@ -32,10 +32,12 @@ Show command help.
 Zero means the machine-checkable contract passed. One means evidence validation
 failed. Two means invocation or dependency setup failed.
 .SH NOTES
-The Bash variant requires Python 3 or Python for strict JSON parsing. On Windows,
-use validate-autonomous-gate-evidence.ps1 with PowerShell 7. Keep provider
-evidence temporary before merge because committing it creates a new head and
-self-invalidates the reviewed-head claim.
+The Bash variant requires Python 3 or Python for strict JSON parsing. Invoke it
+through bash because preset installation or ZIP extraction may not preserve the
+Git executable mode. On Windows, use pwsh -NoProfile -File with
+validate-autonomous-gate-evidence.ps1. Keep provider evidence temporary before
+merge because committing it creates a new head and self-invalidates the
+reviewed-head claim.
 .PP
 Dot-source the PowerShell script to make the equivalent advanced function
 Test-AutonomousGateEvidence available in the current session.

@@ -1,6 +1,6 @@
 # Autonomous Run Governance Preset
 
-Version: `0.1.3`
+Version: `0.1.4`
 Requires: `spec-kit >= 0.8.3`
 Recommended priority: `70`
 
@@ -35,11 +35,12 @@ specify preset add --dev /path/to/autonomous-run-governance --priority 70
 Published install:
 
 ```bash
-specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.1.3.zip --priority 70
+specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.1.4.zip --priority 70
 ```
 
-Version 0.1.3 closes a false-readiness boundary found in two independent field
-runs. Declare every acceptance gate before implementation with
+Version 0.1.4 retains the machine-checkable gate contract introduced in v0.1.3
+and makes its invocation stable after ZIP installation. Declare every acceptance
+gate before implementation with
 `autonomous-run-gate-requirements-template`, then collect exact-head execution
 evidence with `autonomous-run-gate-evidence-template`. The requirements define
 command and optional runner/platform tokens, so a green tooling-only job cannot
@@ -66,6 +67,11 @@ pwsh -NoProfile -File .specify/presets/autonomous-run-governance/scripts/validat
 
 Dot-source the PowerShell script to use the equivalent Advanced Function
 `Test-AutonomousGateEvidence` in an existing session.
+
+Always invoke the installed scripts through `bash` or `pwsh -File`. Git records
+the Bash source as executable, but a preset installer or ZIP extraction may copy
+it without that mode bit. Direct path execution is therefore not a portable
+contract.
 
 The accepted requirements file is a reviewed feature artifact. The provider
 evidence file SHOULD be generated in a temporary directory after checks finish,

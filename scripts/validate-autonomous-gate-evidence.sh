@@ -8,7 +8,7 @@ usage() {
 validate-autonomous-gate-evidence.sh - validate exact-head gate evidence
 
 Usage:
-  validate-autonomous-gate-evidence.sh --requirements FILE --evidence FILE --head SHA
+  bash validate-autonomous-gate-evidence.sh --requirements FILE --evidence FILE --head SHA
 
 Options:
   --requirements FILE   Accepted gate requirements declared before delivery.

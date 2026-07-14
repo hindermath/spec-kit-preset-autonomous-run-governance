@@ -83,8 +83,10 @@ a rationale and re-evaluation trigger.
 After final checks, inspect workflow definitions or job logs and create the
 provider-neutral evidence JSON in a temporary location. Hash the accepted
 requirements, bind every row to the full current reviewed head, and run the
-installed Bash or PowerShell validator. Exactly one Primary row is required per
-gate; explicitly linked Supplemental rows are allowed. Missing, stale,
+installed validator through `bash <validator.sh>` or
+`pwsh -NoProfile -File <validator.ps1>`. Preset installation may not preserve
+executable mode bits. Exactly one Primary row is required per gate; explicitly
+linked Supplemental rows are allowed. Missing, stale,
 contradictory, empty, or token-mismatched evidence blocks merge.
 
 Do not commit the temporary exact-head evidence before merge: that commit would

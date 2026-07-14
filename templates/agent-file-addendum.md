@@ -24,8 +24,10 @@
 - Declare acceptance gates in the reviewed requirements JSON before
   implementation. Before merge, derive commands and runners from workflow
   definitions or logs, create temporary exact-head evidence, and run the
-  installed Bash or PowerShell validator. Missing or token-mismatched rows fail
-  closed; validator success grants no remote authority.
+  installed validator through `bash <validator.sh>` or
+  `pwsh -NoProfile -File <validator.ps1>` because installers may not preserve
+  executable mode bits. Missing or token-mismatched rows fail closed; validator
+  success grants no remote authority.
 - Keep the exact-head provider snapshot temporary. Committing it before merge
   creates a new head and self-invalidates the proof; use causal closeout for a
   durable post-delivery record.
