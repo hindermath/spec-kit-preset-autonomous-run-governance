@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "00000000-0000-0000-0000-000000000000",
+  "featurePath": "specs/NNN-feature",
+  "branch": "NNN-feature",
+  "deliveryMode": "LocalImplementation",
+  "authorityRevalidationRequired": true,
+  "stage": "Preflight",
+  "status": "Active",
+  "checkpointCommit": "N/A",
+  "acceptedArtifacts": [],
+  "tasks": {
+    "path": "N/A",
+    "sha256": "N/A",
+    "completed": 0,
+    "total": 0
+  },
+  "lastPassingGate": "N/A",
+  "nextExactAction": "Complete autonomous-run preflight.",
+  "lastOperation": {
+    "kind": "N/A",
+    "state": "N/A",
+    "summary": "No operation has started."
+  },
+  "stop": {
+    "reason": "N/A",
+    "requestedAt": "N/A",
+    "safeBoundary": "N/A"
+  },
+  "updatedAt": "1970-01-01T00:00:00Z"
+}

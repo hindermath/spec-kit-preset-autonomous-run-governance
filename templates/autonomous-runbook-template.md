@@ -18,6 +18,7 @@ Default: `LocalImplementation`.
 - installed preset stack and repository prerequisites
 - complete feature checklists
 - explicit delivery mode and hard stop conditions
+- validated feature-local autonomous-run state and safe stop boundary
 
 ## Stage Order
 
@@ -101,6 +102,19 @@ reviewed result, or merge fact into itself.
 
 ## Resume
 
-Persist completed task state, evidence, last passing gate, current authority,
-and next exact action. On resume, recheck repository state and governance, then
-continue without regenerating accepted phases unless drift is proven.
+Persist `specs/<feature>/autonomous-run-state.json` at logical phase boundaries,
+graceful stops, hard gates, and completion. The state index records task and
+accepted-artifact hashes, checkpoint commit, last passing gate, last operation,
+and next exact action. Tasks, evidence, and Git remain authoritative.
+
+Use `speckit.autonomous-status` for a read-only inspection. A deliberate stop
+uses `speckit.autonomous-stop`, records `PausedByUser`, preserves all work, and
+performs no implicit commit or remote action. It takes effect at the next safe
+agent or command boundary; it is not an atomic process-manager kill.
+
+Use `speckit.autonomous-resume` for `PausedByUser`. After an unexpected
+interruption, `speckit.autonomous` may continue only after reconciling state,
+Git, feature metadata, accepted-artifact hashes, tasks, evidence, governance,
+current authority, and any operation marked `NeedsRevalidation`. Do not
+regenerate accepted phases unless drift is proven. Material conflict, unknown
+dirty changes, or ambiguous feature identity sets `Blocked` and stops.

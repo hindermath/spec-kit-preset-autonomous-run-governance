@@ -11,6 +11,13 @@ $ARGUMENTS
 Use the request, repository constitution, agent guidance, current feature
 metadata, and accepted feature artifacts as binding input.
 
+Before creating a feature, inspect repository metadata and
+`specs/<feature>/autonomous-run-state.json`. A valid `PausedByUser` state MUST
+stop this command and direct the user to `speckit.autonomous-resume`. A valid
+`Interrupted` state may resume only after the full drift, operation, governance,
+and authority audit defined by that command. Never overwrite an active run with
+a new feature.
+
 ## Authority Gate
 
 Determine exactly one delivery mode from explicit current authority:
@@ -40,6 +47,9 @@ authority from general autonomy.
    paths for remote and delivery tasks. Keep scope, decisions, commands,
    results, skipped triggers, residual risk, permissions, and resume state
    current.
+   Create `specs/<feature>/autonomous-run-state.json` from the installed state
+   template and update it at logical phase boundaries, graceful stops, hard
+   gates, and completion. Validate every persisted transition.
 5. Prove one representative vertical slice and its failing/green contract
    before broad repetition. Group negative cases only when every expected
    failure and ownership boundary remains explicit.
@@ -99,9 +109,17 @@ single-commit-capable; verify its own terminal provider facts externally.
 Never create an empty feature, retrospective, or closeout pull request. If no
 eligible diff exists, record that no remote delivery action is required.
 
-On resume, recheck repository state, feature identity, governance, current
-authority, completed tasks, evidence, and the last passing gate. Continue from
-the next exact action without regenerating accepted phases unless drift exists.
+On unexpected interruption, reconstruct the run from state, Git, tasks, and
+evidence. Mark an operation without a trustworthy result `NeedsRevalidation`.
+Recheck repository state, feature identity, governance, current authority,
+completed tasks, evidence, and the last passing gate. Continue from the next
+exact action without regenerating accepted phases unless drift exists. A
+deliberate `PausedByUser` state never resumes through this command; it requires
+`speckit.autonomous-resume`.
+
+A user stop or pause request has priority over orchestration. Do not start new
+work after it. At the next safe boundary, follow `speckit.autonomous-stop`; do
+not treat a prompt command as an atomic external-process kill.
 
 Finish with task and artifact counts, validation, skipped conditions, review
 state, follow-ups, remote identifiers when authorized, and exact local/remote

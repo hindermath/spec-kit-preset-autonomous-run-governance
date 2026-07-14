@@ -21,6 +21,10 @@ The plan MUST:
 - pre-name one causal closeout path only when self-invalidating or post-merge
   facts require it
 - define resume state and a retrospective handoff boundary
+- create and validate the feature-local run-state index at logical phase
+  boundaries, graceful stops, hard gates, and completion
+- define the next safe stop boundary, in-flight-operation revalidation, drift
+  classification, and explicit-resume rule for a deliberate pause
 
 `LocalImplementation` remains the plan default unless current authority clearly
 delegates `PublishPR` or `MergeAndSync`.

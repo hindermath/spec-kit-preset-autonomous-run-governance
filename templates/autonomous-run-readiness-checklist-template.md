@@ -6,6 +6,10 @@
 - [ ] Missing remote authority defaults to `LocalImplementation`.
 - [ ] Accepted scope and explicit exclusions are unchanged.
 - [ ] Repository constitution, agent guidance, and feature identity agree.
+- [ ] The feature-local run state validates and agrees with branch, feature
+      metadata, checkpoint history, accepted artifacts, tasks, and evidence.
+- [ ] `PausedByUser` requires explicit resume; unexpected interruption and any
+      uncertain operation have a documented revalidation boundary.
 
 ## Artifact Convergence
 
@@ -61,6 +65,8 @@
 ## Learning and Finish
 
 - [ ] Resume state and the next exact action are recorded.
+- [ ] A graceful stop, if requested, preserved work at a safe boundary and did
+      not infer commit, push, rollback, merge, or process-kill authority.
 - [ ] Out-of-scope findings have owner, evidence path, and re-evaluation trigger.
 - [ ] Retrospective decisions separate portable rules from project specifics.
 - [ ] No empty retrospective branch or pull request was created.

@@ -9,6 +9,8 @@
 | Delivery mode | `[LocalImplementation/PublishPR/MergeAndSync]` |
 | Authority source | `[current request or N/A]` |
 | Evidence owner | `[owner]` |
+| Run-state path | `specs/[feature]/autonomous-run-state.json` |
+| Run-state status | `[Active/StopRequested/PausedByUser/Interrupted/Blocked/Completed]` |
 
 ## Scope and Convergence
 
@@ -73,7 +75,11 @@ does not create a new, unvalidated head.
 
 ## Resume and Follow-up
 
+- Checkpoint commit: `[full object ID or N/A]`
+- Last operation: `[kind and Completed/Failed/NeedsRevalidation/N/A]`
 - Last passing gate: `[gate]`
 - Next exact action: `[action]`
+- Stop reason and safe boundary: `[reason/boundary or N/A]`
+- Authority revalidation required: `[true/false]`
 - Residual risk: `[risk]`
 - Out-of-scope follow-up: `[owner/path/trigger]`

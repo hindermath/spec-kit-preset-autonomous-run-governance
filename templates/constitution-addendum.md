@@ -8,6 +8,12 @@
 - Optional stages repeat to documented convergence criteria, not a fixed count.
 - Evidence is created before implementation and records exact acceptance paths,
   permissions, validation, residual risk, follow-up, and resume state.
+- Every active run has one feature-local validated state index. A deliberate
+  pause requires explicit resume; an unexpected interruption requires drift,
+  operation, governance, and authority revalidation before continuation.
+- A graceful stop takes priority at the next safe orchestration boundary. It
+  preserves work and grants no commit, push, merge, rollback, or process-kill
+  authority.
 - Shared writers are serialized. Project-specific mutable validation tokens
   authorize one explicit invocation per transition.
 - Validation helpers receive an explicit repository root and pass only when

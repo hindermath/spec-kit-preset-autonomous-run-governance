@@ -8,6 +8,7 @@
 | Delivery evidence | `[path]` |
 | Delivery mode | `[mode]` |
 | Remote result | `[N/A/PR/merge/sync]` |
+| Interruptions and resumes | `[None or stop/status/resume evidence]` |
 
 ## Observations
 
@@ -26,3 +27,4 @@ least two independent field observations.
 - Pending observations: `[IDs or None]`
 - Rejected project details: `[items or None]`
 - Next field gate: `[feature or synthetic test]`
+- Resume-state quality: `[Valid/NeedsImprovement/N/A plus evidence]`

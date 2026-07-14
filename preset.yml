@@ -3,8 +3,8 @@ schema_version: "1.0"
 preset:
   id: "autonomous-run-governance"
   name: "Autonomous Run Governance"
-  version: "0.1.4"
-  description: "Adds permission-bounded, evidence-first governance for autonomous Spec Kit delivery, convergence, resume, closeout, and retrospective learning."
+  version: "0.2.0"
+  description: "Adds permission-bounded, evidence-first governance for autonomous Spec Kit delivery, validated stop and resume state, closeout, and retrospective learning."
   author: "Thorsten Hindermann"
   repository: "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance"
   license: "MIT"
@@ -54,6 +54,11 @@ provides:
       description: "Starter evidence ledger for convergence, validation, and delivery"
 
     - type: "template"
+      name: "autonomous-run-state-template"
+      file: "templates/autonomous-run-state-template.json"
+      description: "Machine-readable lifecycle checkpoint for stop and resume"
+
+    - type: "template"
       name: "autonomous-run-gate-requirements-template"
       file: "templates/autonomous-run-gate-requirements-template.json"
       description: "Machine-readable acceptance gates declared before delivery"
@@ -88,6 +93,21 @@ provides:
       file: "commands/speckit.autonomous-retrospective.md"
       description: "Extract and classify reusable learning from a completed autonomous run"
 
+    - type: "command"
+      name: "speckit.autonomous-status"
+      file: "commands/speckit.autonomous-status.md"
+      description: "Inspect an autonomous run without changing repository state"
+
+    - type: "command"
+      name: "speckit.autonomous-stop"
+      file: "commands/speckit.autonomous-stop.md"
+      description: "Gracefully pause an autonomous run at a safe boundary"
+
+    - type: "command"
+      name: "speckit.autonomous-resume"
+      file: "commands/speckit.autonomous-resume.md"
+      description: "Resume a paused or interrupted autonomous run after audit"
+
 tags:
   - "autonomous"
   - "governance"
@@ -97,5 +117,7 @@ tags:
   - "convergence"
   - "permissions"
   - "resume"
+  - "stop"
+  - "checkpoint"
   - "closeout"
   - "retrospective"
