@@ -2,6 +2,9 @@
 ## Autonomous Task-shaping Rules
 
 - Start with preflight, evidence creation, and checklist verification tasks.
+- Add an early serialized task to create and validate the feature-local
+  autonomous-run state. Update it at phase boundaries, graceful stops, hard
+  gates, and completion; task checkboxes and evidence remain authoritative.
 - Name stable task IDs and exact repository paths. Every remote or delivery task
   names the evidence path that records its result.
 - Put a failing or missing proof before implementation when the contract is
@@ -41,3 +44,6 @@
 - Keep current-head verification before merge. Route self-invalidating and true
   post-merge facts to one pre-named, single-commit-capable closeout.
 - End with a retrospective task; do not add an empty retrospective branch or PR.
+- Make stop/resume tasks explicit when long-running or remotely delivered work
+  is in scope. A deliberate pause records `PausedByUser`; uncertain in-flight
+  work is `NeedsRevalidation`, never an inferred pass.

@@ -1,6 +1,6 @@
 # Autonomous Run Governance Preset
 
-Version: `0.1.4`
+Version: `0.2.0`
 Requires: `spec-kit >= 0.8.3`
 Recommended priority: `70`
 
@@ -12,10 +12,14 @@ It provides:
 
 - `speckit.autonomous` for end-to-end, convergence-based feature delivery
 - `speckit.autonomous-retrospective` for classified workflow learning
+- `speckit.autonomous-status` for read-only run inspection
+- `speckit.autonomous-stop` for a graceful pause at a safe boundary
+- `speckit.autonomous-resume` for explicit recovery after pause or interruption
 - Constitution, Spec, Plan, Tasks, and Agent addenda
 - runbook, evidence, retrospective, and readiness-checklist templates
 - machine-readable gate-requirements and exact-head evidence templates
-- read-only Bash and PowerShell gate-evidence validators
+- a machine-readable feature-local run-state template
+- read-only Bash and PowerShell gate-evidence and run-state validators
 - field-validation evidence from six product runs plus audit and closure runs
 
 `LocalImplementation` is the safe default. `PublishPR` and `MergeAndSync`
@@ -35,12 +39,37 @@ specify preset add --dev /path/to/autonomous-run-governance --priority 70
 Published install:
 
 ```bash
-specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.1.4.zip --priority 70
+specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.2.0.zip --priority 70
 ```
 
-Version 0.1.4 retains the machine-checkable gate contract introduced in v0.1.3
-and makes its invocation stable after ZIP installation. Declare every acceptance
-gate before implementation with
+Version 0.2.0 retains the machine-checkable gate contract from v0.1.4 and adds
+validated, feature-local lifecycle checkpoints. A deliberate pause is
+`PausedByUser` and requires `speckit.autonomous-resume`; an unexpected
+interruption requires drift, operation, governance, and authority revalidation.
+The general command never overwrites an active run or silently resumes a
+deliberate pause.
+
+Create `specs/<feature>/autonomous-run-state.json` from
+`autonomous-run-state-template` and validate it on macOS/Linux:
+
+```bash
+bash .specify/presets/autonomous-run-governance/scripts/validate-autonomous-run-state.sh \
+  --state specs/NNN-feature/autonomous-run-state.json
+```
+
+On Windows:
+
+```powershell
+pwsh -NoProfile -File .specify/presets/autonomous-run-governance/scripts/validate-autonomous-run-state.ps1 `
+  -State specs/NNN-feature/autonomous-run-state.json
+```
+
+The stop command is cooperative. It checkpoints at the next safe agent or
+command boundary and does not claim to atomically terminate an arbitrary
+external process. An operation without a trustworthy result becomes
+`NeedsRevalidation`.
+
+Declare every acceptance gate before implementation with
 `autonomous-run-gate-requirements-template`, then collect exact-head execution
 evidence with `autonomous-run-gate-evidence-template`. The requirements define
 command and optional runner/platform tokens, so a green tooling-only job cannot
@@ -68,7 +97,7 @@ pwsh -NoProfile -File .specify/presets/autonomous-run-governance/scripts/validat
 Dot-source the PowerShell script to use the equivalent Advanced Function
 `Test-AutonomousGateEvidence` in an existing session.
 
-Always invoke the installed scripts through `bash` or `pwsh -File`. Git records
+Always invoke installed scripts through `bash` or `pwsh -File`. Git records
 the Bash source as executable, but a preset installer or ZIP extraction may copy
 it without that mode bit. Direct path execution is therefore not a portable
 contract.

@@ -1,0 +1,23 @@
+.TH VALIDATE-AUTONOMOUS-RUN-STATE 1 "2026-07-14" "autonomous-run-governance 0.2.0" "User Commands"
+.SH NAME
+validate-autonomous-run-state \- validate resumable autonomous Spec Kit run state
+.SH SYNOPSIS
+.B bash validate-autonomous-run-state.sh
+.BI --state " FILE"
+.PP
+.B pwsh -NoProfile -File validate-autonomous-run-state.ps1
+.BI -State " FILE"
+.SH DESCRIPTION
+Validates the feature-local autonomous-run-state JSON schema, checkpoint fields,
+task counters, lifecycle state, stop boundary, and authority revalidation flag.
+The validator is read-only and grants no start, resume, commit, push, merge, or
+provider authority.
+.SH STATES
+Allowed states are Active, StopRequested, PausedByUser, Interrupted, Blocked,
+and Completed. Paused, interrupted, and blocked states require an explicit stop
+reason, UTC request time, safe boundary, and later authority revalidation.
+.SH EXIT STATUS
+Returns 0 when the state is valid and 2 for invalid input or schema violations.
+.SH PORTABILITY
+Invoke the installed Bash script explicitly through bash because ZIP extraction
+may not preserve executable mode bits. Use PowerShell 7 on Windows.

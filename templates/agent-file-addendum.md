@@ -2,6 +2,10 @@
 ## Autonomous Spec Kit Runs
 
 - Use the installed `speckit.autonomous` command for a fully delegated feature.
+- Use `speckit.autonomous-status` for read-only inspection,
+  `speckit.autonomous-stop` for a graceful safe-boundary pause, and
+  `speckit.autonomous-resume` for an explicitly paused run. Do not resume
+  `PausedByUser` through the general command.
 - Determine `LocalImplementation`, `PublishPR`, or `MergeAndSync` from explicit
   current authority. General autonomy grants no remote or bypass permission.
 - Iterate optional stages to convergence, establish evidence before edits, prove
@@ -35,3 +39,6 @@
   facts, and keep it single-commit-capable without recursive self-reference.
 - Create no empty feature, retrospective, or closeout pull request.
 - Run the retrospective command after delivery and promote only portable rules.
+- Keep the feature-local run-state index validated at phase boundaries. Recheck
+  current authority and uncertain operations after every interruption; recorded
+  delivery mode is evidence, not permission.
