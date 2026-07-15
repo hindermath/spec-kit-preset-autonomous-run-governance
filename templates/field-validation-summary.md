@@ -1,8 +1,9 @@
 # Autonomous Run Governance Field Validation
 
-Version `0.2.0` is based on six consecutive product `MergeAndSync` field runs,
+Version `0.2.1` is based on six consecutive product `MergeAndSync` field runs,
 the Feature-024 audit, Feature-027 closure, and Features 025-026 conformance
-hardening in `hindermath/TuiVision` through 2026-07-14.
+hardening plus the real Feature-028 resume in `hindermath/TuiVision` through
+2026-07-15.
 
 | Feature | Feature PR | Closeout | Retrospective | Primary learning |
 |---|---:|---:|---:|---|
@@ -16,7 +17,7 @@ hardening in `hindermath/TuiVision` through 2026-07-14.
 | 027 Pre-Wave-5 Closure | #66 | #67 | in closeout | executable validator dependency search before evidence-only test skips |
 | 025 Core Runtime Conformance | #69 | #72 | #70 and #71 | exact delivery-candidate integrity and executed acceptance-scope mapping |
 | 026 Component/Data Conformance | #74 | #75 | integrated closeout | second false-ready gate mapping; promote deterministic exact-head gate validation |
-| 028 Wave-5/6 Conformance Closure | paused before implementation | deferred | AR-028-01/02 | protected deliberate pause, explicit resume, and uncertain-operation revalidation |
+| 028 Wave-5/6 Conformance Closure | #79 | causal closeout pending | AR-028-01/02/03 | protected resume worked; current mandatory preset rules also need an accepted-artifact delta audit |
 
 Across all runs, required technical checks passed before merge, actionable
 GraphQL review-thread count was zero, and unavailable Copilot quota was recorded
@@ -44,14 +45,31 @@ could not distinguish a deliberate user pause from an unexpected interruption.
 Version 0.2.0 adds feature-local validated run state plus status, cooperative
 stop, and explicit resume commands. `PausedByUser` fails closed under the general
 autonomous command, and an operation without a trustworthy terminal result is
-`NeedsRevalidation`. Actual 028 completion remains deferred until explicit user
-release.
+`NeedsRevalidation`. Thorsten later released Feature 028 explicitly, so the
+resume contract received a real field execution rather than synthetic proof
+alone.
+
+The resumed Feature 028 run then exposed one narrower migration gap. Preset
+v0.2.0 already required an executable-consumer search before treating changed
+status markers as test-free, but the accepted Feature-028 tasks predated that
+rule. Resume classified the version change as non-material and reran Analyze,
+yet it preserved the old task list without checking whether a current mandatory
+correctness rule applied and was missing. The first remote CI run therefore
+found two stale marker assertions; the bounded remediation changed tests and
+evidence only, and the final 756-test run plus PR gates passed. Version 0.2.1
+adds a mandatory-rule delta audit for preset/governance drift. It permits only
+minimal in-place Plan, Tasks, or checklist amendments and does not reopen scope
+or retroactively apply efficiency preferences.
 
 Validation required before release:
 
 - development install, list, info, resolve, disable, enable, remove, reinstall
 - composition with the six existing governance presets
-- exactly one generated command/skill per supported agent integration
+- exactly one generated command/skill per supported agent integration; validate
+  Copilot legacy and skills modes separately while the CLI transitions formats
 - synthetic `LocalImplementation` through Analyze without remote writes
 - resume, convergence, no-empty-PR, and unauthorized remote-action refusal
+- old-preset accepted tasks resumed under a newer mandatory rule: require a
+  minimal delta amendment plus Analyze, while an efficiency-only delta preserves
+  accepted artifacts
 - versioned GitHub ZIP installation and checksum verification

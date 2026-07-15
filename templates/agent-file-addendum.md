@@ -42,3 +42,8 @@
 - Keep the feature-local run-state index validated at phase boundaries. Recheck
   current authority and uncertain operations after every interruption; recorded
   delivery mode is evidence, not permission.
+- After preset or governance drift, compare current mandatory correctness,
+  security, permission, and evidence-integrity rules with accepted Plan, Tasks,
+  and checklists. Minimally add an applicable missing rule and rerun Analyze;
+  preserve scope and do not rewrite accepted artifacts for efficiency-only
+  guidance.
