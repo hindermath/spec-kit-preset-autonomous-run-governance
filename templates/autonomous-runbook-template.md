@@ -116,5 +116,14 @@ Use `speckit.autonomous-resume` for `PausedByUser`. After an unexpected
 interruption, `speckit.autonomous` may continue only after reconciling state,
 Git, feature metadata, accepted-artifact hashes, tasks, evidence, governance,
 current authority, and any operation marked `NeedsRevalidation`. Do not
-regenerate accepted phases unless drift is proven. Material conflict, unknown
-dirty changes, or ambiguous feature identity sets `Blocked` and stops.
+regenerate accepted phases unless drift is proven.
+
+When installed preset or governance versions changed, compare their current
+mandatory correctness, security, permission, and evidence-integrity rules with
+the accepted Plan, Tasks, and checklists. If an applicable rule is missing,
+amend only those affected entries in place and rerun readiness plus Analyze
+before implementation. Preserve accepted scope and decisions; a new efficiency
+preference is retrospective input, not authority for retroactive task churn.
+Record the compared versions and delta disposition in evidence. Material
+conflict, unknown dirty changes, or ambiguous feature identity sets `Blocked`
+and stops.

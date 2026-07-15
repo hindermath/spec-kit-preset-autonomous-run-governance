@@ -16,6 +16,10 @@
 - [ ] Clarify has no remaining material planning ambiguity.
 - [ ] Requirements and plan-review checklists pass or have accepted dispositions.
 - [ ] Tasks are dependency-ordered and name exact evidence paths for delivery.
+- [ ] After preset or governance drift, current mandatory correctness, security,
+      permission, and evidence-integrity rules were compared with accepted Plan,
+      Tasks, and checklists; applicable missing rules were minimally added and
+      efficiency-only preferences did not rewrite accepted artifacts.
 - [ ] Analyze has no Critical/High finding; Medium findings are resolved or owned.
 - [ ] Every implementation task is complete or conditionally evidenced.
 

@@ -1,6 +1,6 @@
 # Autonomous Run Governance Preset
 
-Version: `0.2.0`
+Version: `0.2.1`
 Requires: `spec-kit >= 0.8.3`
 Recommended priority: `70`
 
@@ -39,12 +39,19 @@ specify preset add --dev /path/to/autonomous-run-governance --priority 70
 Published install:
 
 ```bash
-specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.2.0.zip --priority 70
+specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.2.1.zip --priority 70
 ```
 
-Version 0.2.0 retains the machine-checkable gate contract from v0.1.4 and adds
-validated, feature-local lifecycle checkpoints. A deliberate pause is
-`PausedByUser` and requires `speckit.autonomous-resume`; an unexpected
+Version 0.2.1 retains the machine-checkable gate and lifecycle contracts from
+v0.2.0 and adds a mandatory-rule delta audit for resume after preset or
+governance drift. Current correctness, security, permission, and
+evidence-integrity rules are compared with accepted Plan, Tasks, and checklists.
+An applicable missing rule is added only to the affected entries before
+readiness and Analyze rerun; accepted scope remains stable and efficiency-only
+guidance does not cause retroactive task churn.
+
+Version 0.2.0 added validated, feature-local lifecycle checkpoints. A deliberate
+pause is `PausedByUser` and requires `speckit.autonomous-resume`; an unexpected
 interruption requires drift, operation, governance, and authority revalidation.
 The general command never overwrites an active run or silently resumes a
 deliberate pause.
