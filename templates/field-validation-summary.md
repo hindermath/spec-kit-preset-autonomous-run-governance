@@ -1,9 +1,10 @@
 # Autonomous Run Governance Field Validation
 
-Version `0.2.1` is based on six consecutive product `MergeAndSync` field runs,
+Version `0.2.2` is based on six consecutive product `MergeAndSync` field runs,
 the Feature-024 audit, Feature-027 closure, and Features 025-026 conformance
 hardening plus the real Feature-028 resume in `hindermath/TuiVision` through
-2026-07-15.
+2026-07-15, followed by the Feature-029 three-source conformance audit through
+2026-07-16.
 
 | Feature | Feature PR | Closeout | Retrospective | Primary learning |
 |---|---:|---:|---:|---|
@@ -18,6 +19,7 @@ hardening plus the real Feature-028 resume in `hindermath/TuiVision` through
 | 025 Core Runtime Conformance | #69 | #72 | #70 and #71 | exact delivery-candidate integrity and executed acceptance-scope mapping |
 | 026 Component/Data Conformance | #74 | #75 | integrated closeout | second false-ready gate mapping; promote deterministic exact-head gate validation |
 | 028 Wave-5/6 Conformance Closure | #79 | causal closeout pending | AR-028-01/02/03 | protected resume worked; current mandatory preset rules also need an accepted-artifact delta audit |
+| 029 TV203/Free Vision/Terminal.GUI Audit | #84 | causal closeout pending | AR-029-01/02 | temporary exact-head evidence, real three-platform runtime proof, and learner-facing operating guidance |
 
 Across all runs, required technical checks passed before merge, actionable
 GraphQL review-thread count was zero, and unavailable Copilot quota was recorded
@@ -61,6 +63,20 @@ adds a mandatory-rule delta audit for preset/governance drift. It permits only
 minimal in-place Plan, Tasks, or checklist amendments and does not reopen scope
 or retroactively apply efficiency preferences.
 
+Feature 029 confirmed that the gate contract scales to a documentation- and
+evidence-heavy audit with no product-runtime change. Ten accepted gates were
+validated in Bash and PowerShell against the exact reviewed head. Local
+targeted, coverage, A11Y, and homogeneity proof was combined with immutable
+GitHub Actions run and job references for full Release, DocFX, security, and
+real Ubuntu, macOS, and Windows execution. The provider evidence remained
+temporary to avoid self-invalidating the reviewed commit. Version 0.2.2 changes
+no lifecycle or permission rule; it promotes the missing learner- and
+maintainer-facing operating explanation for this already validated workflow.
+The same package validation found that the generated `Deliver` heading had been
+copied into Feature 029 run state even though the strict validators use
+`Publish`, `Review`, and `MergeAndSync`. Version 0.2.2 clarifies the mapping and
+keeps the validator enum strict.
+
 Validation required before release:
 
 - development install, list, info, resolve, disable, enable, remove, reinstall
@@ -73,3 +89,7 @@ Validation required before release:
   minimal delta amendment plus Analyze, while an efficiency-only delta preserves
   accepted artifacts
 - versioned GitHub ZIP installation and checksum verification
+- learner-path review for installation, first local run, delivery modes,
+  status, stop, resume, exact-head evidence, retrospective, and troubleshooting
+- invalid `Deliver` state rejection plus valid `Publish`, `Review`, and
+  `MergeAndSync` transition fixtures in Bash and PowerShell

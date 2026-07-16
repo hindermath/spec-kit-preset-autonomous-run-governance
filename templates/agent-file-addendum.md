@@ -42,6 +42,9 @@
 - Keep the feature-local run-state index validated at phase boundaries. Recheck
   current authority and uncertain operations after every interruption; recorded
   delivery mode is evidence, not permission.
+- Treat a generated `Deliver` heading as an orchestration label only. Persist
+  the canonical machine-state stage `Publish`, `Review`, or `MergeAndSync` for
+  remote closeout and validate the transition; `Deliver` is not a state value.
 - After preset or governance drift, compare current mandatory correctness,
   security, permission, and evidence-integrity rules with accepted Plan, Tasks,
   and checklists. Minimally add an applicable missing rule and rerun Analyze;
