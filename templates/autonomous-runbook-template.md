@@ -34,6 +34,11 @@ Default: `LocalImplementation`.
 10. authorized delivery closeout
 11. retrospective and portable handoff
 
+The word `Deliver` may appear as a generated skill heading, but it is not a
+machine-state stage. Persist `Publish` while publishing, `Review` while
+converging provider checks and review threads, and `MergeAndSync` during the
+authorized merge and default-branch synchronization.
+
 ## Convergence
 
 - Clarify: no answer would materially alter plan, tasks, validation, acceptance,

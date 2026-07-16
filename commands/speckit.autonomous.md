@@ -50,6 +50,9 @@ authority from general autonomy.
    Create `specs/<feature>/autonomous-run-state.json` from the installed state
    template and update it at logical phase boundaries, graceful stops, hard
    gates, and completion. Validate every persisted transition.
+   The generated skill heading `Deliver` is a workflow section, not a valid
+   machine-state stage. During remote closeout record `Publish`, `Review`, or
+   `MergeAndSync` according to the current operation; never persist `Deliver`.
 5. Prove one representative vertical slice and its failing/green contract
    before broad repetition. Group negative cases only when every expected
    failure and ownership boundary remains explicit.
