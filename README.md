@@ -2,7 +2,8 @@
 
 Version: `0.2.2`
 Requires: `spec-kit >= 0.8.3`
-Recommended priority: `70`
+Status: published, optional autonomous governance preset
+Priority: `70`
 
 ## Purpose / Zweck
 
@@ -573,7 +574,7 @@ Zustandsvokabular geschlossen: Im Run State gelten `Publish`, `Review` oder
 
 - optional and stackable; no Spec Kit core patch required
 - Spec Kit `>=0.8.3`
-- priority `70` after the standard six-preset matrix
+- priority `70` after the standard seven-preset matrix
 - Bash/Python and PowerShell validator parity
 - provider-neutral evidence schema
 - agent-vendor-neutral workflow contracts
