@@ -53,6 +53,8 @@ authority from general autonomy.
    The generated skill heading `Deliver` is a workflow section, not a valid
    machine-state stage. During remote closeout record `Publish`, `Review`, or
    `MergeAndSync` according to the current operation; never persist `Deliver`.
+   Schema `1.1` records merge or publication, default-branch synchronization,
+   manifest-declared post-merge actions, and final validation separately.
 5. Prove one representative vertical slice and its failing/green contract
    before broad repetition. Group negative cases only when every expected
    failure and ownership boundary remains explicit.
@@ -126,4 +128,6 @@ not treat a prompt command as an atomic external-process kill.
 
 Finish with task and artifact counts, validation, skipped conditions, review
 state, follow-ups, remote identifiers when authorized, and exact local/remote
-synchronization. Do not start the next feature implicitly.
+synchronization. Set `Completed` only when every applicable schema-1.1 closeout
+field is terminal and final validation is `Completed`. Do not start the next
+feature implicitly.

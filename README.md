@@ -1,6 +1,6 @@
 # Autonomous Run Governance Preset
 
-Version: `0.2.2`
+Version: `0.3.0`
 Requires: `spec-kit >= 0.8.3`
 Status: published, optional autonomous governance preset
 Priority: `70`
@@ -156,7 +156,7 @@ Before installation:
 3. Keep the repository's agent guidance and constitution under version control.
 4. Decide which remote actions the current run may perform.
 5. Install the normal governance presets first when the project uses the
-   recommended seven-preset composition.
+   recommended eight-preset composition.
 6. Have `bash` plus Python on macOS/Linux or PowerShell 7 on Windows for the
    bundled validators.
 
@@ -171,7 +171,7 @@ macOS/Linux Bash und Python oder unter Windows PowerShell 7 benötigt.*
 
 ```bash
 specify preset add \
-  --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.2.2.zip \
+  --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.0.zip \
   --priority 70
 ```
 
@@ -548,6 +548,21 @@ Do not weaken the accepted requirement merely to make evidence pass.
 Command-/Runner-Tokens, eine Primary-Zeile je Gate und N/A-Begründungen.
 Schwäche keine akzeptierte Anforderung ab, nur damit Evidence grün wird.*
 
+## Version 0.3.0 / Version 0.3.0
+
+Version 0.3.0 introduces backward-compatible state schema `1.1`. It records
+merge or publication, default-branch synchronization, manifest-declared
+post-merge actions, and final validation independently. `Completed` is valid
+only after every applicable closeout field is terminal. Resume remains
+lock-protected and idempotent, and provider refusal is not a passing gate.
+
+*Version 0.3.0 fuehrt das rueckwaertskompatible State-Schema `1.1` ein.
+Merge beziehungsweise Publikation, Default-Branch-Synchronisation,
+manifestdeklarierte Post-Merge-Aktionen und Abschlussvalidierung werden
+getrennt gespeichert. `Completed` ist erst nach allen anwendbaren
+Closeout-Schritten gueltig. Resume bleibt lock-geschuetzt und idempotent;
+Provider-Ablehnung ist kein bestandener Gate.*
+
 ## Version 0.2.2 / Version 0.2.2
 
 Version 0.2.2 keeps the v0.2.1 lifecycle, permission, mandatory-rule delta, and
@@ -574,7 +589,7 @@ Zustandsvokabular geschlossen: Im Run State gelten `Publish`, `Review` oder
 
 - optional and stackable; no Spec Kit core patch required
 - Spec Kit `>=0.8.3`
-- priority `70` after the standard seven-preset matrix
+- priority `70` within the standard eight-preset matrix
 - Bash/Python and PowerShell validator parity
 - provider-neutral evidence schema
 - agent-vendor-neutral workflow contracts

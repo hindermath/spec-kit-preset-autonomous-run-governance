@@ -65,6 +65,9 @@
 - [ ] A causal closeout, if required, was pre-named and is single-commit-capable.
 - [ ] No empty feature, retrospective, or closeout pull request is proposed.
 - [ ] Merge, cleanup, and default-branch synchronization are proven when required.
+- [ ] Schema-1.1 closeout records merge/publication, default-branch sync,
+      manifest-declared post-merge actions, and final validation independently.
+- [ ] `Completed` is set only after every applicable closeout field is terminal.
 
 ## Learning and Finish
 

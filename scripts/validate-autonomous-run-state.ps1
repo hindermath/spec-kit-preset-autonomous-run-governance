@@ -100,8 +100,9 @@ function Test-AutonomousRunState {
         throw "State is not valid UTF-8 JSON: $($_.Exception.Message)"
     }
 
-    if ((Get-TextProperty -Object $Data -Name 'schemaVersion') -ne '1.0') {
-        $Errors.Add('State schemaVersion must be 1.0')
+    $SchemaVersion = Get-TextProperty -Object $Data -Name 'schemaVersion'
+    if ($SchemaVersion -notin @('1.0', '1.1')) {
+        $Errors.Add('State schemaVersion must be 1.0 or 1.1')
     }
 
     $RunId = Get-RequiredText -Object $Data -Name 'runId' -Label 'state'
@@ -204,6 +205,20 @@ function Test-AutonomousRunState {
     $RequestedAt = Get-RequiredText -Object $Stop -Name 'requestedAt' -Label 'state.stop'
     $SafeBoundary = Get-RequiredText -Object $Stop -Name 'safeBoundary' -Label 'state.stop'
 
+    $CloseoutValues = @{}
+    if ($SchemaVersion -eq '1.1') {
+        $CloseoutProperty = $Data.PSObject.Properties['closeout']
+        $Closeout = if ($null -eq $CloseoutProperty) { $null } else { $CloseoutProperty.Value }
+        if ($null -eq $Closeout) { $Errors.Add('State.closeout must be an object for schema 1.1') }
+        foreach ($Field in @('mergeOrPublication', 'defaultBranchSync', 'postMergeActions', 'finalValidation')) {
+            $Value = Get-RequiredText -Object $Closeout -Name $Field -Label 'state.closeout'
+            $CloseoutValues[$Field] = $Value
+            if ($Value -notin @('N/A', 'Pending', 'Completed', 'Failed', 'NeedsRevalidation')) {
+                $Errors.Add("State.closeout.${Field} is not allowed")
+            }
+        }
+    }
+
     $UpdatedAt = Get-RequiredText -Object $Data -Name 'updatedAt' -Label 'state'
     if (-not (Test-UtcTimestamp -Value $UpdatedAt)) { $Errors.Add('State.updatedAt must be an ISO-8601 UTC timestamp ending in Z') }
 
@@ -225,6 +240,24 @@ function Test-AutonomousRunState {
     }
     if ($Status -eq 'Completed' -and $NextAction -ne 'N/A') {
         $Errors.Add('Completed state requires nextExactAction N/A')
+    }
+    if ($SchemaVersion -eq '1.1' -and $Status -eq 'Completed') {
+        if ($CloseoutValues['finalValidation'] -ne 'Completed') {
+            $Errors.Add('Completed state requires closeout.finalValidation Completed')
+        }
+        if ($DeliveryMode -eq 'MergeAndSync') {
+            if ($CloseoutValues['mergeOrPublication'] -ne 'Completed') {
+                $Errors.Add('MergeAndSync completion requires mergeOrPublication Completed')
+            }
+            if ($CloseoutValues['defaultBranchSync'] -ne 'Completed') {
+                $Errors.Add('MergeAndSync completion requires defaultBranchSync Completed')
+            }
+            if ($CloseoutValues['postMergeActions'] -notin @('N/A', 'Completed')) {
+                $Errors.Add('MergeAndSync completion requires postMergeActions N/A or Completed')
+            }
+        } elseif ($DeliveryMode -eq 'PublishPR' -and $CloseoutValues['mergeOrPublication'] -ne 'Completed') {
+            $Errors.Add('PublishPR completion requires mergeOrPublication Completed')
+        }
     }
 
     if ($Errors.Count -gt 0) {

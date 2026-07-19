@@ -24,5 +24,16 @@
 - Every Applicable acceptance gate is declared before implementation and must
   pass machine-checkable exact-head execution mapping before merge. Green names,
   aggregate status, approval, or bypass are not technical evidence.
+- A run reaches `Completed` only after its authorized merge or publication
+  boundary, default-branch synchronization where applicable, declared
+  post-merge actions, and final validation have terminal evidence.
+- Persisted remote operations are resumable. Adopt an externally completed
+  operation only when its stable identity and exact expected head match;
+  otherwise mark it `NeedsRevalidation`.
+- Repeated resume requests are lock-protected and idempotent. They must not
+  duplicate commits, pull requests, merges, or closeout actions.
+- Provider refusal before any technical step is classified separately from a
+  technical gate. It is never a passing result and no general billing
+  exception is implied.
 - Workflow learning separates correctness/evidence fixes from efficiency
   preferences and rejects project-specific behavior from portable governance.
