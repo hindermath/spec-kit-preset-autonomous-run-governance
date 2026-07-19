@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "runId": "00000000-0000-0000-0000-000000000000",
   "featurePath": "specs/NNN-feature",
   "branch": "NNN-feature",
@@ -26,6 +26,12 @@
     "reason": "N/A",
     "requestedAt": "N/A",
     "safeBoundary": "N/A"
+  },
+  "closeout": {
+    "mergeOrPublication": "N/A",
+    "defaultBranchSync": "N/A",
+    "postMergeActions": "N/A",
+    "finalValidation": "Pending"
   },
   "updatedAt": "1970-01-01T00:00:00Z"
 }

@@ -73,6 +73,15 @@ does not create a new, unvalidated head.
 | Causal closeout | `[Required/N/A/Open]` | `[pre-named path and reason]` |
 | Duplicate events | `[Observed/N/A]` | `[classification; no implicit cancellation]` |
 
+## Closeout State
+
+| Step | State | Evidence |
+|---|---|---|
+| Merge or publication | `[N/A/Pending/Completed/Failed/NeedsRevalidation]` | `[proof]` |
+| Default-branch synchronization | `[N/A/Pending/Completed/Failed/NeedsRevalidation]` | `[proof]` |
+| Manifest-declared post-merge actions | `[N/A/Pending/Completed/Failed/NeedsRevalidation]` | `[proof]` |
+| Final validation | `[Pending/Completed/Failed/NeedsRevalidation]` | `[proof]` |
+
 ## Resume and Follow-up
 
 - Checkpoint commit: `[full object ID or N/A]`

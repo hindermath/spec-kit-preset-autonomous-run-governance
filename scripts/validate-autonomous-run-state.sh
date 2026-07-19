@@ -103,8 +103,9 @@ if not isinstance(data, dict):
     errors.append("state root must be an object")
     data = {}
 
-if data.get("schemaVersion") != "1.0":
-    errors.append("state schemaVersion must be 1.0")
+schema_version = text(data.get("schemaVersion")).strip()
+if schema_version not in ("1.0", "1.1"):
+    errors.append("state schemaVersion must be 1.0 or 1.1")
 
 run_id = require_text(data, "runId", "state")
 try:
@@ -208,6 +209,30 @@ stop_reason = require_text(stop, "reason", "state.stop")
 requested_at = require_text(stop, "requestedAt", "state.stop")
 safe_boundary = require_text(stop, "safeBoundary", "state.stop")
 
+closeout = data.get("closeout")
+optional_closeout_states = ("N/A", "Pending", "Completed", "Failed", "NeedsRevalidation")
+required_closeout_states = ("Pending", "Completed", "Failed", "NeedsRevalidation")
+closeout_values = {}
+if schema_version == "1.1":
+    if not isinstance(closeout, dict):
+        errors.append("state.closeout must be an object for schema 1.1")
+        closeout = {}
+    for field in (
+        "mergeOrPublication",
+        "defaultBranchSync",
+        "postMergeActions",
+        "finalValidation",
+    ):
+        value = require_text(closeout, field, "state.closeout")
+        closeout_values[field] = value
+        allowed_states = (
+            required_closeout_states
+            if field == "finalValidation"
+            else optional_closeout_states
+        )
+        if value not in allowed_states:
+            errors.append(f"state.closeout.{field} is not allowed")
+
 updated_at = require_text(data, "updatedAt", "state")
 if updated_at and not valid_timestamp(updated_at):
     errors.append("state.updatedAt must be an ISO-8601 UTC timestamp ending in Z")
@@ -227,6 +252,29 @@ if status == "Interrupted" and operation_state not in ("Failed", "NeedsRevalidat
     errors.append("Interrupted state cannot claim the last operation completed")
 if status == "Completed" and next_action != "N/A":
     errors.append("Completed state requires nextExactAction N/A")
+if schema_version == "1.1" and status == "Completed":
+    if closeout_values.get("finalValidation") != "Completed":
+        errors.append("Completed state requires closeout.finalValidation Completed")
+    if delivery_mode == "MergeAndSync":
+        if closeout_values.get("mergeOrPublication") != "Completed":
+            errors.append("MergeAndSync completion requires mergeOrPublication Completed")
+        if closeout_values.get("defaultBranchSync") != "Completed":
+            errors.append("MergeAndSync completion requires defaultBranchSync Completed")
+        if closeout_values.get("postMergeActions") not in ("N/A", "Completed"):
+            errors.append("MergeAndSync completion requires postMergeActions N/A or Completed")
+    elif delivery_mode == "PublishPR":
+        if closeout_values.get("mergeOrPublication") != "Completed":
+            errors.append("PublishPR completion requires mergeOrPublication Completed")
+        if closeout_values.get("defaultBranchSync") != "N/A":
+            errors.append("PublishPR completion requires defaultBranchSync N/A")
+        if closeout_values.get("postMergeActions") != "N/A":
+            errors.append("PublishPR completion requires postMergeActions N/A")
+    elif delivery_mode == "LocalImplementation":
+        for field in ("mergeOrPublication", "defaultBranchSync", "postMergeActions"):
+            if closeout_values.get(field) != "N/A":
+                errors.append(
+                    f"LocalImplementation completion requires {field} N/A"
+                )
 
 if errors:
     for message in errors:
