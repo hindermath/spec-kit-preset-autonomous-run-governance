@@ -213,7 +213,12 @@ function Test-AutonomousRunState {
         foreach ($Field in @('mergeOrPublication', 'defaultBranchSync', 'postMergeActions', 'finalValidation')) {
             $Value = Get-RequiredText -Object $Closeout -Name $Field -Label 'state.closeout'
             $CloseoutValues[$Field] = $Value
-            if ($Value -notin @('N/A', 'Pending', 'Completed', 'Failed', 'NeedsRevalidation')) {
+            $AllowedStates = if ($Field -eq 'finalValidation') {
+                @('Pending', 'Completed', 'Failed', 'NeedsRevalidation')
+            } else {
+                @('N/A', 'Pending', 'Completed', 'Failed', 'NeedsRevalidation')
+            }
+            if ($Value -notin $AllowedStates) {
                 $Errors.Add("State.closeout.${Field} is not allowed")
             }
         }
@@ -255,8 +260,22 @@ function Test-AutonomousRunState {
             if ($CloseoutValues['postMergeActions'] -notin @('N/A', 'Completed')) {
                 $Errors.Add('MergeAndSync completion requires postMergeActions N/A or Completed')
             }
-        } elseif ($DeliveryMode -eq 'PublishPR' -and $CloseoutValues['mergeOrPublication'] -ne 'Completed') {
-            $Errors.Add('PublishPR completion requires mergeOrPublication Completed')
+        } elseif ($DeliveryMode -eq 'PublishPR') {
+            if ($CloseoutValues['mergeOrPublication'] -ne 'Completed') {
+                $Errors.Add('PublishPR completion requires mergeOrPublication Completed')
+            }
+            if ($CloseoutValues['defaultBranchSync'] -ne 'N/A') {
+                $Errors.Add('PublishPR completion requires defaultBranchSync N/A')
+            }
+            if ($CloseoutValues['postMergeActions'] -ne 'N/A') {
+                $Errors.Add('PublishPR completion requires postMergeActions N/A')
+            }
+        } elseif ($DeliveryMode -eq 'LocalImplementation') {
+            foreach ($Field in @('mergeOrPublication', 'defaultBranchSync', 'postMergeActions')) {
+                if ($CloseoutValues[$Field] -ne 'N/A') {
+                    $Errors.Add("LocalImplementation completion requires ${Field} N/A")
+                }
+            }
         }
     }
 

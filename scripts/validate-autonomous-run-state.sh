@@ -210,7 +210,8 @@ requested_at = require_text(stop, "requestedAt", "state.stop")
 safe_boundary = require_text(stop, "safeBoundary", "state.stop")
 
 closeout = data.get("closeout")
-closeout_states = ("N/A", "Pending", "Completed", "Failed", "NeedsRevalidation")
+optional_closeout_states = ("N/A", "Pending", "Completed", "Failed", "NeedsRevalidation")
+required_closeout_states = ("Pending", "Completed", "Failed", "NeedsRevalidation")
 closeout_values = {}
 if schema_version == "1.1":
     if not isinstance(closeout, dict):
@@ -224,7 +225,12 @@ if schema_version == "1.1":
     ):
         value = require_text(closeout, field, "state.closeout")
         closeout_values[field] = value
-        if value not in closeout_states:
+        allowed_states = (
+            required_closeout_states
+            if field == "finalValidation"
+            else optional_closeout_states
+        )
+        if value not in allowed_states:
             errors.append(f"state.closeout.{field} is not allowed")
 
 updated_at = require_text(data, "updatedAt", "state")
@@ -259,6 +265,16 @@ if schema_version == "1.1" and status == "Completed":
     elif delivery_mode == "PublishPR":
         if closeout_values.get("mergeOrPublication") != "Completed":
             errors.append("PublishPR completion requires mergeOrPublication Completed")
+        if closeout_values.get("defaultBranchSync") != "N/A":
+            errors.append("PublishPR completion requires defaultBranchSync N/A")
+        if closeout_values.get("postMergeActions") != "N/A":
+            errors.append("PublishPR completion requires postMergeActions N/A")
+    elif delivery_mode == "LocalImplementation":
+        for field in ("mergeOrPublication", "defaultBranchSync", "postMergeActions"):
+            if closeout_values.get(field) != "N/A":
+                errors.append(
+                    f"LocalImplementation completion requires {field} N/A"
+                )
 
 if errors:
     for message in errors:
