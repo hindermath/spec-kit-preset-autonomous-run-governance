@@ -103,7 +103,7 @@ if not isinstance(data, dict):
     errors.append("state root must be an object")
     data = {}
 
-schema_version = data.get("schemaVersion")
+schema_version = text(data.get("schemaVersion")).strip()
 if schema_version not in ("1.0", "1.1"):
     errors.append("state schemaVersion must be 1.0 or 1.1")
 

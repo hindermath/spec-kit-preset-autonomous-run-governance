@@ -209,7 +209,10 @@ function Test-AutonomousRunState {
     if ($SchemaVersion -eq '1.1') {
         $CloseoutProperty = $Data.PSObject.Properties['closeout']
         $Closeout = if ($null -eq $CloseoutProperty) { $null } else { $CloseoutProperty.Value }
-        if ($null -eq $Closeout) { $Errors.Add('State.closeout must be an object for schema 1.1') }
+        if ($Closeout -isnot [pscustomobject]) {
+            $Errors.Add('State.closeout must be an object for schema 1.1')
+            $Closeout = [pscustomobject]@{}
+        }
         foreach ($Field in @('mergeOrPublication', 'defaultBranchSync', 'postMergeActions', 'finalValidation')) {
             $Value = Get-RequiredText -Object $Closeout -Name $Field -Label 'state.closeout'
             $CloseoutValues[$Field] = $Value
