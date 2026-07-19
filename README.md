@@ -155,8 +155,9 @@ Before installation:
 2. Ensure the target repository already has a valid Spec Kit integration.
 3. Keep the repository's agent guidance and constitution under version control.
 4. Decide which remote actions the current run may perform.
-5. Install the normal governance presets first when the project uses the
-   recommended eight-preset composition.
+5. Install the lower-priority governance presets first when the project uses
+   the recommended eight-preset composition; install
+   `parallel-autonomous-run-governance` after this preset.
 6. Have `bash` plus Python on macOS/Linux or PowerShell 7 on Windows for the
    bundled validators.
 
@@ -183,8 +184,8 @@ specify preset add --dev /path/to/autonomous-run-governance --priority 70
 
 ### Recommended composition / Empfohlene Kombination
 
-Install the normal governance matrix with priorities below `70`, then install
-this optional preset last:
+Install the lower-priority governance presets first, then this preset at `70`
+and `parallel-autonomous-run-governance` at `80`:
 
 | Priority | Preset |
 |---:|---|
@@ -195,9 +196,11 @@ this optional preset last:
 | 50 | `cross-platform-governance` |
 | 60 | `agent-parity-governance` |
 | 70 | `autonomous-run-governance` |
+| 80 | `parallel-autonomous-run-governance` |
 
-*Die normale Governance-Matrix wird zuerst mit niedrigeren Prioritäten
-installiert; dieses optionale Preset folgt zuletzt mit Priorität `70`.*
+*Die Governance-Presets werden in aufsteigender Priorität installiert:
+`autonomous-run-governance` folgt mit `70`, danach
+`parallel-autonomous-run-governance` mit `80`.*
 
 ### Verify installation / Installation prüfen
 
