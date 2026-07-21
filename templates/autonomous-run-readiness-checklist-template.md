@@ -2,6 +2,9 @@
 
 ## Authority and Scope
 
+- [ ] Intake review is `N/A`, or active policy has exactly one current
+      `Ready`/human-approved `ReadyWithAcceptedRisks` result.
+
 - [ ] Exactly one delivery mode is recorded from current authority.
 - [ ] Missing remote authority defaults to `LocalImplementation`.
 - [ ] Accepted scope and explicit exclusions are unchanged.
