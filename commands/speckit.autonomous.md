@@ -18,6 +18,15 @@ stop this command and direct the user to `speckit.autonomous-resume`. A valid
 and authority audit defined by that command. Never overwrite an active run with
 a new feature.
 
+Before branch or feature creation, inspect whether `intake-review-governance`
+is installed and repository policy marks intake review as required. If absent
+or inactive, record `N/A`; Preset 9 is not a hidden dependency. If active,
+require exactly one current result for the binding intake and validate its
+normalized SHA-256. Only `Ready` or human-approved
+`ReadyWithAcceptedRisks` passes. Missing evidence, drift, ambiguity, open
+blocking findings, or unanswered questions stops before Specify. Add the
+accepted result and target hashes to `acceptedArtifacts`.
+
 ## Authority Gate
 
 Determine exactly one delivery mode from explicit current authority:

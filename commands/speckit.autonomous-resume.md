@@ -17,6 +17,9 @@ Before any mutation:
 1. Validate `specs/<feature>/autonomous-run-state.json` and reconcile it with
    current branch, feature metadata, Git history, accepted-artifact hashes,
    `tasks.md`, evidence, and owned/unrelated worktree changes.
+   If intake review was active at creation, revalidate the accepted review
+   result and normalized target hashes. Stale or missing review evidence is
+   material drift and blocks resume until a new result is accepted.
 2. Re-read constitution, agent guidance, installed preset versions, and current
    feature prerequisites. Compare mandatory correctness, security, permission,
    and evidence-integrity rules in the current preset stack with the accepted

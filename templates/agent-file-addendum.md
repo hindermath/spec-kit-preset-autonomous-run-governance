@@ -1,6 +1,10 @@
 
 ## Autonomous Spec Kit Runs
 
+- Treat intake review as `N/A` unless the optional preset and project policy
+  activate it. When active, require a current accepted result before feature
+  creation and retain its hash in autonomous state.
+
 - Use the installed `speckit.autonomous` command for a fully delegated feature.
 - Use `speckit.autonomous-status` for read-only inspection,
   `speckit.autonomous-stop` for a graceful safe-boundary pause, and
