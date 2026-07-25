@@ -11,6 +11,12 @@ $ARGUMENTS
 Use the request, repository constitution, agent guidance, current feature
 metadata, and accepted feature artifacts as binding input.
 
+Resolve the project's learner and accessibility policy before Specify. Carry
+its declared audience, language order, readability target, first-use
+terminology, assumed prior knowledge, and text-first dependency/status/decision
+rules through Spec, Plan, Tasks, implementation evidence, documentation, and
+retrospective. This preset does not invent a project-specific audience.
+
 Before creating a feature, inspect repository metadata and
 `specs/<feature>/autonomous-run-state.json`. A valid `PausedByUser` state MUST
 stop this command and direct the user to `speckit.autonomous-resume`. A valid
