@@ -3,10 +3,15 @@
 Permission-bounded, evidence-first governance for one explicitly delegated
 autonomous Spec Kit run.
 
-Version `0.3.2` | Priority `70` | Spec Kit `>=0.8.3`
+Version `0.3.3` | Priority `70` | Spec Kit `>=0.8.3`
 
-Version 0.3.2 recognizes optional `intake-review-governance`. Preset 9 remains
+Version 0.3.3 recognizes optional `intake-review-governance`. Preset 9 remains
 `N/A` unless repository policy explicitly activates the gate.
+
+Version 0.3.3 additionally carries the accepted project-specific learner and
+accessibility contract through Specify, Plan, Tasks, implementation evidence,
+documentation, and retrospective. It does not invent a target audience or
+silently assume Spec Kit experience.
 
 ## Deutsch
 
@@ -60,7 +65,7 @@ have succeeded.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.2.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.3.zip \
      --priority 70
    ```
 
@@ -133,7 +138,7 @@ bypass, secret, or provider-administration authority.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.2.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.3.zip \
      --priority 70
    ```
 

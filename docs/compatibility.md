@@ -8,7 +8,7 @@
 
 | Ebene | Aktueller Wert | Bedeutung |
 |---|---|---|
-| Preset-Release | `v0.3.2` | Veroeffentlichtes Paket und ZIP |
+| Preset-Release | `v0.3.3` | Veroeffentlichtes Paket und ZIP |
 | `preset.yml`-Schema | `schema_version: "1.0"` | Spec-Kit-Presetmanifest |
 | Run-State-Vertrag | `schemaVersion: "1.1"` | Autonomer Lifecycle und Closeout |
 
@@ -16,9 +16,9 @@ Diese Werte duerfen nicht miteinander verwechselt werden. Ein
 Presetmanifest-Schema `1.0` bedeutet nicht, dass der Run-State ebenfalls
 Schema `1.0` verwendet.
 
-### Upgrade auf `v0.3.2`
+### Upgrade auf `v0.3.3`
 
-`v0.3.2` ergaenzt das optionale, policy-gesteuerte Intake-Review-Gate vor der
+`v0.3.3` ergaenzt das optionale, policy-gesteuerte Intake-Review-Gate vor der
 Feature-Erstellung. Ohne Preset 9 oder aktive Policy bleibt das Ergebnis `N/A`
 und das bisherige Verhalten unveraendert.
 
@@ -38,7 +38,7 @@ den No-Delta-Befund.
 
 `parallel-autonomous-run-governance` benoetigt in jedem realen
 Worker-Repository mindestens Preset 7 `v0.2.2`. Die gemeinsam getestete
-aktuelle Kombination ist Preset 7 `v0.3.2` mit Preset 8 `v0.2.3`.
+aktuelle Kombination ist Preset 7 `v0.3.3` mit Preset 8 `v0.2.3`.
 
 ## English
 
@@ -46,16 +46,16 @@ aktuelle Kombination ist Preset 7 `v0.3.2` mit Preset 8 `v0.2.3`.
 
 | Layer | Current value | Meaning |
 |---|---|---|
-| Preset release | `v0.3.2` | Published package and ZIP |
+| Preset release | `v0.3.3` | Published package and ZIP |
 | `preset.yml` schema | `schema_version: "1.0"` | Spec Kit preset manifest |
 | Run-state contract | `schemaVersion: "1.1"` | Autonomous lifecycle and closeout |
 
 Do not confuse these values. Preset-manifest schema `1.0` does not imply
 run-state schema `1.0`.
 
-### Upgrade to `v0.3.2`
+### Upgrade to `v0.3.3`
 
-`v0.3.2` adds the optional policy-driven intake-review gate before feature
+`v0.3.3` adds the optional policy-driven intake-review gate before feature
 creation. Without Preset 9 or an active policy, the result is `N/A` and prior
 behavior remains unchanged.
 
@@ -67,5 +67,5 @@ result.
 ### Relationship with Preset 8
 
 `parallel-autonomous-run-governance` requires at least Preset 7 `v0.2.2` in
-every real worker repository. The currently tested pair is Preset 7 `v0.3.2`
+every real worker repository. The currently tested pair is Preset 7 `v0.3.3`
 with Preset 8 `v0.2.3`.

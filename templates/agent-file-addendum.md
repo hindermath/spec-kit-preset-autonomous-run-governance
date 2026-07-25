@@ -54,3 +54,9 @@
   and checklists. Minimally add an applicable missing rule and rerun Analyze;
   preserve scope and do not rewrite accepted artifacts for efficiency-only
   guidance.
+- Before Specify and again before implementation, read the accepted project's
+  learner and accessibility policy. Preserve its declared audience, language
+  order, CEFR target, first-use terminology, prior-knowledge boundary, and
+  text-first dependency/status/decision rules in Spec, Plan, Tasks, evidence,
+  documentation, and retrospective. Installation of this preset does not
+  invent a project-specific audience.
