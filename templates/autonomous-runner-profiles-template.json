@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "profiles": {
+    "replace-with-frontier-profile": {
+      "routingRole": "frontier-reasoning",
+      "agentFamily": "replace-with-agent-family",
+      "model": "replace-with-local-model-id",
+      "reasoningEffort": "high",
+      "executable": "replace-with-agent-executable",
+      "preflight": {
+        "executable": "replace-with-agent-executable",
+        "arguments": [
+          "replace-with-read-only-model-preflight"
+        ]
+      },
+      "arguments": [
+        "replace-with-phase-runner-arguments"
+      ]
+    }
+  }
+}

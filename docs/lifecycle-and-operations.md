@@ -63,6 +63,36 @@ for a safe boundary, then validates `PausedByUser`. Resume revalidates Git,
 tasks, evidence, drift, and current authority before continuing the existing
 attempt. A second resume does not repeat an already proven terminal operation.
 
+## Phasen-Routing / Phase routing
+
+`model-routing.json` ordnet Preset-Kommandos stabilen Rollen zu. Wenn mehrere
+aktive Presets dasselbe Kommando klassifizieren, gewinnt die staerkste Rolle:
+`frontier-reasoning`, `coding-review`, `long-running-implementation`,
+`fast-mechanical`, danach `script-only`. Konkrete Provider- und Modellnamen
+stehen nur in einer lokalen Runner-Konfiguration.
+
+Ein Modellwechsel ist nur an einer persistierten Phasengrenze erlaubt. Der
+vorherige Prozess muss erfolgreich beendet sein; seine Metadaten und das
+SHA-256-gebundene Ergebnis werden im Run-State gespeichert. Erst danach startet
+`invoke-autonomous-model-phase.*` einen neuen Prozess fuer die naechste Phase.
+`script-only` wird direkt deterministisch ausgefuehrt und darf keinen
+Modellprozess starten. Ein fehlendes oder mehrdeutiges Profil, ein fehlendes
+Modell beziehungsweise Reasoning-Level oder ein fehlschlagender Preflight setzt
+den Lauf auf `Blocked`.
+
+`model-routing.json` maps preset commands to stable roles. If several active
+presets classify the same command, the strongest role wins:
+`frontier-reasoning`, `coding-review`, `long-running-implementation`,
+`fast-mechanical`, then `script-only`. Concrete provider and model names exist
+only in local runner configuration.
+
+A model switch is allowed only at a persisted phase boundary. The previous
+process must have completed successfully, and its metadata plus SHA-256-bound
+result are stored in run state before `invoke-autonomous-model-phase.*` starts
+a new process for the next phase. `script-only` runs deterministically without
+a model process. A missing or ambiguous profile, missing model or reasoning
+effort, or failed preflight sets the run to `Blocked`.
+
 ## Deutsch
 
 ### Status
@@ -102,6 +132,8 @@ Mutation prueft es:
 5. Preset- und Governance-Drift,
 6. aktuelle lokale und Remote-Berechtigung,
 7. letzte belastbare beziehungsweise unsichere Operation.
+8. Routing-Katalog, lokales Runner-Profil, Modell-Preflight und Hash der letzten
+   abgeschlossenen gerouteten Phase.
 
 Bereits belegte Arbeit wird wiederverwendet. Nur unbewiesene oder
 unvollstaendige Operationen werden erneut ausgefuehrt.
@@ -143,7 +175,8 @@ exact action.
 `/speckit.autonomous-resume` continues only an existing run. Before mutation it
 checks feature and branch identity, schema and hashes, tasks and Git history,
 owned and unrelated changes, preset and governance drift, current authority,
-and the last trustworthy or uncertain operation.
+the last trustworthy or uncertain operation, routing catalog, local runner
+profile, model preflight, and the last completed routed-phase hash.
 
 Verified work is reused. Only an unproven or incomplete operation is retried.
 

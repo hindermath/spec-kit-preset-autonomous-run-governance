@@ -19,6 +19,8 @@ Default: `LocalImplementation`.
 - complete feature checklists
 - explicit delivery mode and hard stop conditions
 - validated feature-local autonomous-run state and safe stop boundary
+- complete command-role catalog and exactly one validated local runner profile
+  for every routed phase
 
 ## Stage Order
 
@@ -33,6 +35,11 @@ Default: `LocalImplementation`.
 9. triggered local validation and evidence completion
 10. authorized delivery closeout
 11. retrospective and portable handoff
+
+At every routed boundary, resolve the strongest role across active presets.
+Finish the current process, persist its profile/model/effort metadata and
+SHA-256 result, then start a new process for the dependent phase. Missing or
+ambiguous configuration fails closed. `script-only` work runs directly.
 
 The word `Deliver` may appear as a generated skill heading, but it is not a
 machine-state stage. Persist `Publish` while publishing, `Review` while
@@ -110,7 +117,8 @@ reviewed result, or merge fact into itself.
 Persist `specs/<feature>/autonomous-run-state.json` at logical phase boundaries,
 graceful stops, hard gates, and completion. The state index records task and
 accepted-artifact hashes, checkpoint commit, last passing gate, last operation,
-and next exact action. Tasks, evidence, and Git remain authoritative.
+next exact action, routed phase dependencies, runner metadata, preflight, and
+result hashes. Tasks, evidence, and Git remain authoritative.
 
 Use `speckit.autonomous-status` for a read-only inspection. A deliberate stop
 uses `speckit.autonomous-stop`, records `PausedByUser`, preserves all work, and

@@ -185,6 +185,85 @@ function Test-AutonomousRunState {
         $Errors.Add('State.tasks.sha256 must be lowercase SHA-256')
     }
 
+    $RoutingProperty = $Data.PSObject.Properties['routing']
+    if ($null -ne $RoutingProperty) {
+        $Routing = $RoutingProperty.Value
+        if ($Routing -isnot [pscustomobject]) {
+            $Errors.Add('State.routing must be an object when present')
+        } else {
+            $RoutingPolicy = Get-RequiredText -Object $Routing -Name 'policy' -Label 'state.routing'
+            if ($RoutingPolicy -ne 'balanced-v1') {
+                $Errors.Add('State.routing.policy must be balanced-v1')
+            }
+            $FallbackPolicy = Get-RequiredText -Object $Routing -Name 'fallbackPolicy' -Label 'state.routing'
+            if ($FallbackPolicy -ne 'fail-closed') {
+                $Errors.Add('State.routing.fallbackPolicy must be fail-closed')
+            }
+            $PhasesProperty = $Routing.PSObject.Properties['phases']
+            if ($null -eq $PhasesProperty -or $null -eq $PhasesProperty.Value) {
+                $Errors.Add('State.routing.phases must be an array')
+                $RoutingPhases = @()
+            } else {
+                $RoutingPhases = @($PhasesProperty.Value)
+            }
+            $AllowedRoutingRoles = @('script-only', 'fast-mechanical', 'long-running-implementation', 'coding-review', 'frontier-reasoning')
+            $AllowedRoutingStatuses = @('Pending', 'Running', 'Completed', 'Blocked', 'Failed', 'NeedsRevalidation')
+            $RoutingPhaseIds = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+            $RoutingDependencies = [System.Collections.Generic.List[object]]::new()
+            for ($Index = 0; $Index -lt $RoutingPhases.Count; $Index++) {
+                $Phase = $RoutingPhases[$Index]
+                $Label = "state.routing.phases[$Index]"
+                $CurrentPhaseId = Get-RequiredText -Object $Phase -Name 'phaseId' -Label $Label
+                if (-not $RoutingPhaseIds.Add($CurrentPhaseId)) {
+                    $Errors.Add("Duplicate routing phaseId: $CurrentPhaseId")
+                }
+                [void](Get-RequiredText -Object $Phase -Name 'command' -Label $Label)
+                $RoutingRole = Get-RequiredText -Object $Phase -Name 'routingRole' -Label $Label
+                if ($RoutingRole -notin $AllowedRoutingRoles) {
+                    $Errors.Add("${Label}.routingRole is not allowed")
+                }
+                $RoutingStatus = Get-RequiredText -Object $Phase -Name 'status' -Label $Label
+                if ($RoutingStatus -notin $AllowedRoutingStatuses) {
+                    $Errors.Add("${Label}.status is not allowed")
+                }
+                $RunnerProfile = Get-RequiredText -Object $Phase -Name 'runnerProfile' -Label $Label
+                $DependsOnProperty = $Phase.PSObject.Properties['dependsOn']
+                if ($null -ne $DependsOnProperty) {
+                    foreach ($Dependency in @($DependsOnProperty.Value)) {
+                        if ($Dependency -isnot [string] -or [string]::IsNullOrWhiteSpace($Dependency)) {
+                            $Errors.Add("${Label}.dependsOn must contain non-empty strings")
+                        } else {
+                            $RoutingDependencies.Add([pscustomobject]@{ Label = $Label; Value = $Dependency })
+                        }
+                    }
+                }
+                if ($RoutingStatus -eq 'Completed') {
+                    if ($RoutingRole -ne 'script-only') {
+                        foreach ($Field in @('agentFamily', 'model', 'reasoningEffort')) {
+                            [void](Get-RequiredText -Object $Phase -Name $Field -Label $Label)
+                        }
+                        if ($RunnerProfile -eq 'N/A') {
+                            $Errors.Add("${Label}.runnerProfile must be declared for Completed model phases")
+                        }
+                    }
+                    $ResultHash = Get-RequiredText -Object $Phase -Name 'resultSha256' -Label $Label
+                    if ($ResultHash -notmatch '^[0-9a-f]{64}$') {
+                        $Errors.Add("${Label}.resultSha256 must be lowercase SHA-256")
+                    }
+                    $ResultPath = Get-RequiredText -Object $Phase -Name 'resultPath' -Label $Label
+                    if (-not (Test-RelativePath -Value $ResultPath)) {
+                        $Errors.Add("${Label}.resultPath must be repository-relative without ..")
+                    }
+                }
+            }
+            foreach ($Dependency in $RoutingDependencies) {
+                if (-not $RoutingPhaseIds.Contains([string] $Dependency.Value)) {
+                    $Errors.Add("$($Dependency.Label).dependsOn references unknown phase '$($Dependency.Value)'")
+                }
+            }
+        }
+    }
+
     [void](Get-RequiredText -Object $Data -Name 'lastPassingGate' -Label 'state')
     $NextAction = Get-RequiredText -Object $Data -Name 'nextExactAction' -Label 'state'
 

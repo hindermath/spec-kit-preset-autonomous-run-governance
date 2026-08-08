@@ -51,14 +51,23 @@ authority from general autonomy.
 1. Preflight repository state, feature identity, governance, prerequisites, and
    checklists. Stop for a material conflict, destructive ambiguity, missing
    required authority, or failed hard gate.
-2. Execute Specify, repeated Clarify, requirements checklists, Plan,
+2. Resolve every active preset's `model-routing.json` before semantic work.
+   Classify each command by the strongest applicable role and resolve exactly
+   one matching local runner profile. Concrete model names belong only to that
+   local configuration. Missing or ambiguous profiles, models, reasoning
+   effort, executables, or failed preflights set the run to `Blocked`; never
+   fall back silently. Execute `script-only` work directly without a model.
+3. Execute Specify, repeated Clarify, requirements checklists, Plan,
    plan-review remediation, Tasks, repeated Analyze, Implement, validation, and
-   the authorized delivery closeout in dependency order.
-3. Converge by outcome, not repetition count. Clarification has no material
+   the authorized delivery closeout in dependency order. A routed phase starts
+   in a new process only after every dependency phase completed and its result
+   plus execution metadata were SHA-256-bound in run state. Never change the
+   model inside a running process.
+4. Converge by outcome, not repetition count. Clarification has no material
    planning ambiguity; checklists pass or carry accepted dispositions; Analyze
    has no Critical/High finding and every Medium is fixed or accepted with an
    owner; implementation tasks are complete or conditionally evidenced.
-4. Create evidence before the first implementation edit. Name exact evidence
+5. Create evidence before the first implementation edit. Name exact evidence
    paths for remote and delivery tasks. Keep scope, decisions, commands,
    results, skipped triggers, residual risk, permissions, and resume state
    current.
@@ -70,31 +79,31 @@ authority from general autonomy.
    `MergeAndSync` according to the current operation; never persist `Deliver`.
    Schema `1.1` records merge or publication, default-branch synchronization,
    manifest-declared post-merge actions, and final validation separately.
-5. Prove one representative vertical slice and its failing/green contract
+6. Prove one representative vertical slice and its failing/green contract
    before broad repetition. Group negative cases only when every expected
    failure and ownership boundary remains explicit.
-6. Serialize shared evidence, version, workflow, statistics, and agent-guidance
+7. Serialize shared evidence, version, workflow, statistics, and agent-guidance
    writers. If a mutable validation token is required, one transition covers
    exactly one explicit invocation.
-7. Pass repository roots explicitly to validation helpers. A pass needs the
+8. Pass repository roots explicitly to validation helpers. A pass needs the
    expected exit status, required output, and a clean structured/error channel.
-8. Before classifying a change as documentation- or evidence-only and skipping
+9. Before classifying a change as documentation- or evidence-only and skipping
    executable tests, search for validators that read the changed paths, markers,
    schemas, or status values. Update and run every affected validator in the
    same change.
-9. Validate the exact delivery candidate before every authorized commit. Stage
+10. Validate the exact delivery candidate before every authorized commit. Stage
    only intended paths, run `git diff --cached --check`, and reconcile the
    staged path inventory with repository status so intended untracked or
    unstaged files cannot escape validation. Preserve unrelated work. In
    `LocalImplementation`, use a per-file or temporary-index equivalent and
    restore the original index state.
-10. Route out-of-scope findings to named follow-up evidence instead of silently
+11. Route out-of-scope findings to named follow-up evidence instead of silently
    expanding the feature.
-11. Before implementation, resolve the preset's gate-requirements template and
+12. Before implementation, resolve the preset's gate-requirements template and
    declare every acceptance gate in a reviewed feature artifact. Applicable
    gates name required command tokens and any runner or platform tokens; `N/A`
    gates name their rationale and re-evaluation trigger.
-12. Before merge, generate provider-neutral gate evidence for the exact current
+13. Before merge, generate provider-neutral gate evidence for the exact current
    reviewed head in a temporary location and run the installed validator through
    `bash <validator.sh>` or `pwsh -NoProfile -File <validator.ps1>`; installers
    may not preserve executable mode bits. Every gate needs exactly one Primary row;

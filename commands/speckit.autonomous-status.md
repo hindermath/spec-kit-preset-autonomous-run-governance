@@ -24,6 +24,8 @@ Report:
 - checkpoint commit and whether it exists in current history
 - accepted-artifact and task hashes, completed task count, and detected drift
 - last passing gate, last operation, and next exact action
+- current routed phase, resolved role, profile, model, reasoning effort,
+  preflight result, and persisted result hash when routing is declared
 - owned, unrelated, staged, unstaged, and untracked worktree boundaries
 - whether authority must be revalidated before local or remote continuation
 - one of `ReadyToStart`, `ReadyToResume`, `PausedByUser`, `Interrupted`,

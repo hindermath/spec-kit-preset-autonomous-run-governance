@@ -1,0 +1,49 @@
+.TH INVOKE-AUTONOMOUS-MODEL-PHASE 1 "August 2026" "autonomous-run-governance" "User Commands"
+.SH NAME
+invoke-autonomous-model-phase \- run one fail-closed model-routed Spec Kit phase
+.SH SYNOPSIS
+.B invoke-autonomous-model-phase.sh
+-Action Validate|Run|Status -State PATH [OPTIONS]
+.SH DESCRIPTION
+The command resolves the strongest agent-neutral routing role declared by the
+installed presets, binds it to one local runner profile, and starts preflight
+and phase as direct executable-plus-argument-array processes. It never uses
+shell evaluation and never silently falls back to another model.
+.PP
+DE: Modellwechsel erfolgen nur zwischen Phasenprozessen. Konkrete Modellnamen
+bleiben in der lokalen Runner-Konfiguration und ausserhalb reproduzierbarer
+Feature-Anforderungen.
+.PP
+EN: Model changes occur only between phase processes. Concrete model names stay
+in local runner configuration and outside reproducible feature requirements.
+.SH OPTIONS
+.TP
+.B -Action
+Validate checks routing and profiles, Run executes one phase, and Status reports
+the persisted routing state.
+.TP
+.B -State PATH
+Feature-local autonomous-run-state.json.
+.TP
+.B -RunnerConfig PATH
+Local JSON file with fail-closed agent and model profiles.
+.TP
+.B -RoutingRoot PATH
+Installed preset directory containing model-routing.json files.
+.TP
+.B -PhaseId ID
+Stable phase identifier required by Run.
+.TP
+.B -Prompt TEXT
+Additional non-secret phase input.
+.TP
+.B -WhatIf
+Print the resolved phase, profile, model, and effort without starting preflight
+or the phase process.
+.SH SAFETY
+Missing routing, profile, executable, model, effort, or successful preflight
+blocks execution. script-only commands are never started through a model
+profile. Success grants no commit, push, merge, bypass, secret, deployment, or
+provider-administration authority.
+.SH SEE ALSO
+validate-autonomous-run-state(1), orchestrate-parallel-autonomous-runs(1)
