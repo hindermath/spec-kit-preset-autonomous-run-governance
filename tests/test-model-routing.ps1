@@ -168,7 +168,7 @@ try {
     Assert-RoutingTest ($LASTEXITCODE -ne 0) 'script-only command was started through a model runner'
 
     $routingFiles = @(Get-ChildItem -LiteralPath $allPresetRoot -Filter 'model-routing.json' -File -Recurse)
-    Assert-RoutingTest ($routingFiles.Count -eq 11) 'The active eleven-preset profile must provide exactly eleven routing files'
+    Assert-RoutingTest ($routingFiles.Count -eq 12) 'The active managed profile must provide exactly twelve routing files'
     $roleRank = @{
         'script-only' = 0
         'fast-mechanical' = 10
