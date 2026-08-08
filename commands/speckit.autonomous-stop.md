@@ -10,7 +10,8 @@ $ARGUMENTS
 
 This is a cooperative stop, not a process-manager kill. Give the stop request
 priority over planned feature work. Do not launch another task, validation, or
-remote action after receiving it.
+remote action after receiving it. In particular, do not start another routed
+model phase or its preflight.
 
 At the next safe agent or command boundary:
 
@@ -18,6 +19,8 @@ At the next safe agent or command boundary:
    evidence, last passing gate, and last operation.
 2. If an external command ended without a trustworthy result, record its state
    as `NeedsRevalidation`; never infer success from having started it.
+   For a routed model phase, preserve its role, profile, model, effort, process
+   result, and output hash when available.
 3. Create or update `specs/<feature>/autonomous-run-state.json` from the installed
    template. Set `status` to `PausedByUser`, record the reason, UTC request time,
    safe boundary, and next exact action, and set

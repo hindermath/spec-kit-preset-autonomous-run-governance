@@ -3,7 +3,11 @@
 Permission-bounded, evidence-first governance for one explicitly delegated
 autonomous Spec Kit run.
 
-Version `0.3.3` | Priority `70` | Spec Kit `>=0.8.3`
+Version `0.3.4` | Priority `70` | Spec Kit `>=0.8.3`
+
+Version 0.3.4 accepts machine-local runner-profile schema 2.0 and composes with
+the published `model-routing.json` catalogs. Unknown or ambiguous bindings
+remain blocked.
 
 Version 0.3.3 recognizes optional `intake-review-governance`. Preset 9 remains
 `N/A` unless repository policy explicitly activates the gate.
@@ -22,6 +26,7 @@ Vorbereitung bis zum belegbaren Abschluss. Es verbindet:
 
 - ausdrueckliche Berechtigungen statt stiller Annahmen,
 - reproduzierbare Specify-, Clarify-, Plan-, Tasks- und Analyze-Phasen,
+- ausgewogenes, providerneutrales Modell-Routing an sicheren Phasengrenzen,
 - einen maschinenlesbaren Run-State,
 - kooperatives Stoppen und idempotentes Fortsetzen,
 - pruefbare Acceptance-Gates fuer den exakten aktuellen Head,
@@ -37,7 +42,8 @@ Bypass-, Secret- oder Provider-Administrationsrechte.
 flowchart LR
     A["Expliziter Auftrag"] --> B["Preflight und Berechtigung"]
     B --> C["Spec Kit: Specify bis Analyze"]
-    C --> D["Implementieren und validieren"]
+    C --> R["SHA-256-gebundene Phasenuebergabe"]
+    R --> D["Implementieren und validieren"]
     D --> E{"Delivery-Modus"}
     E -->|LocalImplementation| F["Lokaler Abschluss"]
     E -->|PublishPR| G["Commit, Push und PR"]
@@ -53,6 +59,12 @@ Implementierung und Validierung. Der aktuelle Auftrag bestimmt genau einen
 Delivery-Modus. Erst wenn dessen Abschlussbedingungen und die finale
 Validierung erfuellt sind, ist der Lauf `Completed`.
 
+Eine einzelne autonome Ausfuehrung darf unterschiedliche Modellprofile nutzen.
+Der Wechsel erfolgt ausschliesslich zwischen abgeschlossenen Phasen durch einen
+neuen Prozess. Rolle, Profil, Modell, Reasoning-Aufwand, Preflight und
+Ergebnis-Hash werden im Run-State belegt. Fehlt ein erforderliches lokales
+Profil, wird der Lauf `Blocked`; es gibt keinen stillen Fallback.
+
 **Text alternative EN:** An explicit instruction first passes repository and
 authority preflight. The Spec Kit phases, implementation, and validation
 follow. Current authority selects exactly one delivery mode. The run becomes
@@ -65,7 +77,7 @@ have succeeded.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.3.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.4.zip \
      --priority 70
    ```
 
@@ -74,6 +86,7 @@ have succeeded.
    ```bash
    specify preset info autonomous-run-governance
    specify preset resolve autonomous-run-readiness-checklist-template
+   bash .specify/scripts/bash/invoke-autonomous-model-phase.sh --help
    ```
 
 3. Einen eindeutig begrenzten lokalen Lauf delegieren:
@@ -123,6 +136,7 @@ verifiable closeout. It combines:
 
 - explicit authority instead of silent assumptions,
 - reproducible Specify, Clarify, Plan, Tasks, and Analyze phases,
+- balanced provider-neutral model routing at safe phase boundaries,
 - machine-readable run state,
 - cooperative stop and idempotent resume,
 - acceptance gates bound to the exact current head,
@@ -138,7 +152,7 @@ bypass, secret, or provider-administration authority.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.3.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.4.zip \
      --priority 70
    ```
 
@@ -165,6 +179,11 @@ bypass, secret, or provider-administration authority.
 
 Use `/speckit.autonomous-stop` for a deliberate pause. Resume a deliberately
 paused run only through `/speckit.autonomous-resume`.
+
+One autonomous run may use different local model profiles. A switch is allowed
+only between completed phases by starting a new process. The run state records
+the role, profile, model, reasoning effort, preflight, and result hash. A
+missing required profile blocks the run; no silent fallback is permitted.
 
 ### Preset 7 or Preset 8?
 
@@ -193,6 +212,8 @@ Preset 8 builds on this preset and does not replace worker governance.
 - Stop is cooperative and never an implicit process kill.
 - A stored delivery mode records history; it is not current permission.
 - Missing, stale, or contradictory evidence blocks remote closeout.
+- Missing model profiles, failed preflights, or unbound phase handoffs block the
+  next routed phase.
 - `Completed` requires every applicable closeout field and final validation.
 
 ## License

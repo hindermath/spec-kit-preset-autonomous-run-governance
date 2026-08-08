@@ -12,6 +12,15 @@
 | Run-state path | `specs/[feature]/autonomous-run-state.json` |
 | Run-state status | `[Active/StopRequested/PausedByUser/Interrupted/Blocked/Completed]` |
 
+## Model Routing
+
+| Phase | Command | Role | Profile | Model | Effort | Preflight | Result SHA-256 |
+|---|---|---|---|---|---|---|---|
+| `[phase]` | `[command]` | `[stable role/script-only]` | `[local profile/N/A]` | `[resolved model/N/A]` | `[effort/N/A]` | `[Pass/Blocked/N/A]` | `[hash/N/A]` |
+
+Model identifiers are execution evidence, not feature requirements. A model
+change requires a completed process boundary and a validated handoff hash.
+
 ## Scope and Convergence
 
 | Gate | State | Evidence or disposition |

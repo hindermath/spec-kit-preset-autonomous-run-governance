@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "presetId": "autonomous-run-governance",
+  "fallbackPolicy": "fail-closed",
+  "defaultRole": "frontier-reasoning",
+  "commands": {
+    "speckit.specify": "frontier-reasoning",
+    "speckit.clarify": "frontier-reasoning",
+    "speckit.checklist": "frontier-reasoning",
+    "speckit.plan": "frontier-reasoning",
+    "speckit.tasks": "frontier-reasoning",
+    "speckit.analyze": "frontier-reasoning",
+    "speckit.implement": "long-running-implementation",
+    "speckit.autonomous": "frontier-reasoning",
+    "speckit.autonomous-retrospective": "coding-review",
+    "speckit.autonomous-status": "fast-mechanical",
+    "speckit.autonomous-stop": "script-only",
+    "speckit.autonomous-resume": "frontier-reasoning"
+  }
+}

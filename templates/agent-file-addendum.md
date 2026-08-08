@@ -46,6 +46,15 @@
 - Keep the feature-local run-state index validated at phase boundaries. Recheck
   current authority and uncertain operations after every interruption; recorded
   delivery mode is evidence, not permission.
+- Resolve command roles from every active preset `model-routing.json`; when
+  roles overlap, apply the strongest applicable role. Keep concrete provider
+  and model identifiers only in local runner profiles.
+- Switch models only by completing and hashing one phase, persisting its
+  metadata, and starting a new process for the dependent phase. Never switch a
+  live process in place.
+- Fail closed when a required profile, model, reasoning effort, executable, or
+  preflight is missing or invalid. Execute `script-only` phases directly and do
+  not disguise them as model work.
 - Treat a generated `Deliver` heading as an orchestration label only. Persist
   the canonical machine-state stage `Publish`, `Review`, or `MergeAndSync` for
   remote closeout and validate the transition; `Deliver` is not a state value.

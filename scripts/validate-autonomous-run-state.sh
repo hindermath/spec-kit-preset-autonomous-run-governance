@@ -188,6 +188,75 @@ elif not valid_relative_path(tasks_path):
 elif not re.fullmatch(r"[0-9a-f]{64}", tasks_hash):
     errors.append("state.tasks.sha256 must be lowercase SHA-256")
 
+routing = data.get("routing")
+if routing is not None:
+    if not isinstance(routing, dict):
+        errors.append("state.routing must be an object when present")
+    else:
+        if require_text(routing, "policy", "state.routing") != "balanced-v1":
+            errors.append("state.routing.policy must be balanced-v1")
+        if require_text(routing, "fallbackPolicy", "state.routing") != "fail-closed":
+            errors.append("state.routing.fallbackPolicy must be fail-closed")
+        phases = routing.get("phases")
+        if not isinstance(phases, list):
+            errors.append("state.routing.phases must be an array")
+            phases = []
+        allowed_routing_roles = {
+            "script-only", "fast-mechanical", "long-running-implementation",
+            "coding-review", "frontier-reasoning",
+        }
+        allowed_routing_statuses = {
+            "Pending", "Running", "Completed", "Blocked", "Failed",
+            "NeedsRevalidation",
+        }
+        routing_phase_ids = set()
+        routing_dependencies = []
+        for index, phase in enumerate(phases):
+            label = f"state.routing.phases[{index}]"
+            if not isinstance(phase, dict):
+                errors.append(f"{label} must be an object")
+                continue
+            phase_id = require_text(phase, "phaseId", label)
+            if phase_id in routing_phase_ids:
+                errors.append(f"duplicate routing phaseId: {phase_id}")
+            routing_phase_ids.add(phase_id)
+            require_text(phase, "command", label)
+            routing_role = require_text(phase, "routingRole", label)
+            if routing_role not in allowed_routing_roles:
+                errors.append(f"{label}.routingRole is not allowed")
+            routing_status = require_text(phase, "status", label)
+            if routing_status not in allowed_routing_statuses:
+                errors.append(f"{label}.status is not allowed")
+            runner_profile = require_text(phase, "runnerProfile", label)
+            depends_on = phase.get("dependsOn", [])
+            if not isinstance(depends_on, list):
+                errors.append(f"{label}.dependsOn must be an array")
+                depends_on = []
+            for dependency in depends_on:
+                if not isinstance(dependency, str) or not dependency.strip():
+                    errors.append(f"{label}.dependsOn must contain non-empty strings")
+                else:
+                    routing_dependencies.append((label, dependency))
+            if routing_status == "Completed":
+                if routing_role != "script-only":
+                    for field in ("agentFamily", "model", "reasoningEffort"):
+                        require_text(phase, field, label)
+                    if runner_profile == "N/A":
+                        errors.append(
+                            f"{label}.runnerProfile must be declared for Completed model phases"
+                        )
+                result_hash = require_text(phase, "resultSha256", label)
+                if not re.fullmatch(r"[0-9a-f]{64}", result_hash):
+                    errors.append(f"{label}.resultSha256 must be lowercase SHA-256")
+                result_path = require_text(phase, "resultPath", label)
+                if result_path and not valid_relative_path(result_path):
+                    errors.append(f"{label}.resultPath must be repository-relative without ..")
+        for label, dependency in routing_dependencies:
+            if dependency not in routing_phase_ids:
+                errors.append(
+                    f"{label}.dependsOn references unknown phase '{dependency}'"
+                )
+
 require_text(data, "lastPassingGate", "state")
 next_action = require_text(data, "nextExactAction", "state")
 

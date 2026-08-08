@@ -8,13 +8,19 @@
 
 | Ebene | Aktueller Wert | Bedeutung |
 |---|---|---|
-| Preset-Release | `v0.3.3` | Veroeffentlichtes Paket und ZIP |
+| Preset-Release | `v0.3.4` | Veroeffentlichtes Paket und ZIP |
 | `preset.yml`-Schema | `schema_version: "1.0"` | Spec-Kit-Presetmanifest |
 | Run-State-Vertrag | `schemaVersion: "1.1"` | Autonomer Lifecycle und Closeout |
 
 Diese Werte duerfen nicht miteinander verwechselt werden. Ein
 Presetmanifest-Schema `1.0` bedeutet nicht, dass der Run-State ebenfalls
 Schema `1.0` verwendet.
+
+### Upgrade auf `v0.3.4`
+
+`v0.3.4` akzeptiert maschinenlokale Runner-Profile mit Schema `2.0` und bindet
+die veröffentlichten `model-routing.json`-Kataloge ein. Mehrdeutige oder
+unbekannte Bindungen bleiben blockierend.
 
 ### Upgrade auf `v0.3.3`
 
@@ -38,7 +44,7 @@ den No-Delta-Befund.
 
 `parallel-autonomous-run-governance` benoetigt in jedem realen
 Worker-Repository mindestens Preset 7 `v0.2.2`. Die gemeinsam getestete
-aktuelle Kombination ist Preset 7 `v0.3.3` mit Preset 8 `v0.2.3`.
+aktuelle Kombination ist Preset 7 `v0.3.4` mit Preset 8 `v0.2.3`.
 
 ## English
 
@@ -46,12 +52,18 @@ aktuelle Kombination ist Preset 7 `v0.3.3` mit Preset 8 `v0.2.3`.
 
 | Layer | Current value | Meaning |
 |---|---|---|
-| Preset release | `v0.3.3` | Published package and ZIP |
+| Preset release | `v0.3.4` | Published package and ZIP |
 | `preset.yml` schema | `schema_version: "1.0"` | Spec Kit preset manifest |
 | Run-state contract | `schemaVersion: "1.1"` | Autonomous lifecycle and closeout |
 
 Do not confuse these values. Preset-manifest schema `1.0` does not imply
 run-state schema `1.0`.
+
+### Upgrade to `v0.3.4`
+
+`v0.3.4` accepts machine-local runner profiles using schema `2.0` and composes
+with the published `model-routing.json` catalogs. Unknown or ambiguous
+bindings remain blocking.
 
 ### Upgrade to `v0.3.3`
 
@@ -67,5 +79,5 @@ result.
 ### Relationship with Preset 8
 
 `parallel-autonomous-run-governance` requires at least Preset 7 `v0.2.2` in
-every real worker repository. The currently tested pair is Preset 7 `v0.3.3`
+every real worker repository. The currently tested pair is Preset 7 `v0.3.4`
 with Preset 8 `v0.2.3`.

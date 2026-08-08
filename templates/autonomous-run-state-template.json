@@ -15,6 +15,11 @@
     "completed": 0,
     "total": 0
   },
+  "routing": {
+    "policy": "balanced-v1",
+    "fallbackPolicy": "fail-closed",
+    "phases": []
+  },
   "lastPassingGate": "N/A",
   "nextExactAction": "Complete autonomous-run preflight.",
   "lastOperation": {
