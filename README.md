@@ -3,10 +3,11 @@
 Permission-bounded, evidence-first governance for one explicitly delegated
 autonomous Spec Kit run.
 
-Version `0.3.5` | Priority `70` | Spec Kit `>=0.8.3`
+Version `0.3.6` | Priority `70` | Spec Kit `>=0.8.3`
 
-Version 0.3.5 corrects the managed-profile validation fixture to require all
-twelve routing catalogs. Runtime and authority semantics are unchanged.
+Version 0.3.6 classifies a missing or outdated PowerShell runtime as a bilingual
+blocked prerequisite in the model-routing test wrapper. Runtime and authority
+semantics are unchanged.
 
 Version 0.3.4 accepts machine-local runner-profile schema 2.0 and composes with
 the published `model-routing.json` catalogs. Unknown or ambiguous bindings
@@ -80,7 +81,7 @@ have succeeded.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.5.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.6.zip \
      --priority 70
    ```
 
@@ -155,7 +156,7 @@ bypass, secret, or provider-administration authority.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.5.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.6.zip \
      --priority 70
    ```
 
