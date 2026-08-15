@@ -11,11 +11,7 @@ Vor dem ersten Lauf muessen folgende Bedingungen erfuellt sein:
 1. Das Ziel ist ein Git-Repository mit akzeptierten Spec-Kit-Artefakten oder
    einer eindeutig beschriebenen neuen Feature-Anforderung.
 2. Spec Kit `>=0.8.3` ist installiert.
-3. `autonomous-run-governance >=0.3.6` ist aktiv.
-
-Hinweis: Der Quellkandidat 0.4.0 ist noch nicht veroeffentlicht. Seine
-Liefermengen-, Phasenergebnis- und Lifecycle-Evidence-Vertraege duerfen erst
-nach dem unabhaengigen Feldnachweis als Release installiert werden.
+3. `autonomous-run-governance >=0.4.1` ist aktiv.
 4. Constitution und Agent-Guidance sind lesbar.
 5. Der Arbeitsbaum ist bekannt; fremde Aenderungen sind abgegrenzt.
 6. Delivery-Modus und erlaubte Remote-Aktionen sind ausdruecklich genannt.
@@ -26,7 +22,7 @@ Veröffentlichter Tag:
 
 ```bash
 specify preset add \
-  --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.6.zip \
+  --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.1.zip \
   --priority 70
 ```
 
@@ -45,7 +41,7 @@ specify preset resolve autonomous-run-state-template
 specify preset resolve autonomous-run-readiness-checklist-template
 ```
 
-Erwartet werden Version `0.3.6`, Prioritaet `70` und genau ein Beitrag je
+Erwartet werden Version `0.4.1`, Prioritaet `70` und genau ein Beitrag je
 autonomem Befehl.
 
 ### Readiness vor dem Start
@@ -104,11 +100,7 @@ Before the first run:
 1. The target is a Git repository with accepted Spec Kit artifacts or a
    clearly described new feature request.
 2. Spec Kit `>=0.8.3` is installed.
-3. `autonomous-run-governance >=0.3.6` is active.
-
-Note: source candidate 0.4.0 is not published. Its delivery-set, phase-result,
-and lifecycle-evidence contracts must not be installed as a release before the
-independent field proof passes.
+3. `autonomous-run-governance >=0.4.1` is active.
 4. The constitution and agent guidance are readable.
 5. Worktree ownership and unrelated changes are known.
 6. Delivery mode and permitted remote actions are explicit.
@@ -119,7 +111,7 @@ Published tag:
 
 ```bash
 specify preset add \
-  --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.6.zip \
+  --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.1.zip \
   --priority 70
 ```
 
@@ -138,7 +130,7 @@ specify preset resolve autonomous-run-state-template
 specify preset resolve autonomous-run-readiness-checklist-template
 ```
 
-Expect version `0.3.6`, priority `70`, and one contribution for each autonomous
+Expect version `0.4.1`, priority `70`, and one contribution for each autonomous
 command.
 
 ### Readiness questions
