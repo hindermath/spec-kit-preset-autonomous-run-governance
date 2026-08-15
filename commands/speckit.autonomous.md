@@ -62,7 +62,9 @@ authority from general autonomy.
    the authorized delivery closeout in dependency order. A routed phase starts
    in a new process only after every dependency phase completed and its result
    plus execution metadata were SHA-256-bound in run state. Never change the
-   model inside a running process.
+   model inside a running process. Exit code zero is necessary but not
+   sufficient: validate the structured phase result, task counts, gates, phase
+   identity, and bound payload hash before persisting `Completed`.
 4. Converge by outcome, not repetition count. Clarification has no material
    planning ambiguity; checklists pass or carry accepted dispositions; Analyze
    has no Critical/High finding and every Medium is fixed or accepted with an
@@ -91,24 +93,28 @@ authority from general autonomy.
    executable tests, search for validators that read the changed paths, markers,
    schemas, or status values. Update and run every affected validator in the
    same change.
-10. Validate the exact delivery candidate before every authorized commit. Stage
-   only intended paths, run `git diff --cached --check`, and reconcile the
-   staged path inventory with repository status so intended untracked or
-   unstaged files cannot escape validation. Preserve unrelated work. In
-   `LocalImplementation`, use a per-file or temporary-index equivalent and
-   restore the original index state.
+10. Validate the explicit intended delivery set read-only before every
+   authorized commit. Pass every intended untracked file to
+   `validate-autonomous-delivery-set.*`; the validator also covers changed
+   tracked files, reports unrelated untracked paths, and proves index/worktree
+   immutability. Then stage only intended paths, run
+   `git diff --cached --check`, and reconcile the staged path inventory with
+   repository status. Preserve unrelated work. In `LocalImplementation`, use a
+   per-file or temporary-index equivalent and restore the original index state.
 11. Route out-of-scope findings to named follow-up evidence instead of silently
    expanding the feature.
 12. Before implementation, resolve the preset's gate-requirements template and
    declare every acceptance gate in a reviewed feature artifact. Applicable
    gates name required command tokens and any runner or platform tokens; `N/A`
    gates name their rationale and re-evaluation trigger.
-13. Before merge, generate provider-neutral gate evidence for the exact current
-   reviewed head in a temporary location and run the installed validator through
+13. Before merge, generate a provider-neutral schema-2.0 `PreMerge` snapshot
+   for the exact current reviewed head in a temporary location and run the installed validator through
    `bash <validator.sh>` or `pwsh -NoProfile -File <validator.ps1>`; installers
    may not preserve executable mode bits. Every gate needs exactly one Primary row;
    supplemental rows must point to that primary evidence. Missing, stale,
-   contradictory, empty, or token-mismatched evidence blocks merge.
+   contradictory, empty, token-mismatched, or premature merge evidence blocks
+   merge. Schema-1.0 evidence is accepted only with explicit historical mode
+   and never authorizes a new delivery decision.
 
 ## Remote Closeout
 
@@ -128,9 +134,10 @@ the accepted requirements hash, full reviewed head, gate completeness,
 Applicable/N/A boundaries, required command and runner tokens, and Primary versus
 Supplemental evidence. Its successful exit grants no remote authority.
 
-Keep exact-head provider evidence temporary during the merge decision. Committing
-that evidence would create a new head and invalidate its own reviewed-head claim.
-Use the existing causal-closeout boundary for post-delivery facts.
+Keep the `PreMerge` snapshot temporary during the merge decision. Committing it
+would create a new head and invalidate its own reviewed-head claim. After merge,
+create a separate causal schema-2.0 `PostMerge` snapshot that binds the accepted
+PreMerge normalized hash and actual merge commit and adds no product delta.
 
 Use one pre-named causal closeout only when current-head or post-merge facts
 cannot be committed without invalidating themselves. Keep it evidence-only and

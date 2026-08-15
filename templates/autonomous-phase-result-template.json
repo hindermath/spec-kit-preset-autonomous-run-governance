@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "phaseId": "replace-with-phase-id",
+  "attemptId": "replace-with-non-zero-uuid",
+  "outcome": "Completed",
+  "expectedTasks": 0,
+  "completedTasks": 0,
+  "blockedReason": "",
+  "gatesSatisfied": true,
+  "payloadPath": "replace-with-repository-relative-payload-path",
+  "payloadSha256": "replace-with-normalized-lowercase-sha256"
+}

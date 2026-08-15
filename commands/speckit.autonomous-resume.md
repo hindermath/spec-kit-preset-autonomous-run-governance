@@ -27,13 +27,16 @@ Before any mutation:
    delivery mode is historical evidence, not current permission.
    Re-resolve every active `model-routing.json`, the selected local runner
    profile, model, reasoning effort, executable, and preflight. Recompute the
-   recorded result hash for the last completed routed phase.
+   recorded structured result and payload hashes for the last completed routed
+   phase. Accept trustworthy completion without repetition only when exit code,
+   phase identity, task counts, gates, and both hashes still validate.
 3. Classify drift:
    - no drift: continue from `nextExactAction`;
    - non-material governance or preset drift: run the mandatory-rule delta
      audit, then rerun the affected readiness or Analyze gate before
      implementation;
-   - uncertain in-flight operation: rerun only the affected validation or task;
+   - uncertain in-flight operation or missing/invalid structured phase result:
+     set `NeedsRevalidation`, then rerun only the affected validation or task;
    - invalid routing, profile drift, failed preflight, or a changed handoff
      hash: set `Blocked` and do not start the next phase;
    - material conflict, unknown dirty changes, missing checkpoint, or ambiguous

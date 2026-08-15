@@ -3,7 +3,20 @@
 Permission-bounded, evidence-first governance for one explicitly delegated
 autonomous Spec Kit run.
 
-Version `0.3.6` | Priority `70` | Spec Kit `>=0.8.3`
+Candidate `0.4.0` | Latest published `0.3.6` | Priority `70` | Spec Kit `>=0.8.3`
+
+Der unveroeffentlichte Kandidat 0.4.0 prueft die ausdrueckliche Liefermenge
+einschliesslich benannter unversionierter Dateien, verlangt ein strukturiertes
+semantisches Ergebnis fuer jede geroutete Phase und trennt `PreMerge`- von
+`PostMerge`-Gate-Evidence. Exitcode 0 allein bedeutet nicht mehr `Completed`.
+Die Installationsbeispiele bleiben bis zum unabhaengigen Feldnachweis bewusst
+auf dem veroeffentlichten Tag v0.3.6.
+
+*The unreleased 0.4.0 candidate validates the explicit delivery set, including
+named untracked files, requires a structured semantic result for every routed
+phase, and separates `PreMerge` from `PostMerge` gate evidence. Exit zero alone
+no longer means `Completed`. Installation examples deliberately remain on
+published tag v0.3.6 until independent field validation passes.*
 
 Version 0.3.6 classifies a missing or outdated PowerShell runtime as a bilingual
 blocked prerequisite in the model-routing test wrapper. Runtime and authority

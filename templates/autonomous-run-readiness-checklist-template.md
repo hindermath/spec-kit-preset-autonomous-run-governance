@@ -28,6 +28,13 @@
 
 ## Proof and Validation
 
+- [ ] The explicit delivery set includes every intended untracked file and no
+      unrelated or ignored runtime evidence.
+- [ ] Every routed phase has a valid structured semantic result; exit zero is
+      not treated as sufficient completion evidence.
+- [ ] New merge decisions use schema-2.0 `PreMerge` evidence; schema 1.0 is
+      historical audit evidence only.
+
 - [ ] Evidence existed before the first implementation edit.
 - [ ] One representative vertical slice has failing and green proof.
 - [ ] Negative matrices preserve each expected failure and ownership boundary.

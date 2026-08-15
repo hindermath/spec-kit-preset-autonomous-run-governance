@@ -65,6 +65,19 @@ attempt. A second resume does not repeat an already proven terminal operation.
 
 ## Phasen-Routing / Phase routing
 
+Ein Prozessende mit Code 0 ist notwendig, aber nicht hinreichend. Der Wrapper
+setzt die Operation vor dem Start auf `NeedsRevalidation`. Erst ein passendes
+strukturiertes Resultat mit Outcome `Completed`, vollstaendigen Taskzahlen,
+erfuellten Gates und gueltigem Payload-Hash schliesst die Phase ab. Fehlende
+oder widerspruechliche Evidence fuehrt zu `Blocked` und verlangt einen
+expliziten Resume-Audit.
+
+*A zero process exit is necessary but insufficient. Before launch the wrapper
+sets the operation to `NeedsRevalidation`. Only a matching structured result
+with completed tasks, satisfied gates, and a valid payload hash closes the
+phase. Missing or contradictory evidence becomes `Blocked` and requires an
+explicit resume audit.*
+
 `model-routing.json` ordnet Preset-Kommandos stabilen Rollen zu. Wenn mehrere
 aktive Presets dasselbe Kommando klassifizieren, gewinnt die staerkste Rolle:
 `frontier-reasoning`, `coding-review`, `long-running-implementation`,

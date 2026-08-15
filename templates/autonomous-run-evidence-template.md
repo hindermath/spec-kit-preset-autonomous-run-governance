@@ -43,6 +43,11 @@ exit cannot override a fatal structured or error-channel signal.
 
 ## Delivery Candidate Integrity
 
+- Delivery-set validator and exact intended untracked paths:
+- Index/worktree before and after evidence:
+- Unrelated or ignored paths and disposition:
+- Structured phase-result paths and normalized hashes:
+
 | Check | Result | Evidence |
 |---|---|---|
 | Intended paths | `[Pass/Open]` | `[path inventory]` |
@@ -52,6 +57,10 @@ exit cannot override a fatal structured or error-channel signal.
 | Index preservation | `[Pass/N/A/Open]` | `[restored prior state or authorized staged candidate]` |
 
 ## Acceptance Gate Contract
+
+- Lifecycle snapshot type (`PreMerge` or `PostMerge`):
+- Accepted PreMerge path and normalized hash, when PostMerge:
+- Historical schema-1.0 evidence, if any, and audit-only rationale:
 
 | Item | Value |
 |---|---|

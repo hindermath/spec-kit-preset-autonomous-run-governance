@@ -3,7 +3,7 @@ schema_version: "1.0"
 preset:
   id: "autonomous-run-governance"
   name: "Autonomous Run Governance"
-  version: "0.3.6"
+  version: "0.4.0"
   description: "Adds permission-bounded autonomous delivery and an optional policy-driven intake-review gate before feature creation."
   author: "Thorsten Hindermann"
   repository: "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance"
@@ -77,6 +77,11 @@ provides:
       name: "autonomous-run-gate-evidence-template"
       file: "templates/autonomous-run-gate-evidence-template.json"
       description: "Machine-readable exact-head execution evidence for acceptance gates"
+
+    - type: "template"
+      name: "autonomous-phase-result-template"
+      file: "templates/autonomous-phase-result-template.json"
+      description: "Machine-readable semantic completion result for one routed phase"
 
     - type: "template"
       name: "autonomous-run-retrospective-template"

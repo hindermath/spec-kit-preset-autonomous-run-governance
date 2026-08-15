@@ -22,6 +22,11 @@ Spec-Kit-Lauf. Es richtet sich an:
 5. [Recovery und Fehlersuche](recovery-and-troubleshooting.md)
 6. [Kompatibilitaet](compatibility.md)
 
+Werkzeugreferenzen: [Liefermenge](man/validate-autonomous-delivery-set.1),
+[Phasenergebnis](man/validate-autonomous-phase-result.1),
+[Gate-Evidence](man/validate-autonomous-gate-evidence.1) und
+[Modellphase](man/invoke-autonomous-model-phase.1).
+
 ### Schnelleinstieg nach Rolle
 
 | Rolle | Zuerst lesen | Danach |
@@ -63,6 +68,11 @@ audiences are:
 4. [Evidence and closeout](evidence-and-closeout.md)
 5. [Recovery and troubleshooting](recovery-and-troubleshooting.md)
 6. [Compatibility](compatibility.md)
+
+Tool references: [delivery set](man/validate-autonomous-delivery-set.1),
+[phase result](man/validate-autonomous-phase-result.1),
+[gate evidence](man/validate-autonomous-gate-evidence.1), and
+[model phase](man/invoke-autonomous-model-phase.1).
 
 ### Quick path by role
 
