@@ -8,7 +8,10 @@ invoke-autonomous-model-phase \- run one fail-closed model-routed Spec Kit phase
 The command resolves the strongest agent-neutral routing role declared by the
 installed presets, binds it to one local runner profile, and starts preflight
 and phase as direct executable-plus-argument-array processes. It never uses
-shell evaluation and never silently falls back to another model.
+shell evaluation and never silently falls back to another model. Before Run
+starts, the operation is persisted as NeedsRevalidation. Exit code zero alone
+never completes the phase: a schema-1.0 structured result must pass semantic
+validation before the operation becomes Completed.
 .PP
 DE: Modellwechsel erfolgen nur zwischen Phasenprozessen. Konkrete Modellnamen
 bleiben in der lokalen Runner-Konfiguration und ausserhalb reproduzierbarer
@@ -41,9 +44,9 @@ Additional non-secret phase input.
 Print the resolved phase, profile, model, and effort without starting preflight
 or the phase process.
 .SH SAFETY
-Missing routing, profile, executable, model, effort, or successful preflight
-blocks execution. script-only commands are never started through a model
-profile. Success grants no commit, push, merge, bypass, secret, deployment, or
-provider-administration authority.
+Missing routing, profile, executable, model, effort, successful preflight, or a
+valid structured result blocks execution. Script-only commands are never
+started through a model profile. Success grants no commit, push, merge, bypass,
+secret, deployment, or provider-administration authority.
 .SH SEE ALSO
-validate-autonomous-run-state(1), orchestrate-parallel-autonomous-runs(1)
+validate-autonomous-phase-result(1), validate-autonomous-run-state(1), orchestrate-parallel-autonomous-runs(1)

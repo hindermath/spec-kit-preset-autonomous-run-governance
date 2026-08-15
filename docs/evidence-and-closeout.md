@@ -4,6 +4,19 @@
 
 ## Evidence-Kette / Evidence chain
 
+Vor einem positiven Liefergate wird die beabsichtigte Liefermenge read-only
+geprueft. Dazu gehoeren getrackte Aenderungen und ausdruecklich benannte
+unversionierte Dateien. Fremde unversionierte Dateien werden gemeldet, aber nie
+still aufgenommen. Eine geroutete Phase benoetigt neben Exitcode 0 ein
+strukturiertes Ergebnis mit vollstaendigen Tasks, erfuellten Gates und
+Hashbindungen.
+
+*Before a delivery gate passes, validate the intended delivery set read-only,
+including tracked changes and explicitly named untracked files. Report but do
+not silently include unrelated files. A routed phase needs a structured result
+with complete tasks, satisfied gates, and hash bindings in addition to exit
+zero.*
+
 ```mermaid
 flowchart LR
     A["Gate-Anforderungen"] --> B["Akzeptierte Artefakte"]
@@ -54,6 +67,12 @@ pwsh -NoProfile -File `
 
 ### Exact-Head-Evidence
 
+Neue Laeufe verwenden Schema 2.0. `PreMerge` bindet den geprueften Head und die
+Anforderungen, enthaelt aber keine Merge-Behauptung. `PostMerge` bindet den
+normalisierten PreMerge-Hash und den tatsaechlichen Merge-Commit; seine
+`changedPaths` bleiben leer. Historisches Schema 1.0 ist nur im expliziten
+Auditmodus gueltig.
+
 Vor einem Merge muss jede Primary-Evidence-Zeile zum vollstaendigen aktuellen
 reviewten Head passen. Supplemental-Zeilen verweisen auf ihre Primary-Zeile.
 Check-, Workflow- oder Job-Namen allein beweisen weder ausgefuehrte Befehle
@@ -93,6 +112,11 @@ successful validator exit proves contract consistency, but grants no remote
 authority.
 
 ### Exact-head evidence
+
+New runs use schema 2.0. `PreMerge` binds the reviewed head and requirements but
+contains no merge claim. `PostMerge` binds the normalized pre-merge hash and the
+actual merge commit, with empty `changedPaths`. Historical schema 1.0 is valid
+only in explicit audit mode.
 
 Before merge, every primary evidence row must match the full current reviewed
 head. Supplemental rows reference their primary row. Check, workflow, or job

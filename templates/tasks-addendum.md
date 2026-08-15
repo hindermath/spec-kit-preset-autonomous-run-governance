@@ -1,6 +1,10 @@
 
 ## Autonomous Task-shaping Rules
 
+- Add a task to validate every intended untracked delivery path without staging.
+- Add a task to bind each routed phase to a valid semantic result.
+- Add separate PreMerge and PostMerge evidence tasks when merge delivery applies.
+
 - Start with preflight, evidence creation, and checklist verification tasks.
 - Add an early serialized task to create and validate the feature-local
   autonomous-run state. Update it at phase boundaries, graceful stops, hard

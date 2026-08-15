@@ -1,6 +1,10 @@
 
 ## Autonomous Delivery Plan
 
+Plan an explicit read-only delivery-set check for tracked and named untracked
+paths. Plan structured phase-result validation before `Completed` and separate
+PreMerge/PostMerge evidence when merge authority applies.
+
 The plan MUST:
 
 - identify preflight commands, feature state, governance, and hard stop gates

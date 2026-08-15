@@ -1,7 +1,14 @@
 {
-  "schemaVersion": "1.0",
-  "requirementsSha256": "replace-with-lowercase-sha256-of-requirements-file",
+  "schemaVersion": "2.0",
+  "snapshotType": "PreMerge",
+  "snapshotId": "replace-with-non-zero-uuid",
+  "capturedAt": "1970-01-01T00:00:00Z",
+  "requirementsSha256": "replace-with-normalized-lowercase-sha256",
   "reviewedHead": "replace-with-full-reviewed-head-sha",
+  "acceptedPreMergePath": "",
+  "acceptedPreMergeSha256": "",
+  "mergeCommit": "",
+  "changedPaths": [],
   "entries": [
     {
       "gateId": "replace-with-stable-gate-id",

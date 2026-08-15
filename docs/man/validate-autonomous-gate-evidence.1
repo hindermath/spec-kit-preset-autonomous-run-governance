@@ -1,4 +1,4 @@
-.TH VALIDATE-AUTONOMOUS-GATE-EVIDENCE 1 "2026-07-21" "autonomous-run-governance 0.3.6" "User Commands"
+.TH VALIDATE-AUTONOMOUS-GATE-EVIDENCE 1 "August 2026" "autonomous-run-governance 0.4.0 candidate" "User Commands"
 .SH NAME
 validate-autonomous-gate-evidence \- validate exact-head delivery gates
 .SH SYNOPSIS
@@ -6,11 +6,15 @@ validate-autonomous-gate-evidence \- validate exact-head delivery gates
 .BR --requirements " FILE "
 .BR --evidence " FILE "
 .BR --head " SHA"
+.RB [ --merge-commit " SHA"]
+.RB [ --historical ]
 .SH DESCRIPTION
 Validates a reviewed gate-requirements JSON file against a provider-neutral
-execution-evidence JSON file for one full Git object ID. The command checks the
-requirements hash, complete gate coverage, Applicable and N/A boundaries,
-required command and runner tokens, and Primary versus Supplemental evidence.
+schema-2.0 PreMerge or PostMerge JSON snapshot for one full Git object ID. The
+command checks the normalized requirements hash, complete gate coverage,
+Applicable and N/A boundaries, required command and runner tokens, and Primary
+versus Supplemental evidence. PostMerge additionally binds the accepted
+PreMerge hash and merge commit and requires an empty remaining delta.
 .PP
 The command is read-only. Success grants no commit, push, pull-request, merge,
 bypass, cancellation, secret, or provider-administration authority.
@@ -26,20 +30,24 @@ job logs.
 .B --head SHA
 Expected full 40- or 64-character hexadecimal Git object ID.
 .TP
+.B --merge-commit SHA
+Expected merge commit for a PostMerge snapshot.
+.TP
+.B --historical
+Accept schema-1.0 evidence for audit only. The result is HistoricalOnly and
+never authorizes a new merge decision.
+.TP
 .B -h, --help
 Show command help.
 .SH EXIT STATUS
-Zero means the machine-checkable contract passed. One means evidence validation
-failed. Two means invocation or dependency setup failed.
+Zero means the machine-checkable contract passed. Two means invocation,
+dependency, schema, lifecycle, hash, or evidence validation failed.
 .SH NOTES
 The Bash variant requires Python 3 or Python for strict JSON parsing. Invoke it
 through bash because preset installation or ZIP extraction may not preserve the
 Git executable mode. On Windows, use pwsh -NoProfile -File with
-validate-autonomous-gate-evidence.ps1. Keep provider evidence temporary before
-merge because committing it creates a new head and self-invalidates the
-reviewed-head claim.
-.PP
-Dot-source the PowerShell script to make the equivalent advanced function
-Test-AutonomousGateEvidence available in the current session.
+validate-autonomous-gate-evidence.ps1. Keep PreMerge provider evidence temporary
+before merge because committing it creates a new head and self-invalidates the
+reviewed-head claim. Create PostMerge evidence causally after the merge.
 .SH SEE ALSO
-specify(1), git(1)
+validate-autonomous-delivery-set(1), validate-autonomous-phase-result(1), git(1)

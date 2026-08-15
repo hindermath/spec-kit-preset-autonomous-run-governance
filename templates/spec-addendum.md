@@ -1,6 +1,10 @@
 
 ## Autonomous-run Applicability
 
+Specify whether the run changes delivery-set validation, routed-phase result
+semantics, or gate-evidence lifecycle. New delivery decisions use schema 2.0;
+legacy schema 1.0 is historical audit evidence only.
+
 Record:
 
 - intended delivery mode and its explicit authority source

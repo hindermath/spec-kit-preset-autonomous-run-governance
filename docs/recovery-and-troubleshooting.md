@@ -37,6 +37,11 @@ Status zuerst:
 
 ### Resume erkennt Drift
 
+Bei einer unterbrochenen gerouteten Phase prueft Resume zuerst die strukturierte
+Resultatdatei und ihren gebundenen Hash. Ein vertrauenswuerdig vollstaendiges
+Ergebnis wird nicht wiederholt. Fehlende, abgeschnittene oder widerspruechliche
+Evidence bleibt `NeedsRevalidation` oder `Blocked`.
+
 Nicht jede Drift verlangt eine Neugenerierung. Zwingende aktuelle
 Korrektheits-, Sicherheits-, Berechtigungs- oder Evidence-Regeln werden
 minimal in betroffene Plan-, Task- oder Checklist-Eintraege eingearbeitet.
@@ -94,6 +99,10 @@ feature identity; unowned worktree changes; unreadable governance; and missing
 current delivery authority. Run `/speckit.autonomous-status` first.
 
 ### Resume detects drift
+
+For an interrupted routed phase, Resume first verifies the structured result
+and its bound hash. Trustworthy completed evidence is not repeated. Missing,
+truncated, or contradictory evidence remains `NeedsRevalidation` or `Blocked`.
 
 Not every drift requires regeneration. Integrate current mandatory correctness,
 security, permission, or evidence rules minimally into affected plan, task, or

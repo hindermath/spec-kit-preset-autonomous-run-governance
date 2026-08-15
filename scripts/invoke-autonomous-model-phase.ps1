@@ -418,6 +418,7 @@ if (-not [string]::IsNullOrWhiteSpace($PromptFile)) {
     $Prompt = Get-Content -LiteralPath $PromptFile -Raw -Encoding utf8
 }
 $fullPrompt = "Execute /$($phase.command) for the current repository. Follow the accepted feature artifacts and autonomous run state."
+$fullPrompt += "`nWrite the machine-readable phase result to the exact output file from the runner profile. Use autonomous-phase-result-template.json and report Completed only when task and gate evidence is complete."
 if (-not [string]::IsNullOrWhiteSpace($Prompt)) {
     $fullPrompt += "`n`nPhase input:`n$Prompt"
 }
@@ -427,13 +428,15 @@ if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
 }
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 [void](New-Item -ItemType Directory -Path $OutputDirectory -Force)
-$outputFile = Join-Path $OutputDirectory "$PhaseId.out.txt"
+$outputFile = Join-Path $OutputDirectory "$PhaseId.result.json"
+$logFile = Join-Path $OutputDirectory "$PhaseId.log.txt"
 $values = @{
     worktree = $Worktree
     phaseId = $PhaseId
     command = [string] $phase.command
     prompt = $fullPrompt
     outputFile = $outputFile
+    logFile = $logFile
     model = [string] $runnerProfileData.model
     reasoningEffort = [string] $runnerProfileData.reasoningEffort
 }
@@ -495,10 +498,22 @@ try {
         throw $reason
     }
 
-    if (-not (Test-Path -LiteralPath $outputFile -PathType Leaf)) {
-        @($execution.output) | Set-Content -LiteralPath $outputFile -Encoding utf8NoBOM
+    if (@($execution.output).Count -gt 0) {
+        @($execution.output) | Set-Content -LiteralPath $logFile -Encoding utf8NoBOM
     }
-    $resultHash = (Get-FileHash -LiteralPath $outputFile -Algorithm SHA256).Hash.ToLowerInvariant()
+    Assert-AMRCondition (Test-Path -LiteralPath $outputFile -PathType Leaf) "Phase '$PhaseId' produced no structured result."
+    $validationOutput = @(& (Join-Path $PSScriptRoot 'validate-autonomous-phase-result.ps1') `
+        -Repo $repositoryRoot -Result $outputFile -PhaseId $PhaseId -ExitCode ([int] $execution.exitCode) 2>&1)
+    $validationExitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
+    if ($validationExitCode -ne 0) {
+        $reason = "Phase '$PhaseId' semantic result validation failed: $($validationOutput -join ' ')"
+        Set-AMRBlockedState $stateData $phase $reason "ModelRoutingPhase:$PhaseId"
+        $phase.exitCode = 0
+        Write-AMRJsonAtomic $statePath $stateData
+        throw $reason
+    }
+    $validation = ($validationOutput -join "`n") | ConvertFrom-Json
+    $resultHash = [string] $validation.normalizedSha256
     $timestamp = [DateTime]::UtcNow.ToString('o')
     $phase.status = 'Completed'
     $phase.exitCode = 0

@@ -12,6 +12,10 @@ Vor dem ersten Lauf muessen folgende Bedingungen erfuellt sein:
    einer eindeutig beschriebenen neuen Feature-Anforderung.
 2. Spec Kit `>=0.8.3` ist installiert.
 3. `autonomous-run-governance >=0.3.6` ist aktiv.
+
+Hinweis: Der Quellkandidat 0.4.0 ist noch nicht veroeffentlicht. Seine
+Liefermengen-, Phasenergebnis- und Lifecycle-Evidence-Vertraege duerfen erst
+nach dem unabhaengigen Feldnachweis als Release installiert werden.
 4. Constitution und Agent-Guidance sind lesbar.
 5. Der Arbeitsbaum ist bekannt; fremde Aenderungen sind abgegrenzt.
 6. Delivery-Modus und erlaubte Remote-Aktionen sind ausdruecklich genannt.
@@ -101,6 +105,10 @@ Before the first run:
    clearly described new feature request.
 2. Spec Kit `>=0.8.3` is installed.
 3. `autonomous-run-governance >=0.3.6` is active.
+
+Note: source candidate 0.4.0 is not published. Its delivery-set, phase-result,
+and lifecycle-evidence contracts must not be installed as a release before the
+independent field proof passes.
 4. The constitution and agent guidance are readable.
 5. Worktree ownership and unrelated changes are known.
 6. Delivery mode and permitted remote actions are explicit.

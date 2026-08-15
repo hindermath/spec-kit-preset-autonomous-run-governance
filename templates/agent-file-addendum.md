@@ -1,6 +1,12 @@
 
 ## Autonomous Spec Kit Runs
 
+Before a positive delivery gate, validate the explicit intended delivery set,
+including named untracked files, without staging or mutation. A routed phase is
+`Completed` only when exit code and structured semantic result agree. New merge
+decisions require schema-2.0 `PreMerge` evidence and a separate causal
+`PostMerge` snapshot; legacy schema 1.0 is audit-only.
+
 - Treat intake review as `N/A` unless the optional preset and project policy
   activate it. When active, require a current accepted result before feature
   creation and retain its hash in autonomous state.

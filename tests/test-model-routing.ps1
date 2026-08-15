@@ -87,7 +87,7 @@ try {
 
     $fixtureArguments = @(
         '-NoProfile', '-File', $fixtureRunner,
-        '-OutputFile', '{outputFile}', '-Content', '{command}'
+        '-OutputFile', '{outputFile}', '-PhaseId', '{phaseId}', '-Content', '{command}'
     )
     $profiles = [ordered]@{
         schemaVersion = '1.0'

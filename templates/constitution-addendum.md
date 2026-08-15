@@ -1,6 +1,11 @@
 
 ## Autonomous Spec Kit Delivery Governance
 
+Exit code zero is necessary but not sufficient for a routed phase to complete.
+Validate the explicit intended delivery set read-only. New merge decisions use
+separate schema-2.0 PreMerge and PostMerge snapshots; historical schema 1.0
+cannot grant current delivery authority.
+
 - Autonomous execution never implies remote write, merge, bypass,
   cancellation, secret, or provider-administration authority.
 - Every run declares `LocalImplementation`, `PublishPR`, or `MergeAndSync` from

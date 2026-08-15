@@ -1,0 +1,38 @@
+.TH VALIDATE-AUTONOMOUS-PHASE-RESULT 1 "August 2026" "autonomous-run-governance 0.4.0 candidate" "User Commands"
+.SH NAME
+validate-autonomous-phase-result \- validate semantic completion of one routed phase
+.SH SYNOPSIS
+.B validate-autonomous-phase-result.sh
+.BR --repo " PATH"
+.BR --result " FILE"
+.BR --phase-id " ID"
+.BR --exit-code " N"
+.SH DESCRIPTION
+A process exit code of zero is necessary but not sufficient. The command also
+checks the structured result schema, phase and attempt identity, task
+completion, gate result, payload path, and normalized payload SHA-256.
+.PP
+DE: Fehlende, leere, abgeschnittene, blockierte oder fachlich unvollstaendige
+Ergebnisse bleiben fehlgeschlossen und duerfen nicht als Completed gespeichert
+werden.
+.PP
+EN: Missing, empty, truncated, blocked, or semantically incomplete results fail
+closed and must not be persisted as Completed.
+.SH OPTIONS
+.TP
+.B --repo PATH
+Repository root used to resolve the repository-relative payload path.
+.TP
+.B --result FILE
+Structured JSON result emitted by the routed phase.
+.TP
+.B --phase-id ID
+Expected stable phase identifier.
+.TP
+.B --exit-code N
+Exit code of the completed phase process.
+.SH EXIT STATUS
+Zero means semantic completion passed. Two means invocation or malformed input
+failed. Three means process or semantic phase completion failed.
+.SH SEE ALSO
+invoke-autonomous-model-phase(1), validate-autonomous-delivery-set(1)

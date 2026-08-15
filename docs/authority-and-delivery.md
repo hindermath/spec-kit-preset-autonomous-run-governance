@@ -4,6 +4,16 @@
 
 ## Delivery-Entscheidung / Delivery decision
 
+Eine erfolgreiche Validierung erteilt keine Berechtigung. Vor Commit oder PR
+wird die ausdrueckliche Liefermenge geprueft. Vor Merge beweist ein
+Schema-2.0-`PreMerge`-Snapshot den exakten Head, ohne den Merge zu behaupten.
+Der spaetere `PostMerge`-Snapshot dokumentiert nur kausal neue Providerfakten.
+
+*Successful validation grants no authority. Validate the explicit delivery set
+before commit or PR. Before merge, a schema-2.0 `PreMerge` snapshot proves the
+exact head without claiming merge. The later `PostMerge` snapshot records only
+causally new provider facts.*
+
 ```mermaid
 flowchart TD
     A["Aktueller ausdruecklicher Auftrag"] --> B{"Remote-Aktionen erlaubt?"}

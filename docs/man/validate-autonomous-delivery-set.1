@@ -1,0 +1,38 @@
+.TH VALIDATE-AUTONOMOUS-DELIVERY-SET 1 "August 2026" "autonomous-run-governance 0.4.0 candidate" "User Commands"
+.SH NAME
+validate-autonomous-delivery-set \- validate an explicit delivery set read-only
+.SH SYNOPSIS
+.B validate-autonomous-delivery-set.sh
+.BR --repo " PATH"
+.RB [ --intended " PATH ..."]
+.SH DESCRIPTION
+Validates every changed tracked file plus explicitly named untracked delivery
+files. It reports unrelated untracked paths, rejects ignored paths, symbolic
+links, traversal, duplicates, missing files, directories, and trailing
+whitespace, and proves that the Git index and worktree state did not change.
+.PP
+DE: Das Ergebnis beschreibt die beabsichtigte Liefermenge. Es fuehrt weder
+Staging noch Commit, Push, Pull Request oder Merge aus.
+.PP
+EN: The result describes the intended delivery set. It performs no staging,
+commit, push, pull request, or merge.
+.SH OPTIONS
+.TP
+.B --repo PATH
+Git worktree to validate.
+.TP
+.B --intended PATH
+Repository-relative, non-ignored untracked file intended for delivery. Repeat
+the option for multiple files.
+.TP
+.B -h, --help
+Show command help.
+.SH EXIT STATUS
+Zero means the explicit delivery set passed. Two means invocation, repository,
+path, whitespace, dependency, or immutability validation failed.
+.SH NOTES
+Invoke the Bash entrypoint through Bash because ZIP extraction may not preserve
+executable bits. On Windows use the PowerShell entrypoint. Both call the same
+Python 3 validation core and therefore use the same error classes.
+.SH SEE ALSO
+git(1), validate-autonomous-phase-result(1), validate-autonomous-gate-evidence(1)
