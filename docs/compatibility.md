@@ -8,8 +8,8 @@
 
 | Ebene | Aktueller Wert | Bedeutung |
 |---|---|---|
-| Preset-Release | `v0.3.6` | Veroeffentlichtes Paket und ZIP |
-| Quellkandidat | `0.4.0` | Noch nicht veroeffentlicht; Feldvalidierung ausstehend |
+| Preset-Release | `v0.4.1` | Veroeffentlichtes Paket und ZIP |
+| Quellkandidat | `N/A` | Kein neuer unveroeffentlichter Kandidat |
 | `preset.yml`-Schema | `schema_version: "1.0"` | Spec-Kit-Presetmanifest |
 | Run-State-Vertrag | `schemaVersion: "1.1"` | Autonomer Lifecycle und Closeout |
 
@@ -17,14 +17,15 @@ Diese Werte duerfen nicht miteinander verwechselt werden. Ein
 Presetmanifest-Schema `1.0` bedeutet nicht, dass der Run-State ebenfalls
 Schema `1.0` verwendet.
 
-### Kandidat `0.4.0`
+### Upgrade auf `v0.4.1`
 
-Der Kandidat fuehrt eine ausdrueckliche Liefermenge, strukturierte
+`v0.4.1` fuehrt eine ausdrueckliche Liefermenge, strukturierte
 Phasenergebnisse und Gate-Evidence-Schema 2.0 mit getrenntem Pre-/Post-Merge-
 Lebenszyklus ein. Historisches Schema 1.0 bleibt mit explizitem
 `--historical` beziehungsweise `-Historical` lesbar, kann aber keine neue
-Mergefreigabe erzeugen. Vor unabhaengiger Feldvalidierung gibt es kein Upgrade
-und keinen Release-Tag.
+Mergefreigabe erzeugen. Der Patch ersetzt die widerspruechliche Statusangabe
+des kurzzeitig veroeffentlichten Tags `v0.4.0`; dessen Laufzeitvertraege bleiben
+unveraendert.
 
 ### Upgrade auf `v0.3.6`
 
@@ -66,7 +67,7 @@ den No-Delta-Befund.
 
 `parallel-autonomous-run-governance` benoetigt in jedem realen
 Worker-Repository mindestens Preset 7 `v0.2.2`. Die gemeinsam getestete
-aktuelle Kombination ist Preset 7 `v0.3.6` mit Preset 8 `v0.2.6`.
+aktuelle Kombination ist Preset 7 `v0.4.1` mit Preset 8 `v0.2.6`.
 
 ## English
 
@@ -74,21 +75,22 @@ aktuelle Kombination ist Preset 7 `v0.3.6` mit Preset 8 `v0.2.6`.
 
 | Layer | Current value | Meaning |
 |---|---|---|
-| Preset release | `v0.3.6` | Published package and ZIP |
-| Source candidate | `0.4.0` | Unreleased; independent field validation pending |
+| Preset release | `v0.4.1` | Published package and ZIP |
+| Source candidate | `N/A` | No newer unpublished candidate |
 | `preset.yml` schema | `schema_version: "1.0"` | Spec Kit preset manifest |
 | Run-state contract | `schemaVersion: "1.1"` | Autonomous lifecycle and closeout |
 
 Do not confuse these values. Preset-manifest schema `1.0` does not imply
 run-state schema `1.0`.
 
-### Candidate `0.4.0`
+### Upgrade to `v0.4.1`
 
-The candidate introduces an explicit delivery set, structured phase results,
+`v0.4.1` introduces an explicit delivery set, structured phase results,
 and Gate Evidence schema 2.0 with separate pre- and post-merge lifecycle
 snapshots. Historical schema 1.0 remains readable in explicit historical mode
-but cannot authorize a new merge. No upgrade or release tag exists before
-independent field validation.
+but cannot authorize a new merge. This patch replaces the contradictory status
+wording in the briefly published `v0.4.0` tag; its runtime contracts are
+unchanged.
 
 ### Upgrade to `v0.3.6`
 
@@ -121,5 +123,5 @@ result.
 ### Relationship with Preset 8
 
 `parallel-autonomous-run-governance` requires at least Preset 7 `v0.2.2` in
-every real worker repository. The currently tested pair is Preset 7 `v0.3.6`
+every real worker repository. The currently tested pair is Preset 7 `v0.4.1`
 with Preset 8 `v0.2.6`.

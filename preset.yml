@@ -3,7 +3,7 @@ schema_version: "1.0"
 preset:
   id: "autonomous-run-governance"
   name: "Autonomous Run Governance"
-  version: "0.4.0"
+  version: "0.4.1"
   description: "Adds permission-bounded autonomous delivery and an optional policy-driven intake-review gate before feature creation."
   author: "Thorsten Hindermann"
   repository: "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance"

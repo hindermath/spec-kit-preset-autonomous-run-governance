@@ -3,20 +3,20 @@
 Permission-bounded, evidence-first governance for one explicitly delegated
 autonomous Spec Kit run.
 
-Candidate `0.4.0` | Latest published `0.3.6` | Priority `70` | Spec Kit `>=0.8.3`
+Version `0.4.1` | Priority `70` | Spec Kit `>=0.8.3`
 
-Der unveroeffentlichte Kandidat 0.4.0 prueft die ausdrueckliche Liefermenge
+Version 0.4.1 prueft die ausdrueckliche Liefermenge
 einschliesslich benannter unversionierter Dateien, verlangt ein strukturiertes
 semantisches Ergebnis fuer jede geroutete Phase und trennt `PreMerge`- von
 `PostMerge`-Gate-Evidence. Exitcode 0 allein bedeutet nicht mehr `Completed`.
-Die Installationsbeispiele bleiben bis zum unabhaengigen Feldnachweis bewusst
-auf dem veroeffentlichten Tag v0.3.6.
+Der unabhaengige G2B-Feldnachweis und die versionierte ZIP-Pruefung sind
+abgeschlossen.
 
-*The unreleased 0.4.0 candidate validates the explicit delivery set, including
+*Version 0.4.1 validates the explicit delivery set, including
 named untracked files, requires a structured semantic result for every routed
 phase, and separates `PreMerge` from `PostMerge` gate evidence. Exit zero alone
-no longer means `Completed`. Installation examples deliberately remain on
-published tag v0.3.6 until independent field validation passes.*
+no longer means `Completed`. The independent G2B field proof and versioned ZIP
+validation are complete.*
 
 Version 0.3.6 classifies a missing or outdated PowerShell runtime as a bilingual
 blocked prerequisite in the model-routing test wrapper. Runtime and authority
@@ -98,7 +98,7 @@ have succeeded.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.6.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.1.zip \
      --priority 70
    ```
 
@@ -173,7 +173,7 @@ bypass, secret, or provider-administration authority.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.3.6.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.1.zip \
      --priority 70
    ```
 

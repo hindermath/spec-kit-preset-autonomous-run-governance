@@ -5,10 +5,11 @@ fixtures, schema-2.0 PreMerge/PostMerge binding, historical audit-only behavior,
 and Bash/PowerShell parity. A source candidate is not a release until an
 independent field run passes.
 
-Candidate 0.4.0 adds 15 templates, 11 scripts, five commands, and five portable
-manpages. Feature 027 provides synthetic positive and negative fixture evidence
-only. Publication, tag, ZIP, catalog, consumer, and fleet claims remain blocked
-until the independent G2B field validation and release decision.
+Release 0.4.1 adds 15 templates, 11 scripts, five commands, and five portable
+manpages. Feature 027 provided synthetic positive and negative fixtures;
+Feature 028 independently reproduced all three findings, completed the
+cross-shell field proof, and approved publication. The versioned ZIP must still
+be verified independently by each release and rollout workflow.
 
 Version `0.2.2` is based on six consecutive product `MergeAndSync` field runs,
 the Feature-024 audit, Feature-027 closure, and Features 025-026 conformance
