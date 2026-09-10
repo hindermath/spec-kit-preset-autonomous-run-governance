@@ -61,6 +61,8 @@ Validate the explicit delivery set read-only before staging. Name each intended
 untracked path; never infer unrelated files as delivery. Require a structured
 phase result before `Completed`. Generate schema-2.0 `PreMerge` evidence for the
 exact reviewed head and a separate `PostMerge` snapshot that binds its hash.
+If immutable historical whitespace must be retained, record current explicit
+authority and pass only its exact intended path plus unchanged raw SHA-256.
 
 Create evidence before implementation. Deliver one representative vertical
 slice with failing and green proof. Group negative cases only when each

@@ -17,6 +17,16 @@ not silently include unrelated files. A routed phase needs a structured result
 with complete tasks, satisfied gates, and hash bindings in addition to exit
 zero.*
 
+Historische Whitespace-Bytes duerfen nur mit aktueller ausdruecklicher
+Genehmigung als wiederholtes `--allow-historical-whitespace PATH=RAW_SHA256`
+beziehungsweise `-AllowHistoricalWhitespace PATH=RAW_SHA256` passieren. Der
+Pfad muss zugleich mit `--intended`/`-Intended` benannt sein. Ein abweichender,
+unnoetiger oder nicht verwendeter Eintrag blockiert.
+
+*Historical whitespace bytes pass only with current explicit authority as a
+repeated exact `PATH=RAW_SHA256` allowance. The path must also be named as an
+intended file; a mismatched, unnecessary, or unused entry blocks.*
+
 ```mermaid
 flowchart LR
     A["Gate-Anforderungen"] --> B["Akzeptierte Artefakte"]

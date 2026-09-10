@@ -97,7 +97,10 @@ authority from general autonomy.
    authorized commit. Pass every intended untracked file to
    `validate-autonomous-delivery-set.*`; the validator also covers changed
    tracked files, reports unrelated untracked paths, and proves index/worktree
-   immutability. Then stage only intended paths, run
+   immutability. A historical-whitespace allowance requires separate explicit
+   authority and binds one exact intended path plus its unchanged raw SHA-256;
+   never infer, generalize, or reuse it after content drift. Then stage only
+   intended paths, run
    `git diff --cached --check`, and reconcile the staged path inventory with
    repository status. Preserve unrelated work. In `LocalImplementation`, use a
    per-file or temporary-index equivalent and restore the original index state.

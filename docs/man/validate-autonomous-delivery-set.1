@@ -1,10 +1,11 @@
-.TH VALIDATE-AUTONOMOUS-DELIVERY-SET 1 "August 2026" "autonomous-run-governance 0.4.1" "User Commands"
+.TH VALIDATE-AUTONOMOUS-DELIVERY-SET 1 "September 2026" "autonomous-run-governance 0.4.2" "User Commands"
 .SH NAME
 validate-autonomous-delivery-set \- validate an explicit delivery set read-only
 .SH SYNOPSIS
 .B validate-autonomous-delivery-set.sh
 .BR --repo " PATH"
 .RB [ --intended " PATH ..."]
+.RB [ --allow-historical-whitespace " PATH=RAW_SHA256 ..."]
 .SH DESCRIPTION
 Validates every changed tracked file plus explicitly named untracked delivery
 files. It reports unrelated untracked paths, rejects ignored paths, symbolic
@@ -24,6 +25,14 @@ Git worktree to validate.
 .B --intended PATH
 Repository-relative, non-ignored untracked file intended for delivery. Repeat
 the option for multiple files.
+.TP
+.B --allow-historical-whitespace PATH=RAW_SHA256
+Permit trailing whitespace only for the explicitly approved, immutable
+historical file at the exact repository-relative path and raw SHA-256. The file
+must also be named by
+.BR --intended .
+Repeat the option for multiple files. Hash, path, content, or necessity drift
+fails closed.
 .TP
 .B -h, --help
 Show command help.
