@@ -30,6 +30,8 @@
 
 - [ ] The explicit delivery set includes every intended untracked file and no
       unrelated or ignored runtime evidence.
+- [ ] Every historical-whitespace allowance, if any, has current explicit
+      authority and binds one exact intended path plus its unchanged raw SHA-256.
 - [ ] Every routed phase has a valid structured semantic result; exit zero is
       not treated as sufficient completion evidence.
 - [ ] New merge decisions use schema-2.0 `PreMerge` evidence; schema 1.0 is

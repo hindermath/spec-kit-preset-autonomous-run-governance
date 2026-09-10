@@ -23,6 +23,12 @@ function Get-NormalizedHash([string]$Path) {
     ).ToLowerInvariant()
 }
 
+function Get-RawHash([string]$Path) {
+    return [Convert]::ToHexString(
+        [Security.Cryptography.SHA256]::HashData([IO.File]::ReadAllBytes($Path))
+    ).ToLowerInvariant()
+}
+
 function Invoke-Expected([scriptblock]$Command, [int]$ExpectedExit, [string]$Label) {
     $Output = @(& $Command 2>&1)
     $Actual = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
@@ -70,7 +76,19 @@ try {
     [IO.File]::WriteAllText((Join-Path $Repo 'delivery.txt'), "bad `n", [Text.UTF8Encoding]::new($false))
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt } 2 'PowerShell whitespace rejection')
     if ($HasBash) { [void](Invoke-Expected { & bash $DeliverySh --repo $Repo --intended delivery.txt } 2 'Bash whitespace rejection') }
+    $HistoricalHash = Get-RawHash (Join-Path $Repo 'delivery.txt')
+    $Allowance = "delivery.txt=${HistoricalHash}"
+    $PsHistorical = Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt -AllowHistoricalWhitespace $Allowance } 0 'PowerShell exact historical whitespace allowance'
+    Assert-EvidenceTest (($PsHistorical -join "`n") -match $HistoricalHash) 'PowerShell allowance hash was not reported'
+    if ($HasBash) {
+        $ShHistorical = Invoke-Expected { & bash $DeliverySh --repo $Repo --intended delivery.txt --allow-historical-whitespace $Allowance } 0 'Bash exact historical whitespace allowance'
+        Assert-EvidenceTest (($ShHistorical -join "`n") -match $HistoricalHash) 'Bash allowance hash was not reported'
+    }
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt -AllowHistoricalWhitespace "delivery.txt=$('0' * 64)" } 2 'Allowance hash mismatch rejection')
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt -AllowHistoricalWhitespace "other.txt=${HistoricalHash}" } 2 'Allowance path mismatch rejection')
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt -AllowHistoricalWhitespace 'delivery.txt=not-a-hash' } 2 'Malformed allowance rejection')
     [IO.File]::WriteAllText((Join-Path $Repo 'delivery.txt'), "delivery`n", [Text.UTF8Encoding]::new($false))
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt -AllowHistoricalWhitespace $Allowance } 2 'Unneeded allowance rejection')
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended ../escape.txt } 2 'Traversal rejection')
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended (Join-Path $Repo 'delivery.txt') } 2 'Absolute path rejection')
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended missing.txt } 2 'Missing path rejection')

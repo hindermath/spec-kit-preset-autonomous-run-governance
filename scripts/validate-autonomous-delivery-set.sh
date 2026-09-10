@@ -7,8 +7,8 @@ python_command="$(command -v python3 || command -v python || true)"
 arguments=(delivery)
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --repo|--intended) [ "$#" -ge 2 ] || exit 2; arguments+=("$1" "$2"); shift 2 ;;
-    -h|--help) printf '%s\n' 'Usage: validate-autonomous-delivery-set.sh --repo PATH [--intended PATH ...]'; exit 0 ;;
+    --repo|--intended|--allow-historical-whitespace) [ "$#" -ge 2 ] || exit 2; arguments+=("$1" "$2"); shift 2 ;;
+    -h|--help) printf '%s\n' 'Usage: validate-autonomous-delivery-set.sh --repo PATH [--intended PATH ...] [--allow-historical-whitespace PATH=RAW_SHA256 ...]'; exit 0 ;;
     *) printf 'ERROR AEI001: unknown option: %s\n' "$1" >&2; exit 2 ;;
   esac
 done

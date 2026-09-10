@@ -3,7 +3,18 @@
 Permission-bounded, evidence-first governance for one explicitly delegated
 autonomous Spec Kit run.
 
-Version `0.4.1` | Priority `70` | Spec Kit `>=0.8.3`
+Version `0.4.2` | Priority `70` | Spec Kit `>=0.8.3`
+
+Version 0.4.2 ergaenzt eine fail-closed Ausnahme fuer unveraenderliche
+historische Textdateien: Sie muss als exakter repositoryrelativer Pfad plus
+Roh-SHA-256 ausdruecklich genehmigt und zugleich Teil der beabsichtigten
+Liefermenge sein. Pfad-, Hash- oder Inhaltsdrift sowie eine unnoetige Ausnahme
+bleiben blockierend.
+
+*Version 0.4.2 adds a fail-closed exception for immutable historical text
+files. It requires an explicitly approved exact repository-relative path plus
+raw SHA-256, and the file must also be part of the intended delivery set. Path,
+hash, or content drift and unnecessary exceptions remain blocking.*
 
 Version 0.4.1 prueft die ausdrueckliche Liefermenge
 einschliesslich benannter unversionierter Dateien, verlangt ein strukturiertes
@@ -98,7 +109,7 @@ have succeeded.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.1.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.2.zip \
      --priority 70
    ```
 
@@ -173,7 +184,7 @@ bypass, secret, or provider-administration authority.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.1.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.2.zip \
      --priority 70
    ```
 

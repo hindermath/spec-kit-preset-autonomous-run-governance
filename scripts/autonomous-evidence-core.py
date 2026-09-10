@@ -88,17 +88,28 @@ def git_state(repo: Path) -> tuple[str, str]:
     return tree, hashlib.sha256(status.encode("utf-8")).hexdigest()
 
 
-def validate_text_whitespace(path: Path, label: str) -> None:
+def validate_text_whitespace(
+    path: Path, label: str, allowed_raw_hash: str = ""
+) -> bool:
     raw = path.read_bytes()
     if b"\x00" in raw:
-        return
+        return False
     try:
         text = raw.decode("utf-8-sig", errors="strict")
     except UnicodeDecodeError as exc:
         fail("AEI006", f"{label} is neither UTF-8 text nor detected binary: {exc}")
     for number, line in enumerate(text.replace("\r\n", "\n").replace("\r", "\n").split("\n"), 1):
         if line.endswith((" ", "\t")):
+            if allowed_raw_hash:
+                actual_raw_hash = hashlib.sha256(raw).hexdigest()
+                if actual_raw_hash != allowed_raw_hash:
+                    fail(
+                        "AEI009",
+                        f"historical whitespace allowance hash mismatch: {label}",
+                    )
+                return True
             fail("AEI007", f"trailing whitespace: {label}:{number}")
+    return False
 
 
 def delivery_command(args: argparse.Namespace) -> str:
@@ -125,6 +136,25 @@ def delivery_command(args: argparse.Namespace) -> str:
         intended.append(normalized)
         intended_paths[normalized] = path
 
+    whitespace_allowances: dict[str, str] = {}
+    for value in args.allow_historical_whitespace:
+        path_text, separator, expected_hash = value.rpartition("=")
+        expected_hash = expected_hash.lower()
+        if not separator or not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
+            fail(
+                "AEI009",
+                "historical whitespace allowance must be PATH=64-hex-raw-SHA256",
+            )
+        normalized, path = relative_path(repo, path_text)
+        if normalized in whitespace_allowances:
+            fail("AEI009", f"duplicate historical whitespace allowance: {normalized}")
+        if normalized not in intended_paths or intended_paths[normalized] != path:
+            fail(
+                "AEI009",
+                f"historical whitespace allowance must name an intended file: {normalized}",
+            )
+        whitespace_allowances[normalized] = expected_hash
+
     tracked = [
         line for line in run_git(repo, "diff", "--name-only", "HEAD", "--").splitlines() if line
     ]
@@ -138,10 +168,21 @@ def delivery_command(args: argparse.Namespace) -> str:
             fail("AEI005", f"intended path is neither changed nor untracked: {path_text}")
 
     checked = sorted(set(tracked + intended))
+    used_allowances: set[str] = set()
     for path_text in checked:
         _, path = relative_path(repo, path_text)
         if path.exists() and path.is_file():
-            validate_text_whitespace(path, path_text)
+            if validate_text_whitespace(
+                path, path_text, whitespace_allowances.get(path_text, "")
+            ):
+                used_allowances.add(path_text)
+    unused_allowances = sorted(set(whitespace_allowances) - used_allowances)
+    if unused_allowances:
+        fail(
+            "AEI009",
+            "historical whitespace allowance was not required: "
+            + ", ".join(unused_allowances),
+        )
 
     after = git_state(repo)
     if before != after:
@@ -155,6 +196,10 @@ def delivery_command(args: argparse.Namespace) -> str:
             "intendedUntrackedPaths": sorted(set(intended) & set(untracked)),
             "unrelatedUntrackedPaths": unrelated,
             "checkedPaths": checked,
+            "historicalWhitespaceAllowances": [
+                {"path": path_text, "rawSha256": whitespace_allowances[path_text]}
+                for path_text in sorted(whitespace_allowances)
+            ],
             "indexTree": before[0],
             "worktreeStatusSha256": before[1],
         },
@@ -352,6 +397,7 @@ def parser() -> argparse.ArgumentParser:
     delivery = commands.add_parser("delivery")
     delivery.add_argument("--repo", required=True)
     delivery.add_argument("--intended", action="append", default=[])
+    delivery.add_argument("--allow-historical-whitespace", action="append", default=[])
     phase = commands.add_parser("phase")
     phase.add_argument("--repo", required=True)
     phase.add_argument("--result", required=True)

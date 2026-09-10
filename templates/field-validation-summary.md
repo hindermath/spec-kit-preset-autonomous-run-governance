@@ -5,8 +5,9 @@ fixtures, schema-2.0 PreMerge/PostMerge binding, historical audit-only behavior,
 and Bash/PowerShell parity. A source candidate is not a release until an
 independent field run passes.
 
-Release 0.4.1 adds 15 templates, 11 scripts, five commands, and five portable
-manpages. Feature 027 provided synthetic positive and negative fixtures;
+Release 0.4.2 retains 15 templates, 11 scripts, five commands, and five portable
+manpages and adds exact path-and-raw-SHA historical-whitespace allowances
+without weakening the default rejection. Feature 027 provided synthetic positive and negative fixtures;
 Feature 028 independently reproduced all three findings, completed the
 cross-shell field proof, and approved publication. The versioned ZIP must still
 be verified independently by each release and rollout workflow.
