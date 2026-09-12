@@ -131,24 +131,41 @@ def validate_text_whitespace(
 
 
 def staged_name_status(repo: Path) -> dict[str, str]:
-    fields = run_git(repo, "diff", "--cached", "--name-status", "-z", "HEAD", "--").split("\0")
+    fields = run_git(
+        repo,
+        "diff",
+        "--cached",
+        "--name-status",
+        "--no-renames",
+        "-z",
+        "HEAD",
+        "--",
+    ).split("\0")
     result: dict[str, str] = {}
     index = 0
     while index < len(fields) and fields[index]:
         status = fields[index]
         index += 1
-        if status.startswith(("R", "C")):
-            if index + 1 >= len(fields):
-                fail("AEI004", "incomplete staged rename/copy status")
-            new_path = fields[index + 1]
-            index += 2
-            result[new_path] = status[0]
-        else:
-            if index >= len(fields):
-                fail("AEI004", "incomplete staged path status")
-            result[fields[index]] = status[0]
-            index += 1
+        if index >= len(fields):
+            fail("AEI004", "incomplete staged path status")
+        result[fields[index]] = status[0]
+        index += 1
     return result
+
+
+def staged_file_mode(repo: Path, path_text: str) -> str:
+    raw = run_git_bytes(repo, "ls-files", "--stage", "-z", "--", path_text)
+    entries = [entry for entry in raw.split(b"\0") if entry]
+    if len(entries) != 1:
+        fail("AEI005", f"intended staged path has no unique stage-0 index entry: {path_text}")
+    metadata, separator, _ = entries[0].partition(b"\t")
+    parts = metadata.split()
+    if not separator or len(parts) != 3 or parts[2] != b"0":
+        fail("AEI005", f"intended staged path has an invalid index entry: {path_text}")
+    try:
+        return parts[0].decode("ascii")
+    except UnicodeDecodeError:
+        fail("AEI005", f"intended staged path has an invalid index mode: {path_text}")
 
 
 def validate_staged_diff_check(
@@ -200,7 +217,7 @@ def delivery_command(args: argparse.Namespace) -> str:
         normalized, path = relative_path(repo, value)
         if normalized in intended_paths:
             fail("AEI005", f"duplicate intended path: {normalized}")
-        if path.is_symlink():
+        if not args.staged and path.is_symlink():
             fail("AEI005", f"intended path must not be a symbolic link: {normalized}")
         if not args.staged and (not path.exists() or not path.is_file()):
             fail("AEI005", f"intended path is not an existing file: {normalized}")
@@ -277,6 +294,13 @@ def delivery_command(args: argparse.Namespace) -> str:
         if args.staged:
             if staged_status[path_text] == "D":
                 continue
+            mode = staged_file_mode(repo, path_text)
+            if mode not in {"100644", "100755"}:
+                fail(
+                    "AEI005",
+                    f"intended staged path is not a regular file in the index: "
+                    f"{path_text} (mode {mode})",
+                )
             raw = run_git_bytes(repo, "show", f":{path_text}")
             if validate_text_bytes(raw, path_text, whitespace_allowances.get(path_text, "")):
                 used_allowances.add(path_text)

@@ -13,9 +13,11 @@ worktree.
 Git-Arbeitsbaum, dessen Liefermenge geprueft wird. Git worktree to validate.
 .PARAMETER Intended
 Repository-relative Lieferpfade. Ohne -Staged werden unversionierte Dateien
-benannt; mit -Staged muss die Liste exakt dem Indexkandidaten entsprechen.
+benannt; mit -Staged muss die Liste exakt dem physischen Indexkandidaten
+einschliesslich beider Pfade einer Umbenennung entsprechen.
 Repository-relative delivery paths. Without -Staged they name untracked files;
-with -Staged the list must exactly match the index candidate.
+with -Staged the list must exactly match the physical index candidate, including
+both paths of a rename.
 .PARAMETER AllowHistoricalWhitespace
 Explizit genehmigte historische Datei als repositoryrelativer Pfad plus
 unveraenderter Roh-SHA-256 (`PATH=SHA256`). Nur fuer zugleich mit `-Intended`
@@ -25,9 +27,10 @@ files also named with `-Intended`; repeatable.
 .PARAMETER Staged
 Prueft den exakten, mit -Intended benannten Indexkandidaten. Historische
 Whitespace-Ausnahmen gelten nur fuer neu hinzugefuegte Dateien und werden an
-deren Indexbytes gebunden. Validates the exact index candidate named with
--Intended. Historical whitespace allowances apply only to newly added files
-and bind their index bytes.
+deren Indexbytes gebunden. Nur regulaere Index-Dateimodi sind erlaubt. Validates
+the exact index candidate named with -Intended. Historical whitespace
+allowances apply only to newly added files and bind their index bytes. Only
+regular-file index modes are accepted.
 .EXAMPLE
 pwsh -NoProfile -File validate-autonomous-delivery-set.ps1 -Repo . -Intended specs/027/evidence.md
 .EXAMPLE

@@ -3,17 +3,18 @@
 Permission-bounded, evidence-first governance for one explicitly delegated
 autonomous Spec Kit run.
 
-Version `0.4.3` | Priority `70` | Spec Kit `>=0.8.3`
+Version `0.4.4` | Priority `70` | Spec Kit `>=0.8.3`
 
-Version 0.4.3 begrenzt historische Whitespace-Ausnahmen auf tatsaechlich
-unversionierte Dateien und ergaenzt eine exakte, read-only Staged-Pruefung. Die
-Staged-Pruefung bindet neu hinzugefuegte historische Dateien an ihre Indexbytes
-und laesst alle anderen Diff-Fehler blockierend.
+Version 0.4.4 prueft im Staged-Modus Pfade, regulaere Dateitypen und Bytes direkt
+im Git-Index. Umbenennungen werden als geloeschter Quellpfad plus hinzugefuegter
+Zielpfad geprueft; Symlinks, Gitlinks und andere nicht regulaere Indexeintraege
+bleiben blockierend. Die Begrenzung historischer Whitespace-Ausnahmen aus
+v0.4.3 bleibt erhalten.
 
-*Version 0.4.3 limits historical whitespace allowances to genuinely untracked
-files and adds exact read-only staged-candidate validation. The staged check
-binds newly added historical files to their index bytes and keeps every other
-diff error blocking.*
+*Version 0.4.4 validates staged paths, regular-file types, and bytes directly in
+the Git index. Renames are checked as a deleted source plus an added target;
+symlinks, gitlinks, and other non-regular index entries remain blocking. The
+v0.4.3 restriction on historical whitespace allowances remains in force.*
 
 Version 0.4.2 ergaenzt eine fail-closed Ausnahme fuer unveraenderliche
 historische Textdateien: Sie muss als exakter repositoryrelativer Pfad plus
@@ -119,7 +120,7 @@ have succeeded.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.3.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.4.zip \
      --priority 70
    ```
 
@@ -194,7 +195,7 @@ bypass, secret, or provider-administration authority.
 
    ```bash
    specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.3.zip \
+     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.4.zip \
      --priority 70
    ```
 
