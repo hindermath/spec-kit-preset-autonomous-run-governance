@@ -73,7 +73,7 @@ Abschluss:
 Zusaetzlich erlaubt:
 
 - nur beabsichtigte Dateien stagen,
-- Kandidat mit `git diff --cached --check` pruefen,
+- Kandidat mit dem Delivery-Set-Validator im Staged-Modus pruefen,
 - Commit erstellen und Branch pushen,
 - Pull Request erstellen oder aktualisieren.
 

@@ -100,10 +100,11 @@ authority from general autonomy.
    immutability. A historical-whitespace allowance requires separate explicit
    authority and binds one exact intended path plus its unchanged raw SHA-256;
    never infer, generalize, or reuse it after content drift. Then stage only
-   intended paths, run
-   `git diff --cached --check`, and reconcile the staged path inventory with
-   repository status. Preserve unrelated work. In `LocalImplementation`, use a
-   per-file or temporary-index equivalent and restore the original index state.
+   intended paths and rerun `validate-autonomous-delivery-set.*` with
+   `--staged`/`-Staged`, naming every staged path with `--intended`/`-Intended`
+   and repeating the same approved allowance. Preserve unrelated work. In
+   `LocalImplementation`, use a temporary index and restore the original index
+   state.
 11. Route out-of-scope findings to named follow-up evidence instead of silently
    expanding the feature.
 12. Before implementation, resolve the preset's gate-requirements template and

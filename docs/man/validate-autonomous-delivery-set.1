@@ -1,14 +1,18 @@
-.TH VALIDATE-AUTONOMOUS-DELIVERY-SET 1 "September 2026" "autonomous-run-governance 0.4.2" "User Commands"
+.TH VALIDATE-AUTONOMOUS-DELIVERY-SET 1 "September 2026" "autonomous-run-governance 0.4.3" "User Commands"
 .SH NAME
 validate-autonomous-delivery-set \- validate an explicit delivery set read-only
 .SH SYNOPSIS
 .B validate-autonomous-delivery-set.sh
 .BR --repo " PATH"
+.RB [ --staged ]
 .RB [ --intended " PATH ..."]
 .RB [ --allow-historical-whitespace " PATH=RAW_SHA256 ..."]
 .SH DESCRIPTION
 Validates every changed tracked file plus explicitly named untracked delivery
-files. It reports unrelated untracked paths, rejects ignored paths, symbolic
+files. With
+.BR --staged ,
+every intended path must exactly match the index candidate. It reports
+unrelated untracked paths, rejects ignored paths, symbolic
 links, traversal, duplicates, missing files, directories, and trailing
 whitespace, and proves that the Git index and worktree state did not change.
 .PP
@@ -23,16 +27,21 @@ commit, push, pull request, or merge.
 Git worktree to validate.
 .TP
 .B --intended PATH
-Repository-relative, non-ignored untracked file intended for delivery. Repeat
-the option for multiple files.
+Repository-relative intended path. In worktree mode it names an untracked
+delivery file; in staged mode repeat it for every staged path.
+.TP
+.B --staged
+Validate the exact staged candidate. Historical allowances are restricted to
+newly added files and bind their bytes in the Git index.
 .TP
 .B --allow-historical-whitespace PATH=RAW_SHA256
 Permit trailing whitespace only for the explicitly approved, immutable
 historical file at the exact repository-relative path and raw SHA-256. The file
 must also be named by
 .BR --intended .
-Repeat the option for multiple files. Hash, path, content, or necessity drift
-fails closed.
+In worktree mode the file must be untracked; in staged mode it must be newly
+added. Repeat the option for multiple files. Hash, path, content, or necessity
+drift fails closed.
 .TP
 .B -h, --help
 Show command help.

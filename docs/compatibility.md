@@ -8,7 +8,7 @@
 
 | Ebene | Aktueller Wert | Bedeutung |
 |---|---|---|
-| Preset-Release | `v0.4.2` | Veroeffentlichtes Paket und ZIP |
+| Preset-Release | `v0.4.3` | Veroeffentlichtes Paket und ZIP |
 | Quellkandidat | `N/A` | Kein neuer unveroeffentlichter Kandidat |
 | `preset.yml`-Schema | `schema_version: "1.0"` | Spec-Kit-Presetmanifest |
 | Run-State-Vertrag | `schemaVersion: "1.1"` | Autonomer Lifecycle und Closeout |
@@ -16,6 +16,14 @@
 Diese Werte duerfen nicht miteinander verwechselt werden. Ein
 Presetmanifest-Schema `1.0` bedeutet nicht, dass der Run-State ebenfalls
 Schema `1.0` verwendet.
+
+### Upgrade auf `v0.4.3`
+
+`v0.4.3` begrenzt historische Whitespace-Ausnahmen in der Vorstufenpruefung
+auf tatsaechlich unversionierte Dateien. Der neue `--staged`-/`-Staged`-Modus
+bindet die vollstaendige beabsichtigte Indexmenge, erlaubt die Ausnahme nur
+fuer neu hinzugefuegte Dateien mit passendem Indexbyte-Hash und laesst jeden
+anderen `git diff --cached --check`-Fehler blockierend.
 
 ### Upgrade auf `v0.4.2`
 
@@ -77,7 +85,7 @@ den No-Delta-Befund.
 
 `parallel-autonomous-run-governance` benoetigt in jedem realen
 Worker-Repository mindestens Preset 7 `v0.2.2`. Die gemeinsam getestete
-aktuelle Kombination ist Preset 7 `v0.4.2` mit Preset 8 `v0.2.6`.
+aktuelle Kombination ist Preset 7 `v0.4.3` mit Preset 8 `v0.2.6`.
 
 ## English
 
@@ -85,13 +93,21 @@ aktuelle Kombination ist Preset 7 `v0.4.2` mit Preset 8 `v0.2.6`.
 
 | Layer | Current value | Meaning |
 |---|---|---|
-| Preset release | `v0.4.2` | Published package and ZIP |
+| Preset release | `v0.4.3` | Published package and ZIP |
 | Source candidate | `N/A` | No newer unpublished candidate |
 | `preset.yml` schema | `schema_version: "1.0"` | Spec Kit preset manifest |
 | Run-state contract | `schemaVersion: "1.1"` | Autonomous lifecycle and closeout |
 
 Do not confuse these values. Preset-manifest schema `1.0` does not imply
 run-state schema `1.0`.
+
+### Upgrade to `v0.4.3`
+
+`v0.4.3` limits historical whitespace allowances in the pre-stage check to
+genuinely untracked files. The new `--staged`/`-Staged` mode binds the complete
+intended index set, permits an allowance only for a newly added file with a
+matching index-byte hash, and keeps every other `git diff --cached --check`
+error blocking.
 
 ### Upgrade to `v0.4.2`
 
@@ -142,5 +158,5 @@ result.
 ### Relationship with Preset 8
 
 `parallel-autonomous-run-governance` requires at least Preset 7 `v0.2.2` in
-every real worker repository. The currently tested pair is Preset 7 `v0.4.2`
+every real worker repository. The currently tested pair is Preset 7 `v0.4.3`
 with Preset 8 `v0.2.6`.

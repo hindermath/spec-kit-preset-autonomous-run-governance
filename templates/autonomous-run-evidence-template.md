@@ -52,7 +52,7 @@ exit cannot override a fatal structured or error-channel signal.
 |---|---|---|
 | Intended paths | `[Pass/Open]` | `[path inventory]` |
 | Tracked worktree diff | `[Pass/Open]` | `git diff --check` |
-| Exact staged candidate | `[Pass/N/A/Open]` | `git diff --cached --check or local-only equivalent` |
+| Exact staged candidate | `[Pass/N/A/Open]` | `delivery-set validator --staged/-Staged or temporary-index equivalent` |
 | Status reconciliation | `[Pass/Open]` | `[staged/untracked/unstaged boundary]` |
 | Index preservation | `[Pass/N/A/Open]` | `[restored prior state or authorized staged candidate]` |
 

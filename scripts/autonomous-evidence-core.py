@@ -67,6 +67,21 @@ def run_git(repo: Path, *arguments: str) -> str:
     return result.stdout
 
 
+def run_git_bytes(repo: Path, *arguments: str) -> bytes:
+    result = subprocess.run(
+        ["git", "-C", str(repo), *arguments],
+        check=False,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        fail(
+            "AEI004",
+            f"git {' '.join(arguments)} failed: "
+            + result.stderr.decode("utf-8", errors="replace").strip(),
+        )
+    return result.stdout
+
+
 def relative_path(repo: Path, value: str) -> tuple[str, Path]:
     candidate = PurePosixPath(value.replace("\\", "/"))
     if candidate.is_absolute() or not candidate.parts or ".." in candidate.parts:
@@ -88,10 +103,7 @@ def git_state(repo: Path) -> tuple[str, str]:
     return tree, hashlib.sha256(status.encode("utf-8")).hexdigest()
 
 
-def validate_text_whitespace(
-    path: Path, label: str, allowed_raw_hash: str = ""
-) -> bool:
-    raw = path.read_bytes()
+def validate_text_bytes(raw: bytes, label: str, allowed_raw_hash: str = "") -> bool:
     if b"\x00" in raw:
         return False
     try:
@@ -112,11 +124,76 @@ def validate_text_whitespace(
     return False
 
 
+def validate_text_whitespace(
+    path: Path, label: str, allowed_raw_hash: str = ""
+) -> bool:
+    return validate_text_bytes(path.read_bytes(), label, allowed_raw_hash)
+
+
+def staged_name_status(repo: Path) -> dict[str, str]:
+    fields = run_git(repo, "diff", "--cached", "--name-status", "-z", "HEAD", "--").split("\0")
+    result: dict[str, str] = {}
+    index = 0
+    while index < len(fields) and fields[index]:
+        status = fields[index]
+        index += 1
+        if status.startswith(("R", "C")):
+            if index + 1 >= len(fields):
+                fail("AEI004", "incomplete staged rename/copy status")
+            new_path = fields[index + 1]
+            index += 2
+            result[new_path] = status[0]
+        else:
+            if index >= len(fields):
+                fail("AEI004", "incomplete staged path status")
+            result[fields[index]] = status[0]
+            index += 1
+    return result
+
+
+def validate_staged_diff_check(
+    repo: Path, whitespace_allowances: dict[str, str]
+) -> None:
+    result = subprocess.run(
+        ["git", "-C", str(repo), "diff", "--cached", "--check", "--"],
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    if result.returncode == 0:
+        return
+    lines = result.stdout.splitlines()
+    remaining: list[str] = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        allowed = next(
+            (
+                path
+                for path in whitespace_allowances
+                if line.startswith(f"{path}:") and line.endswith(": trailing whitespace.")
+            ),
+            None,
+        )
+        if allowed is not None:
+            index += 1
+            if index < len(lines) and lines[index].startswith("+"):
+                index += 1
+            continue
+        remaining.append(line)
+        index += 1
+    if remaining or result.stderr.strip():
+        detail = " | ".join(remaining + ([result.stderr.strip()] if result.stderr.strip() else []))
+        fail("AEI010", f"staged candidate failed git diff --cached --check: {detail}")
+
+
 def delivery_command(args: argparse.Namespace) -> str:
     repo = Path(args.repo).resolve()
     if not (repo / ".git").exists() and not run_git(repo, "rev-parse", "--git-dir").strip():
         fail("AEI004", "repository root is not a Git worktree")
     before = git_state(repo)
+    candidate_mode = "Staged" if args.staged else "Worktree"
     intended: list[str] = []
     intended_paths: dict[str, Path] = {}
     for value in args.intended:
@@ -125,8 +202,10 @@ def delivery_command(args: argparse.Namespace) -> str:
             fail("AEI005", f"duplicate intended path: {normalized}")
         if path.is_symlink():
             fail("AEI005", f"intended path must not be a symbolic link: {normalized}")
-        if not path.exists() or not path.is_file():
+        if not args.staged and (not path.exists() or not path.is_file()):
             fail("AEI005", f"intended path is not an existing file: {normalized}")
+        if args.staged and path.exists() and not path.is_file():
+            fail("AEI005", f"intended staged path is not a file: {normalized}")
         ignored = subprocess.run(
             ["git", "-C", str(repo), "check-ignore", "--quiet", "--", normalized],
             check=False,
@@ -163,19 +242,51 @@ def delivery_command(args: argparse.Namespace) -> str:
         for line in run_git(repo, "ls-files", "--others", "--exclude-standard").splitlines()
         if line
     ]
-    for path_text in intended:
-        if path_text not in untracked and path_text not in tracked:
-            fail("AEI005", f"intended path is neither changed nor untracked: {path_text}")
+    staged_status = staged_name_status(repo) if args.staged else {}
+    staged_paths = sorted(staged_status)
+    if args.staged:
+        if sorted(intended) != staged_paths:
+            fail(
+                "AEI010",
+                "staged path inventory differs from intended paths: "
+                f"intended={sorted(intended)}, staged={staged_paths}",
+            )
+    else:
+        for path_text in intended:
+            if path_text not in untracked and path_text not in tracked:
+                fail("AEI005", f"intended path is neither changed nor untracked: {path_text}")
 
-    checked = sorted(set(tracked + intended))
+    for path_text in whitespace_allowances:
+        if args.staged:
+            if staged_status.get(path_text) != "A":
+                fail(
+                    "AEI009",
+                    "historical whitespace allowance requires a newly added staged file: "
+                    + path_text,
+                )
+        elif path_text not in untracked:
+            fail(
+                "AEI009",
+                "historical whitespace allowance requires an intended untracked file: "
+                + path_text,
+            )
+
+    checked = staged_paths if args.staged else sorted(set(tracked + intended))
     used_allowances: set[str] = set()
     for path_text in checked:
-        _, path = relative_path(repo, path_text)
-        if path.exists() and path.is_file():
-            if validate_text_whitespace(
-                path, path_text, whitespace_allowances.get(path_text, "")
-            ):
+        if args.staged:
+            if staged_status[path_text] == "D":
+                continue
+            raw = run_git_bytes(repo, "show", f":{path_text}")
+            if validate_text_bytes(raw, path_text, whitespace_allowances.get(path_text, "")):
                 used_allowances.add(path_text)
+        else:
+            _, path = relative_path(repo, path_text)
+            if path.exists() and path.is_file():
+                if validate_text_whitespace(
+                    path, path_text, whitespace_allowances.get(path_text, "")
+                ):
+                    used_allowances.add(path_text)
     unused_allowances = sorted(set(whitespace_allowances) - used_allowances)
     if unused_allowances:
         fail(
@@ -183,6 +294,9 @@ def delivery_command(args: argparse.Namespace) -> str:
             "historical whitespace allowance was not required: "
             + ", ".join(unused_allowances),
         )
+
+    if args.staged:
+        validate_staged_diff_check(repo, whitespace_allowances)
 
     after = git_state(repo)
     if before != after:
@@ -192,10 +306,12 @@ def delivery_command(args: argparse.Namespace) -> str:
         {
             "schemaVersion": "1.0",
             "result": "Pass",
+            "candidateMode": candidate_mode,
             "trackedPaths": sorted(tracked),
             "intendedUntrackedPaths": sorted(set(intended) & set(untracked)),
             "unrelatedUntrackedPaths": unrelated,
             "checkedPaths": checked,
+            **({"stagedPaths": staged_paths} if args.staged else {}),
             "historicalWhitespaceAllowances": [
                 {"path": path_text, "rawSha256": whitespace_allowances[path_text]}
                 for path_text in sorted(whitespace_allowances)
@@ -398,6 +514,7 @@ def parser() -> argparse.ArgumentParser:
     delivery.add_argument("--repo", required=True)
     delivery.add_argument("--intended", action="append", default=[])
     delivery.add_argument("--allow-historical-whitespace", action="append", default=[])
+    delivery.add_argument("--staged", action="store_true")
     phase = commands.add_parser("phase")
     phase.add_argument("--repo", required=True)
     phase.add_argument("--result", required=True)
