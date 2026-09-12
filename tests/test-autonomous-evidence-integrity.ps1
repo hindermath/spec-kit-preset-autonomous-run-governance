@@ -119,6 +119,28 @@ try {
     & git -C $Repo reset --quiet
     Remove-Item -LiteralPath (Join-Path $Repo 'conflict.txt')
 
+    [IO.File]::WriteAllText((Join-Path $Repo 'rename-source.txt'), "rename fixture`n", [Text.UTF8Encoding]::new($false))
+    & git -C $Repo add rename-source.txt
+    & git -C $Repo commit --quiet -m 'add rename fixture'
+    & git -C $Repo mv rename-source.txt rename-target.txt
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended rename-target.txt } 2 'Rename source omission rejection')
+    $RenameCommand = "& '$DeliveryPs' -Repo '$Repo' -Staged -Intended @('rename-source.txt','rename-target.txt')"
+    [void](Invoke-Expected { & pwsh -NoProfile -Command $RenameCommand } 0 'Complete rename inventory pass')
+    & git -C $Repo reset --hard --quiet HEAD
+
+    $GitlinkHead = (& git -C $Repo rev-parse HEAD).Trim()
+    & git -C $Repo update-index --add --cacheinfo "160000,$GitlinkHead,staged-gitlink"
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended staged-gitlink } 2 'Staged gitlink rejection')
+    & git -C $Repo reset --quiet
+
+    if (-not $IsWindows) {
+        & ln -s tracked.txt (Join-Path $Repo 'staged-link.txt')
+        & git -C $Repo add staged-link.txt
+        Remove-Item -LiteralPath (Join-Path $Repo 'staged-link.txt')
+        [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended staged-link.txt } 2 'Index-only staged symlink rejection')
+        & git -C $Repo reset --quiet
+    }
+
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt -AllowHistoricalWhitespace "delivery.txt=$('0' * 64)" } 2 'Allowance hash mismatch rejection')
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt -AllowHistoricalWhitespace "other.txt=${HistoricalHash}" } 2 'Allowance path mismatch rejection')
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt -AllowHistoricalWhitespace 'delivery.txt=not-a-hash' } 2 'Malformed allowance rejection')

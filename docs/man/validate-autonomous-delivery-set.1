@@ -1,4 +1,4 @@
-.TH VALIDATE-AUTONOMOUS-DELIVERY-SET 1 "September 2026" "autonomous-run-governance 0.4.3" "User Commands"
+.TH VALIDATE-AUTONOMOUS-DELIVERY-SET 1 "September 2026" "autonomous-run-governance 0.4.4" "User Commands"
 .SH NAME
 validate-autonomous-delivery-set \- validate an explicit delivery set read-only
 .SH SYNOPSIS
@@ -12,8 +12,9 @@ Validates every changed tracked file plus explicitly named untracked delivery
 files. With
 .BR --staged ,
 every intended path must exactly match the index candidate. It reports
-unrelated untracked paths, rejects ignored paths, symbolic
-links, traversal, duplicates, missing files, directories, and trailing
+unrelated untracked paths, expands renames into their deleted source and added
+target, and rejects ignored paths, non-regular index entries, symbolic links,
+gitlinks, traversal, duplicates, missing files, directories, and trailing
 whitespace, and proves that the Git index and worktree state did not change.
 .PP
 DE: Das Ergebnis beschreibt die beabsichtigte Liefermenge. Es fuehrt weder

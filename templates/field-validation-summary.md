@@ -5,7 +5,7 @@ fixtures, schema-2.0 PreMerge/PostMerge binding, historical audit-only behavior,
 and Bash/PowerShell parity. A source candidate is not a release until an
 independent field run passes.
 
-Release 0.4.3 retains 15 templates, 11 scripts, five commands, and five portable
+Release 0.4.4 retains 15 templates, 11 scripts, five commands, and five portable
 manpages, limits historical-whitespace allowances to untracked additions, and
 validates the exact staged candidate without weakening other diff checks.
 Feature 027 provided synthetic positive and negative fixtures;
