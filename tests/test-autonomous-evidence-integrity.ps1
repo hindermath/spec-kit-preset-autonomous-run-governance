@@ -84,6 +84,41 @@ try {
         $ShHistorical = Invoke-Expected { & bash $DeliverySh --repo $Repo --intended delivery.txt --allow-historical-whitespace $Allowance } 0 'Bash exact historical whitespace allowance'
         Assert-EvidenceTest (($ShHistorical -join "`n") -match $HistoricalHash) 'Bash allowance hash was not reported'
     }
+    [IO.File]::WriteAllText((Join-Path $Repo 'tracked.txt'), "tracked bad `n", [Text.UTF8Encoding]::new($false))
+    $TrackedHash = Get-RawHash (Join-Path $Repo 'tracked.txt')
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended tracked.txt -AllowHistoricalWhitespace "tracked.txt=${TrackedHash}" } 2 'Tracked-file allowance rejection')
+    [IO.File]::WriteAllText((Join-Path $Repo 'tracked.txt'), "changed`n", [Text.UTF8Encoding]::new($false))
+
+    & git -C $Repo add delivery.txt
+    $StagedBefore = (& git -C $Repo status --porcelain=v1 --untracked-files=all --ignored) -join "`n"
+    $PsStaged = Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended delivery.txt -AllowHistoricalWhitespace $Allowance } 0 'PowerShell staged historical whitespace allowance'
+    Assert-EvidenceTest (($PsStaged -join "`n") -match '"candidateMode": "Staged"') 'PowerShell staged mode was not reported'
+    if ($HasBash) {
+        $ShStaged = Invoke-Expected { & bash $DeliverySh --repo $Repo --staged --intended delivery.txt --allow-historical-whitespace $Allowance } 0 'Bash staged historical whitespace allowance'
+        Assert-EvidenceTest (($ShStaged -join "`n") -match '"candidateMode": "Staged"') 'Bash staged mode was not reported'
+    }
+    $StagedAfter = (& git -C $Repo status --porcelain=v1 --untracked-files=all --ignored) -join "`n"
+    Assert-EvidenceTest ($StagedBefore -eq $StagedAfter) 'Staged validation changed repository state'
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended delivery.txt -AllowHistoricalWhitespace "delivery.txt=$('0' * 64)" } 2 'Staged allowance index-hash mismatch rejection')
+    & git -C $Repo add tracked.txt
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended delivery.txt -AllowHistoricalWhitespace $Allowance } 2 'Missing staged path rejection')
+    if ($HasBash) {
+        [void](Invoke-Expected { & bash $DeliverySh --repo $Repo --staged --intended tracked.txt --intended delivery.txt --allow-historical-whitespace $Allowance } 0 'Bash complete staged inventory pass')
+    }
+
+    & git -C $Repo reset --quiet
+    [IO.File]::WriteAllText((Join-Path $Repo 'tracked.txt'), "tracked bad `n", [Text.UTF8Encoding]::new($false))
+    & git -C $Repo add tracked.txt
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended tracked.txt } 2 'Other staged whitespace rejection')
+    [IO.File]::WriteAllText((Join-Path $Repo 'tracked.txt'), "changed`n", [Text.UTF8Encoding]::new($false))
+    & git -C $Repo reset --quiet
+
+    [IO.File]::WriteAllText((Join-Path $Repo 'conflict.txt'), "<<<<<<< HEAD`nvalue`n=======`nother`n>>>>>>> branch`n", [Text.UTF8Encoding]::new($false))
+    & git -C $Repo add conflict.txt
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended conflict.txt } 2 'Staged conflict-marker rejection')
+    & git -C $Repo reset --quiet
+    Remove-Item -LiteralPath (Join-Path $Repo 'conflict.txt')
+
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt -AllowHistoricalWhitespace "delivery.txt=$('0' * 64)" } 2 'Allowance hash mismatch rejection')
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt -AllowHistoricalWhitespace "other.txt=${HistoricalHash}" } 2 'Allowance path mismatch rejection')
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended delivery.txt -AllowHistoricalWhitespace 'delivery.txt=not-a-hash' } 2 'Malformed allowance rejection')
