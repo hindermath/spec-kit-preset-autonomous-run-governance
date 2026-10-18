@@ -62,6 +62,39 @@ silently assume Spec Kit experience.
 
 ## Deutsch
 
+### Vorlagen und Komposition / Templates and Composition
+
+Das [Manifest](preset.yml) liefert eigene autonome Commands, Run-State- und
+Readiness-Vorlagen und ergänzt Constitution/Spec/Plan/Tasks per `append`.
+Installation füllt keinen Run-State aus und startet keinen Lauf. Nenne
+Feature, Scope, aktuelle Autorität und genau einen Delivery-Modus; Vorlagen
+sind Hilfsmittel, keine abgeschlossenen Gates.
+
+*The [manifest](preset.yml) provides autonomous commands, state/readiness
+templates and append contributions to constitution/spec/plan/tasks.
+Installation fills no state and starts no run. Name feature, scope, current
+authority and one delivery mode. Templates are aids, not passed gates.*
+
+Feature-Nummern und Aufrufe unten sind Beispiele. Verwende das tatsächlich
+freigegebene Feature und die Syntax deiner Integration. Bei fehlendem Profil,
+veralteter Evidence oder unklarer Autorität zuerst den Blocker behandeln.
+Status/Readiness ist der sichere Einstieg, nicht ein ungeprüfter Start.
+
+*Feature numbers/invocations below are examples. Use the authorized feature
+and your integration's syntax. Resolve missing profiles, stale evidence or
+unclear authority first. Start with status/readiness, not an unchecked run.*
+
+Kleinere Prioritätszahlen haben höhere Auflösungspriorität. `append` ergänzt,
+`wrap` verschachtelt; `replace` oder Overrides können gleichnamige Beiträge
+verdrängen. Eigene Reihenfolgen separat prüfen. Priorität ersetzt keine
+Phasen-Gates, stärkste deklarierte Routing-Rolle oder Remote-Autorität.
+Prüfe `specify preset resolve plan-template` und erzeugte Agentenflächen.
+
+*Lower numbers mean higher precedence. Append adds, wrap nests; replace or
+overrides can hide same-name contributions. Check custom orderings separately.
+Priority replaces neither phase gates, strongest-role routing nor remote
+authority. Inspect plan-template resolution and generated agent surfaces.*
+
 ### Wofuer ist dieses Preset gedacht?
 
 Dieses Preset fuehrt **einen** Spec-Kit-Feature-Lauf kontrolliert von der
@@ -119,9 +152,7 @@ have succeeded.
 1. Preset installieren:
 
    ```bash
-   specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.4.zip \
-     --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.4.zip --priority 70
    ```
 
 2. Installation pruefen:
@@ -194,9 +225,7 @@ bypass, secret, or provider-administration authority.
 1. Install the preset:
 
    ```bash
-   specify preset add \
-     --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.4.zip \
-     --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.4.zip --priority 70
    ```
 
 2. Verify the installation:

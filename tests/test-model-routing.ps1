@@ -26,14 +26,37 @@ function Write-RoutingJson {
 $presetRoot = Split-Path -Parent $PSScriptRoot
 $runner = Join-Path $presetRoot 'scripts/invoke-autonomous-model-phase.ps1'
 $fixtureRunner = Join-Path $PSScriptRoot 'fixture-model-runner.ps1'
-$allPresetRoot = Split-Path -Parent $presetRoot
 $temporaryRoot = Join-Path ([IO.Path]::GetTempPath()) "autonomous-model-routing-$([guid]::NewGuid())"
+$allPresetRoot = Join-Path $temporaryRoot 'routing-presets'
 $repository = Join-Path $temporaryRoot 'repository'
 $featureDirectory = Join-Path $repository 'specs/999-routing-fixture'
 $statePath = Join-Path $featureDirectory 'autonomous-run-state.json'
 $runnerConfig = Join-Path $temporaryRoot 'runner-profiles.json'
 
 try {
+    # Test the shipped contract without depending on unrelated sibling checkouts.
+    # A weaker plan binding also proves that composition retains the strongest role.
+    $autonomousCatalogRoot = Join-Path $allPresetRoot 'autonomous-run-governance'
+    [void](New-Item -ItemType Directory -Path $autonomousCatalogRoot -Force)
+    Copy-Item -LiteralPath (Join-Path $presetRoot 'model-routing.json'),
+        (Join-Path $presetRoot 'preset.yml') -Destination $autonomousCatalogRoot
+    $compositionRoot = Join-Path $allPresetRoot 'fixture-composition'
+    $compositionCatalogPath = Join-Path $compositionRoot 'model-routing.json'
+    $compositionCatalog = [ordered]@{
+        schemaVersion = '1.0'
+        presetId = 'fixture-composition'
+        fallbackPolicy = 'fail-closed'
+        defaultRole = 'frontier-reasoning'
+        commands = [ordered]@{
+            'speckit.plan' = 'fast-mechanical'
+            'speckit.intake-read' = 'fast-mechanical'
+            'speckit.intake-series-next' = 'fast-mechanical'
+            'speckit.parallel-autonomous-consolidate' = 'coding-review'
+            'speckit.parallel-autonomous-stop' = 'script-only'
+        }
+    }
+    Write-RoutingJson $compositionCatalogPath $compositionCatalog
+    'contributions: []' | Set-Content -LiteralPath (Join-Path $compositionRoot 'preset.yml') -Encoding utf8NoBOM
     [void](New-Item -ItemType Directory -Path $featureDirectory -Force)
     & git -C $repository init --quiet
 
@@ -168,7 +191,7 @@ try {
     Assert-RoutingTest ($LASTEXITCODE -ne 0) 'script-only command was started through a model runner'
 
     $routingFiles = @(Get-ChildItem -LiteralPath $allPresetRoot -Filter 'model-routing.json' -File -Recurse)
-    Assert-RoutingTest ($routingFiles.Count -eq 12) 'The active managed profile must provide exactly twelve routing files'
+    Assert-RoutingTest ($routingFiles.Count -eq 2) 'The isolated composition fixture must contain the shipped and synthetic catalogs'
     $roleRank = @{
         'script-only' = 0
         'fast-mechanical' = 10
@@ -222,6 +245,12 @@ try {
             [string] $effectiveRoles[[string] $expectedRole.Key] -eq [string] $expectedRole.Value
         ) "Unexpected effective role for $($expectedRole.Key)"
     }
+
+    $compositionCatalog.commands['speckit.plan'] = 'invalid-role'
+    Write-RoutingJson $compositionCatalogPath $compositionCatalog
+    & pwsh -NoProfile -File $runner -Action Validate -State $statePath `
+        -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Invalid catalog role was accepted'
 
     Write-Output 'PASS: balanced command routing, phase switching, fail-closed validation, and script-only separation'
 } finally {
