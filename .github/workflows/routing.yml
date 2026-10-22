@@ -22,8 +22,9 @@ jobs:
       - name: Native PowerShell regressions (synthetic runner only)
         shell: pwsh
         run: |
-          ./tests/test-model-routing.ps1
+          # Isolate fixture-internal expected negative exits from the caller.
+          pwsh -NoProfile -File tests/test-model-routing.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          ./tests/test-autonomous-evidence-integrity.ps1
+          pwsh -NoProfile -File tests/test-autonomous-evidence-integrity.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           git diff --exit-code
