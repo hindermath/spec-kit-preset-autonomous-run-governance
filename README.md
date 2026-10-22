@@ -1,5 +1,26 @@
 # Autonomous Run Governance
 
+## Unveroeffentlicht: dynamisches Routing / Unreleased dynamic routing
+
+Schema-3-Runner-Konfigurationen waehlen vor jeder explizit beschriebenen Phase
+ueber den installierten gemeinsamen Model-Routing-Kern. `routingRequirements`
+muss Command, staerkste Rolle, Komplexitaet, Risiko, Kontextbedarf und benoetigte
+Faehigkeiten enthalten. Statische Profile bleiben lesbar. Keine Migration,
+kein Modellstart und kein Home-only-Overlay werden implizit uebernommen.
+Native Modell-/Effort-Konformitaet muss vor dem Preflight durch gepruefte
+Kandidaten-Evidence belegt sein; fehlende native Receipts blockieren. Der
+Preflight ist auf 120 Sekunden, die dynamische Phase auf 3600 Sekunden begrenzt.
+Alle bisherigen Ergebnis-/Evidence-Validatoren bleiben bindend.
+
+Schema-3 configurations use the shared installed Model Routing engine before
+each explicitly described phase. Require command, strongest role, complexity,
+risk, context and capabilities in routingRequirements. Legacy static profiles
+remain readable; no implicit migration, model execution or adoption of a
+Home-only overlay. Reviewed native model/effort conformance is required before
+an access probe; missing native receipts block. The preflight limit is 120
+seconds, the separate dynamic phase limit 3600 seconds. Existing result and
+evidence validators remain mandatory. This source change is not a release.
+
 Patch **0.4.5** liefert die verbesserte zweisprachige Einstiegs- und
 Kompositionsdokumentation. Verhalten und Berechtigungsgrenzen bleiben erhalten.
 [Release-Nachweis / Release record](docs/release-0.4.5-validation.md).

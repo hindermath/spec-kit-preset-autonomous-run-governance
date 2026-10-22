@@ -26,6 +26,9 @@
 .PARAMETER RoutingRoot
     Verzeichnis mit installierten Presets und model-routing.json-Dateien.
 
+.PARAMETER RoutingEngine
+    Optionaler gepruefter gemeinsamer Routing-Kern / Optional reviewed shared routing module.
+
 .PARAMETER PhaseId
     Stabile ID der bei Run auszufuehrenden Phase.
 
@@ -61,6 +64,8 @@ param(
 
     [string] $RunnerConfig = '',
     [string] $RoutingRoot = '',
+
+    [string] $RoutingEngine = '',
     [string] $PhaseId = '',
     [string] $Worktree = '',
     [string] $Prompt = '',
@@ -72,6 +77,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$script:DynamicRoutingEnginePath = $RoutingEngine
 
 $script:AllowedRoles = @(
     'script-only',
@@ -144,6 +150,11 @@ function Get-AMRRoutingCatalog {
     param([Parameter(Mandatory)][string] $Root)
 
     Assert-AMRCondition (Test-Path -LiteralPath $Root -PathType Container) "RoutingRoot fehlt: $Root"
+    $sharedEngine = if ([string]::IsNullOrWhiteSpace($script:DynamicRoutingEnginePath)) { Join-Path $Root 'model-routing-governance/scripts/dynamic-model-routing.psm1' } else { $script:DynamicRoutingEnginePath }
+    if (Test-Path -LiteralPath $sharedEngine -PathType Leaf) {
+        Import-Module $sharedEngine -Force
+        return Get-MRCatalog $Root
+    }
     $effective = @{}
     $sources = @{}
     $catalogPaths = @(Get-ChildItem -LiteralPath $Root -Filter 'model-routing.json' -File -Recurse)
@@ -238,7 +249,14 @@ function Get-AMRRunnerProfile {
         [Parameter(Mandatory)][hashtable] $Phase
     )
 
-    Assert-AMRCondition ([string] $RunnerData.schemaVersion -in @('1.0', '1.1', '2.0')) 'RunnerConfig schemaVersion muss 1.0, 1.1 oder 2.0 sein.'
+    if ([string]$RunnerData.schemaVersion -eq '3.0') {
+        $engine = if ([string]::IsNullOrWhiteSpace($script:DynamicRoutingEnginePath)) { Join-Path $RoutingRoot 'model-routing-governance/scripts/dynamic-model-routing.psm1' } else { $script:DynamicRoutingEnginePath }
+        Assert-AMRCondition (Test-Path -LiteralPath $engine -PathType Leaf) 'Shared dynamic routing engine missing; no fallback to a static profile.'
+        Import-Module $engine -Force
+        $dynamicConfig = Read-MRDocument ([IO.Path]::GetFullPath($RunnerConfig))
+        return Resolve-MRPhaseProfile -Config $dynamicConfig -Phase $Phase -RoutingRoot $RoutingRoot -ProjectRoot $repositoryRoot -ExecutionRoot $Worktree
+    }
+    Assert-AMRCondition ([string] $RunnerData.schemaVersion -in @('1.0', '1.1', '2.0')) 'RunnerConfig schemaVersion muss 1.0, 1.1, 2.0 oder explizit migriertes 3.0 sein.'
     Assert-AMRCondition ($RunnerData.profiles -is [hashtable]) 'RunnerConfig.profiles muss ein Objekt sein.'
     $phaseProfile = if ($Phase.ContainsKey('runnerProfile')) { [string] $Phase.runnerProfile } else { 'N/A' }
     if (-not [string]::IsNullOrWhiteSpace($phaseProfile) -and $phaseProfile -ne 'N/A') {
@@ -456,7 +474,11 @@ if (-not $PSCmdlet.ShouldProcess("phase '$PhaseId'", "Run fail-closed model pref
 }
 
 try {
-    $preflight = Invoke-AMRCommand $runnerProfileData.preflight $values $Worktree
+    $dynamic = $profileResult.Contains('selection')
+    if ($dynamic) {
+        $phase.routingSelection = $profileResult.selection
+        $preflight = Invoke-MRBoundedProcess $runnerProfileData.preflight $values $Worktree -TimeoutSeconds 120
+    } else { $preflight = Invoke-AMRCommand $runnerProfileData.preflight $values $Worktree }
     if ([int] $preflight.exitCode -ne 0) {
         $reason = "Model preflight failed for profile '$profileName' with exit code $($preflight.exitCode)."
         Set-AMRBlockedState $stateData $phase $reason 'ModelRoutingPreflight'
@@ -470,6 +492,17 @@ try {
         throw $reason
     }
 
+    if ($dynamic) {
+        $receipt = Get-MRNativeReceipt -Output @($preflight.output) -Selection $profileResult.selection
+        Test-MRExecutionIdentity $receipt $profileResult.selection
+        $phase.routingPreflightReceipt = $receipt
+        # Re-read policy/evidence/context after the access probe, before edits.
+        $fresh = Get-AMRRunnerProfile (Read-AMRJson ([IO.Path]::GetFullPath($RunnerConfig))) $phase
+        foreach ($key in @('candidateId','model','effort','contextSha256','policySha256','inventorySha256')) {
+            Assert-AMRCondition ($fresh.selection[$key] -ceq $profileResult.selection[$key]) 'Routing changed after preflight; explicit reconciliation required.'
+        }
+        $values.prompt += "`nWrite the existing structured phase-result contract to: $outputFile"
+    }
     $timestamp = [DateTime]::UtcNow.ToString('o')
     $phase.status = 'Running'
     $phase.runnerProfile = $profileName
@@ -489,7 +522,8 @@ try {
     $stateData.updatedAt = $timestamp
     Write-AMRJsonAtomic $statePath $stateData
 
-    $execution = Invoke-AMRCommand $runnerProfileData $values $Worktree
+    if ($dynamic) { $execution = Invoke-MRBoundedProcess $runnerProfileData $values $Worktree -TimeoutSeconds $runnerProfileData.timeoutSeconds }
+    else { $execution = Invoke-AMRCommand $runnerProfileData $values $Worktree }
     if ([int] $execution.exitCode -ne 0) {
         $reason = "Phase '$PhaseId' failed with exit code $($execution.exitCode)."
         Set-AMRBlockedState $stateData $phase $reason "ModelRoutingPhase:$PhaseId"
@@ -498,6 +532,11 @@ try {
         throw $reason
     }
 
+    if ($dynamic) {
+        $receipt = Get-MRNativeReceipt -Output @($execution.output) -Selection $profileResult.selection
+        Test-MRExecutionIdentity $receipt $profileResult.selection
+        $phase.routingExecutionReceipt = $receipt
+    }
     if (@($execution.output).Count -gt 0) {
         @($execution.output) | Set-Content -LiteralPath $logFile -Encoding utf8NoBOM
     }
