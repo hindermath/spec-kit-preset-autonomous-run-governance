@@ -15,6 +15,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Bash routing entrypoint (no inference)
         if: runner.os != 'Windows'
         shell: bash
@@ -28,3 +30,7 @@ jobs:
           pwsh -NoProfile -File tests/test-autonomous-evidence-integrity.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           git diff --exit-code
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git rev-parse HEAD
+          Get-FileHash scripts/invoke-autonomous-model-phase.ps1 -Algorithm SHA256
+          if (@(git status --porcelain --untracked-files=all).Count -ne 0) { throw 'Offline tests changed the repository.' }
