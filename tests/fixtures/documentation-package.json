@@ -1,0 +1,12 @@
+{
+  "id": "autonomous-run-governance",
+  "version": "0.4.6",
+  "priority": 70,
+  "readers": [
+    "docs/user-guide.md",
+    "docs/user-guide.EN.md",
+    "docs/documentation-closeout.md"
+  ],
+  "sourceBaseCommit": "5682ae444f7c2eceb0ab75794a56c7e34040611a",
+  "preserveHistoricalEvidence": true
+}
