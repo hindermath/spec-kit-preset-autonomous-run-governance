@@ -1,16 +1,16 @@
 # Autonomous Run Governance
 
-Patch **0.4.5** liefert die verbesserte zweisprachige Einstiegs- und
+Patch **0.4.6** liefert die verbesserte zweisprachige Einstiegs- und
 Kompositionsdokumentation. Verhalten und Berechtigungsgrenzen bleiben erhalten.
-[Release-Nachweis / Release record](docs/release-0.4.5-validation.md).
+[Release-Nachweis / Release record](docs/release-0.4.6-validation.md).
 
-*Patch 0.4.5 packages the improved bilingual getting-started and composition
+*Patch 0.4.6 packages the improved bilingual getting-started and composition
 guide. Behavior and authority boundaries remain unchanged.*
 
 Permission-bounded, evidence-first governance for one explicitly delegated
 autonomous Spec Kit run.
 
-Version `0.4.5` | Priority `70` | Spec Kit `>=0.8.3`
+Version `0.4.6` | Priority `70` | Spec Kit `>=0.8.3`
 
 Version 0.4.4 prueft im Staged-Modus Pfade, regulaere Dateitypen und Bytes direkt
 im Git-Index. Umbenennungen werden als geloeschter Quellpfad plus hinzugefuegter
@@ -159,7 +159,7 @@ have succeeded.
 1. Preset installieren:
 
    ```bash
-   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.5.zip --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.6.zip --priority 70
    ```
 
 2. Installation pruefen:
@@ -232,7 +232,7 @@ bypass, secret, or provider-administration authority.
 1. Install the preset:
 
    ```bash
-   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.5.zip --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.6.zip --priority 70
    ```
 
 2. Verify the installation:
