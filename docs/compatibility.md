@@ -1,15 +1,19 @@
 # Versionierung und Kompatibilitaet / Versioning and Compatibility
 
+<!-- current-package: 0.4.6 -->
+
+[Deutsch: Leserpfad](user-guide.md) · [English: reader path](user-guide.EN.md)
+
 [Handbuch / Manual](README.md)
 
 ## Deutsch
 
 ### Drei getrennte Versionen
 
-| Ebene | Aktueller Wert | Bedeutung |
+| Ebene | Prüfstand 2026-10-23 | Bedeutung |
 |---|---|---|
-| Preset-Release | `v0.4.4` | Veroeffentlichtes Paket und ZIP |
-| Quellkandidat | `N/A` | Kein neuer unveroeffentlichter Kandidat |
+| Bei Prüfungsbeginn veröffentlicht | `v0.4.5` | Historischer Release-Snapshot; aktuellen Stand auf der Release-Seite prüfen |
+| Quellkandidat | `v0.4.6` | Aktueller Dokumentationskandidat, keine Veröffentlichungsbehauptung |
 | `preset.yml`-Schema | `schema_version: "1.0"` | Spec-Kit-Presetmanifest |
 | Run-State-Vertrag | `schemaVersion: "1.1"` | Autonomer Lifecycle und Closeout |
 
@@ -87,17 +91,20 @@ den No-Delta-Befund.
 ### Zusammenspiel mit Preset 8
 
 `parallel-autonomous-run-governance` benoetigt in jedem realen
-Worker-Repository mindestens Preset 7 `v0.2.2`. Die gemeinsam getestete
-aktuelle Kombination ist Preset 7 `v0.4.4` mit Preset 8 `v0.2.6`.
+Worker-Repository mindestens Preset 7 `v0.2.2`. Der bisher dokumentierte
+historische Prüfstand nennt Preset 7 `v0.4.4` mit Preset 8 `v0.2.6`.
+Die neue Dokumentations-Zielkombination ist Autonomous `v0.4.6` mit Parallel
+`v0.2.8`. Das ist kein behaupteter neuer Live-Kampagnentest; tatsächliche
+Fixture-/Plattformnachweise stehen getrennt im PR.
 
 ## English
 
 ### Three separate versions
 
-| Layer | Current value | Meaning |
+| Layer | Review snapshot 2026-10-23 | Meaning |
 |---|---|---|
-| Preset release | `v0.4.4` | Published package and ZIP |
-| Source candidate | `N/A` | No newer unpublished candidate |
+| Published at review start | `v0.4.5` | Historical release snapshot; check the release page for current state |
+| Source candidate | `v0.4.6` | Current documentation candidate, not a publication claim |
 | `preset.yml` schema | `schema_version: "1.0"` | Spec Kit preset manifest |
 | Run-state contract | `schemaVersion: "1.1"` | Autonomous lifecycle and closeout |
 
@@ -163,5 +170,7 @@ result.
 ### Relationship with Preset 8
 
 `parallel-autonomous-run-governance` requires at least Preset 7 `v0.2.2` in
-every real worker repository. The currently tested pair is Preset 7 `v0.4.4`
-with Preset 8 `v0.2.6`.
+every real worker repository. The previously documented historical pair is
+Preset 7 `v0.4.4` with Preset 8 `v0.2.6`. The new documentation target is
+Autonomous `v0.4.6` with Parallel `v0.2.8`, not a newly claimed live campaign.
+Actual fixture/platform evidence is recorded separately in the PR.

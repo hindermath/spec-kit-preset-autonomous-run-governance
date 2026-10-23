@@ -147,3 +147,15 @@ preference is retrospective input, not authority for retroactive task churn.
 Record the compared versions and delta disposition in evidence. Material
 conflict, unknown dirty changes, or ambiguous feature identity sets `Blocked`
 and stops.
+
+## Nutzungshilfe / Reader help
+
+DE: Genau einen ausdrücklich beauftragten Feature-Lauf kontrolliert durch seine Phasen führen. Diese Vorlage ist ein auszufüllender Starter, kein bestandener Nachweis. Vorhandene passende Evidence weiterverwenden.
+Die bestehenden technischen Feldnamen und Statuswerte nicht übersetzen oder
+nur zum Bestehen eines Tests verändern. Einführung, Begriffe, Beispiel,
+Ergebnis und Fehlerhilfe stehen im [deutschen Leserpfad](https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/blob/main/docs/user-guide.md).
+
+EN: Guide one explicitly authorized feature run through controlled phases. This template is a starter to complete, not passed evidence. Reuse suitable existing evidence.
+Keep technical field names and states unchanged; never alter them just to pass.
+See the [English reader path](https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/blob/main/docs/user-guide.EN.md)
+for introduction, terms, example, result and troubleshooting.
