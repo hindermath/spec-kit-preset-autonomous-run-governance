@@ -2,9 +2,13 @@
 
 <!-- current-package: 0.4.6 -->
 
+[Release-Abschluss und Verbesserungsprofil / Publication closeout and improvement profile](release-0.4.6-validation.md).
+
+The later main-branch documentation follow-up does not change the existing tag archive.
+
 [Deutsch](user-guide.md) · [Preset reference](../README.md)
 
-Source candidate **v0.4.6**. Verify the actually published version on the [release page](https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/releases). This guide grants no merge, release or project authority.
+Published package **v0.4.6**. Verify the actually published version on the [release page](https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/releases). This guide grants no merge, release or project authority.
 
 Contents: [Start](#start) · [Example](#example) · [Terms](#terms) · [Routing](#routing) · [Troubleshooting](#help) · [References](#references)
 

@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "presetId": "autonomous-run-governance",
+  "version": "0.4.6",
+  "repository": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance",
+  "candidate_status": "HistoricalCandidate",
+  "release_status": "Published",
+  "tag": "v0.4.6",
+  "tagCommit": "130a69dc483fa27e3835640c87feb40b446bf4cc",
+  "verifiedAt": "2026-10-24T10:55:46.9905630+00:00",
+  "release": {
+    "id": 422326305,
+    "url": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/releases/tag/v0.4.6",
+    "publishedAt": "2026-10-23T21:29:32.0000000+00:00",
+    "preRelease": false,
+    "draft": false
+  },
+  "archive": {
+    "sha256": "db7450ff1e1fcf26aae4a98fac3504464a2fa1e9bf7db23ffdbe1b89c5ec8b04",
+    "url": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.6.zip",
+    "status": "Verified",
+    "verifiedAt": "2026-10-24T10:55:46.9905630+00:00",
+    "bytes": 134033
+  },
+  "evidenceComplete": true,
+  "historicalDocumentSha256": "4b901a8ecfa5a54d3f114970210f8124e27c75ce1124e13544389299881a40c6",
+  "comparison": {
+    "fromTag": "v0.4.4",
+    "toTag": "v0.4.6",
+    "toCommit": "130a69dc483fa27e3835640c87feb40b446bf4cc",
+    "url": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/compare/f718c00d405260706709be2fd64f59aadfac9312...130a69dc483fa27e3835640c87feb40b446bf4cc",
+    "fromCommit": "f718c00d405260706709be2fd64f59aadfac9312"
+  },
+  "improvements": [
+    {
+      "introducedIn": "v0.4.5",
+      "type": "Regression",
+      "sourcePaths": [
+        "tests/test-model-routing.ps1",
+        "README.md"
+      ],
+      "problem": {
+        "de": "Routing-Tests durften nicht von privaten Profilen oder echten Modellzugängen abhängen.",
+        "en": "Routing tests must not depend on private profiles or real model access."
+      },
+      "description": {
+        "de": "Isolierte Routing-Fixtures und verständlichere Bedienhinweise wurden ergänzt; in 0.4.6 wurden Erstlauf und Kompatibilität konsistent gemacht.",
+        "en": "Isolated routing fixtures and clearer usage guidance were added; 0.4.6 aligned first-run and compatibility guidance."
+      },
+      "benefit": {
+        "de": "Tests sind besser reproduzierbar. Runner-Verhalten und Ausführungsautorität bleiben im Vergleich unverändert.",
+        "en": "Tests are more reproducible. Runner behavior and execution authority remain unchanged in this comparison."
+      },
+      "commit": "8026572a37f967d2603f8a942d5bfd1ccbf2dca2"
+    },
+    {
+      "introducedIn": "v0.4.6",
+      "type": "DocumentationUsability",
+      "sourcePaths": [
+        "docs/user-guide.md",
+        "docs/user-guide.EN.md",
+        "tests/test-documentation-closeout.ps1"
+      ],
+      "problem": {
+        "de": "Ein kurzer README-Einstieg erklärte die vollständigen Leserpfade und Grenzen noch nicht gleichwertig.",
+        "en": "The short README entry did not yet explain the complete reader journey and limits equally."
+      },
+      "description": {
+        "de": "Deutsch-/Englisch-Leitfäden, Command-/Vorlagen-Erklärungen und Dokumentationsregressionen wurden ergänzt. Frühere Einstiegsverbesserungen und der letzte Patch werden getrennt ausgewiesen.",
+        "en": "German/English guides, command/template explanations and documentation regressions were added. Earlier entry-point improvements and the final patch are reported separately."
+      },
+      "benefit": {
+        "de": "Lernende finden Voraussetzungen, Beispiel, Ergebnis und Fehlerhilfe. Neue Textklarheit ist keine neue Runtime-Funktion oder menschliche Abnahme.",
+        "en": "Learners can find prerequisites, an example, its result and troubleshooting. Clearer text is not a new runtime feature or human acceptance."
+      },
+      "commit": "130a69dc483fa27e3835640c87feb40b446bf4cc"
+    }
+  ],
+  "historicalValidation": {
+    "checks": [
+      {
+        "name": "Documentation (windows-2022)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/actions/runs/39992118147/job/120546204472",
+        "startedAt": "2026-10-23T17:04:56Z",
+        "completedAt": "2026-10-23T17:05:08Z",
+        "head": "e65ecf42d36b24082d96d5b1d939c44e2e0f5eab"
+      },
+      {
+        "name": "Documentation (macos-15)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/actions/runs/39992118147/job/120546204284",
+        "startedAt": "2026-10-23T17:07:24Z",
+        "completedAt": "2026-10-23T17:07:33Z",
+        "head": "e65ecf42d36b24082d96d5b1d939c44e2e0f5eab"
+      },
+      {
+        "name": "Documentation (ubuntu-24.04)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/actions/runs/39992118147/job/120546204214",
+        "startedAt": "2026-10-23T17:04:56Z",
+        "completedAt": "2026-10-23T17:05:01Z",
+        "head": "e65ecf42d36b24082d96d5b1d939c44e2e0f5eab"
+      },
+      {
+        "name": "Reader paths (windows-2022)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/actions/runs/39992118120/job/120546203859",
+        "startedAt": "2026-10-23T17:04:55Z",
+        "completedAt": "2026-10-23T17:05:05Z",
+        "head": "e65ecf42d36b24082d96d5b1d939c44e2e0f5eab"
+      },
+      {
+        "name": "Reader paths (macos-15)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/actions/runs/39992118120/job/120546203814",
+        "startedAt": "2026-10-23T17:07:41Z",
+        "completedAt": "2026-10-23T17:07:52Z",
+        "head": "e65ecf42d36b24082d96d5b1d939c44e2e0f5eab"
+      },
+      {
+        "name": "Reader paths (ubuntu-24.04)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/actions/runs/39992118120/job/120546203646",
+        "startedAt": "2026-10-23T17:04:56Z",
+        "completedAt": "2026-10-23T17:05:04Z",
+        "head": "e65ecf42d36b24082d96d5b1d939c44e2e0f5eab"
+      }
+    ],
+    "pr": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/pull/25",
+    "mergeCommit": "130a69dc483fa27e3835640c87feb40b446bf4cc",
+    "reviewedHead": "e65ecf42d36b24082d96d5b1d939c44e2e0f5eab"
+  },
+  "newDocumentationReview": "Pending exact-head human review; no merge or publication authority.",
+  "boundary": "Documentation source only; no new package, runtime behavior, approval, installation, catalog update or cancelled dynamic routing."
+}
