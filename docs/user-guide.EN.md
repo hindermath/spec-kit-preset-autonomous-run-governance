@@ -1,14 +1,16 @@
 # User guide: autonomous-run-governance
 
-<!-- current-package: 0.4.6 -->
+<!-- current-package: 0.4.7 -->
+
+Package identity: **v0.4.7**. [Preparation and publication boundary](release-0.4.7-validation.md). The release page, not this preparation snapshot, proves publication and the external archive hash. Earlier version records below remain historical.
 
 [Release-Abschluss und Verbesserungsprofil / Publication closeout and improvement profile](release-0.4.6-validation.md).
 
-The later main-branch documentation follow-up does not change the existing tag archive.
+The linked base-package evidence remains historical; this package includes the source corrections as a new version.
 
 [Deutsch](user-guide.md) · [Preset reference](../README.md)
 
-Published package **v0.4.6**. Verify the actually published version on the [release page](https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/releases). This guide grants no merge, release or project authority.
+Historical base package **v0.4.6**. Verify the actually published version on the [release page](https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/releases). This guide grants no merge, release or project authority.
 
 Contents: [Start](#start) · [Example](#example) · [Terms](#terms) · [Routing](#routing) · [Troubleshooting](#help) · [References](#references)
 
