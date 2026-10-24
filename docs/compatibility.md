@@ -2,6 +2,10 @@
 
 <!-- current-package: 0.4.6 -->
 
+DE: Paket 0.4.6 ist inzwischen regulär veröffentlicht; [aktueller Release-Abschluss](release-0.4.6-validation.md). Die unten datierten Tabellen bewahren den historischen Prüfstand vor Veröffentlichung. Mindestversion, Beispielkombination und tatsächlich geprüfte Kombination bleiben getrennt; dieser Nachlauf behauptet keinen neuen Kombinationstest.
+
+EN: Package 0.4.6 is now a regular published release; see the linked closeout. The dated tables below preserve the historical pre-publication assessment. Minimum, example and actually tested combinations stay distinct; this follow-up claims no new combination test.
+
 [Deutsch: Leserpfad](user-guide.md) · [English: reader path](user-guide.EN.md)
 
 [Handbuch / Manual](README.md)
