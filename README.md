@@ -1,18 +1,22 @@
 # Autonomous Run Governance
 
-<!-- current-package: 0.4.6 -->
+<!-- current-package: 0.4.7 -->
+
+Paketkennung: **v0.4.7**. [Vorbereitung und Veröffentlichungsgrenze](docs/release-0.4.7-validation.md). Die Release-Seite und der externe Archivnachweis belegen die Veröffentlichung, nicht dieser Vorbereitungsstand. Frühere Versionsnachweise unten bleiben historisch.
+
+<span lang="en">Package identity: v0.4.7. The release page and external archive evidence prove publication, not this preparation snapshot. Earlier version records below remain historical.</span>
 
 [Release-Abschluss und Verbesserungsprofil / Publication closeout and improvement profile](docs/release-0.4.6-validation.md).
 
-Der spätere Dokumentationsnachlauf auf main ändert das bestehende Tag-ZIP nicht.
+Der unten verlinkte Basispaket-Nachweis bleibt historisch; dieses Paket nimmt die Quellenkorrekturen als neue Version auf.
 
-<span lang="en">The later main-branch documentation follow-up does not change the existing tag archive.</span>
+<span lang="en">The linked base-package evidence remains historical; this package includes the source corrections as a new version.</span>
 
 **Leserpfad / Reader path:** [Deutsch: Einstieg, Begriffe und Fehlerhilfe](docs/user-guide.md) · [English: start, terms and troubleshooting](docs/user-guide.EN.md).
 
-Veröffentlichtes Paket **v0.4.6**. Der [Release-Stand](https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/releases) wird getrennt geprüft; ein Commit auf main ist noch keine Veröffentlichung oder Installation.
+Historisches Basispaket **v0.4.6**. Der [Release-Stand](https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/releases) wird getrennt geprüft; ein Commit auf main ist noch keine Veröffentlichung oder Installation.
 
-*Published package v0.4.6. The release page records actual publication separately; a main-branch commit is not publication or installation.*
+*Historical base package v0.4.6. The release page records actual publication separately; a main-branch commit is not publication or installation.*
 
 
 Patch **0.4.6** liefert die verbesserte zweisprachige Einstiegs- und
@@ -25,7 +29,7 @@ guide. Behavior and authority boundaries remain unchanged.*
 Permission-bounded, evidence-first governance for one explicitly delegated
 autonomous Spec Kit run.
 
-Version `0.4.6` | Priority `70` | Spec Kit `>=0.8.3`
+Version `0.4.7` | Priority `70` | Spec Kit `>=0.8.3`
 
 Version 0.4.4 prueft im Staged-Modus Pfade, regulaere Dateitypen und Bytes direkt
 im Git-Index. Umbenennungen werden als geloeschter Quellpfad plus hinzugefuegter
@@ -174,7 +178,7 @@ have succeeded.
 1. Preset installieren:
 
    ```bash
-   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.6.zip --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.7.zip --priority 70
    ```
 
 2. Installation pruefen:
@@ -247,7 +251,7 @@ bypass, secret, or provider-administration authority.
 1. Install the preset:
 
    ```bash
-   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.6.zip --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.7.zip --priority 70
    ```
 
 2. Verify the installation:

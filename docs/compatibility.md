@@ -1,6 +1,6 @@
 # Versionierung und Kompatibilitaet / Versioning and Compatibility
 
-<!-- current-package: 0.4.6 -->
+<!-- current-package: 0.4.7 -->
 
 DE: Paket 0.4.6 ist inzwischen regulär veröffentlicht; [aktueller Release-Abschluss](release-0.4.6-validation.md). Die unten datierten Tabellen bewahren den historischen Prüfstand vor Veröffentlichung. Mindestversion, Beispielkombination und tatsächlich geprüfte Kombination bleiben getrennt; dieser Nachlauf behauptet keinen neuen Kombinationstest.
 
