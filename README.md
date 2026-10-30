@@ -1,10 +1,10 @@
 # Autonomous Run Governance
 
-<!-- current-package: 0.4.7 -->
+<!-- current-package: 0.4.8 -->
 
-Paketkennung: **v0.4.7**. [Vorbereitung und Veröffentlichungsgrenze](docs/release-0.4.7-validation.md). Die Release-Seite und der externe Archivnachweis belegen die Veröffentlichung, nicht dieser Vorbereitungsstand. Frühere Versionsnachweise unten bleiben historisch.
+Paketkennung: **v0.4.8**. [Vorbereitung und Veröffentlichungsgrenze](docs/release-0.4.8-validation.md). Die Release-Seite und der externe Archivnachweis belegen die Veröffentlichung, nicht dieser Vorbereitungsstand. Frühere Versionsnachweise unten bleiben historisch.
 
-<span lang="en">Package identity: v0.4.7. The release page and external archive evidence prove publication, not this preparation snapshot. Earlier version records below remain historical.</span>
+<span lang="en">Package identity: v0.4.8. The release page and external archive evidence prove publication, not this preparation snapshot. Earlier version records below remain historical.</span>
 
 [Release-Abschluss und Verbesserungsprofil / Publication closeout and improvement profile](docs/release-0.4.6-validation.md).
 
@@ -29,7 +29,18 @@ guide. Behavior and authority boundaries remain unchanged.*
 Permission-bounded, evidence-first governance for one explicitly delegated
 autonomous Spec Kit run.
 
-Version `0.4.7` | Priority `70` | Spec Kit `>=0.8.3`
+Version `0.4.8` | Priority `70` | Spec Kit `>=0.8.3`
+
+Version 0.4.8 erhaelt historische Leerzeilen am Dateiende nur mit derselben
+ausdruecklichen Pfad-/Rohhashbindung wie historische Leerzeichen. Im Staged-
+Modus gelten weiterhin die exakten Indexbytes und nur neu hinzugefuegte
+Dateien. Andere EOF-Befunde, Hashdrift, Konfliktmarker und unnoetige Ausnahmen
+bleiben blockierend. Keine Archivdatei wird umgeschrieben.
+
+*Version 0.4.8 preserves historical blank-at-EOF only under the same explicit
+path/raw-hash approval as trailing spaces. Staged mode still requires exact
+index bytes and newly added files. Other EOF errors, hash drift, conflict markers
+and unnecessary exemptions remain blocking. No archive file is rewritten.*
 
 Version 0.4.4 prueft im Staged-Modus Pfade, regulaere Dateitypen und Bytes direkt
 im Git-Index. Umbenennungen werden als geloeschter Quellpfad plus hinzugefuegter
@@ -178,7 +189,7 @@ have succeeded.
 1. Preset installieren:
 
    ```bash
-   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.7.zip --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.8.zip --priority 70
    ```
 
 2. Installation pruefen:
@@ -251,7 +262,7 @@ bypass, secret, or provider-administration authority.
 1. Install the preset:
 
    ```bash
-   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.7.zip --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.8.zip --priority 70
    ```
 
 2. Verify the installation:

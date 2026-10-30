@@ -1,6 +1,6 @@
 # Versionierung und Kompatibilitaet / Versioning and Compatibility
 
-<!-- current-package: 0.4.7 -->
+<!-- current-package: 0.4.8 -->
 
 DE: Dokumentations-Zielpaar: Autonomous 0.4.7 und Parallel 0.2.9; Mindestversionen und historische Feldtests unten bleiben unverändert. Die neue Paketvorbereitung steht im versionsgebundenen Nachweis.
 

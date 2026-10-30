@@ -36,7 +36,7 @@ Validate the exact staged candidate. Historical allowances are restricted to
 newly added files and bind their bytes in the Git index.
 .TP
 .B --allow-historical-whitespace PATH=RAW_SHA256
-Permit trailing whitespace only for the explicitly approved, immutable
+Permit trailing whitespace or blank lines at EOF only for the explicitly approved, immutable
 historical file at the exact repository-relative path and raw SHA-256. The file
 must also be named by
 .BR --intended .

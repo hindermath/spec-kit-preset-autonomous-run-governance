@@ -19,11 +19,13 @@ Repository-relative delivery paths. Without -Staged they name untracked files;
 with -Staged the list must exactly match the physical index candidate, including
 both paths of a rename.
 .PARAMETER AllowHistoricalWhitespace
-Explizit genehmigte historische Datei als repositoryrelativer Pfad plus
+Explizit genehmigte historische Datei (nachgestellte Leerzeichen oder
+Leerzeilen am Dateiende) als repositoryrelativer Pfad plus
 unveraenderter Roh-SHA-256 (`PATH=SHA256`). Nur fuer zugleich mit `-Intended`
 benannte Dateien; wiederholbar. Explicitly approved historical file as a
 repository-relative path plus unchanged raw SHA-256 (`PATH=SHA256`). Only for
-files also named with `-Intended`; repeatable.
+files also named with `-Intended`; repeatable. Supports trailing spaces and
+blank-at-EOF while preserving exact historical bytes.
 .PARAMETER Staged
 Prueft den exakten, mit -Intended benannten Indexkandidaten. Historische
 Whitespace-Ausnahmen gelten nur fuer neu hinzugefuegte Dateien und werden an
