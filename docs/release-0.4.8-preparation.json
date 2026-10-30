@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "presetId": "autonomous-run-governance",
+  "packageVersion": "0.4.8",
+  "historicalPublicationVersion": "0.4.6",
+  "candidate_status": "Prepared",
+  "release_status": "NotEstablishedAtPreparation",
+  "preparedAt": "2026-10-30T12:00:00Z",
+  "sourceCommit": "f5e5ae162b2309f35b91bece1a303ea4091ab364",
+  "runtimeChanged": true,
+  "runtimeChangeApproved": true,
+  "authorizationReference": "User explicitly authorizes the canonical historical EOF validator correction, regression tests, byte-preserving consumer integration and MergeAndSync with admin bypass; no technical gate failures may be relabeled as passes.",
+  "generatorSchemaChanged": false,
+  "externalPublicationEvidence": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/releases/tag/v0.4.8"
+}

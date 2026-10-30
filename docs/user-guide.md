@@ -1,6 +1,6 @@
 # Nutzungsleitfaden: autonomous-run-governance
 
-<!-- current-package: 0.4.7 -->
+<!-- current-package: 0.4.8 -->
 
 Paketkennung: **v0.4.7**. [Vorbereitung und Veröffentlichungsgrenze](release-0.4.7-validation.md). Die Release-Seite und der externe Archivnachweis belegen die Veröffentlichung, nicht dieser Vorbereitungsstand. Frühere Versionsnachweise unten bleiben historisch.
 

@@ -110,7 +110,8 @@ def validate_text_bytes(raw: bytes, label: str, allowed_raw_hash: str = "") -> b
         text = raw.decode("utf-8-sig", errors="strict")
     except UnicodeDecodeError as exc:
         fail("AEI006", f"{label} is neither UTF-8 text nor detected binary: {exc}")
-    for number, line in enumerate(text.replace("\r\n", "\n").replace("\r", "\n").split("\n"), 1):
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    for number, line in enumerate(normalized.split("\n"), 1):
         if line.endswith((" ", "\t")):
             if allowed_raw_hash:
                 actual_raw_hash = hashlib.sha256(raw).hexdigest()
@@ -121,6 +122,14 @@ def validate_text_bytes(raw: bytes, label: str, allowed_raw_hash: str = "") -> b
                     )
                 return True
             fail("AEI007", f"trailing whitespace: {label}:{number}")
+    # A byte-preserved historical snapshot may contain blank-at-EOF without
+    # trailing spaces. Consume the same exact raw-hash allowance for that case;
+    # otherwise Git's staged check must still reject it. No active-file or
+    # path-wide exemption is introduced.
+    if allowed_raw_hash and normalized.endswith("\n\n"):
+        if hashlib.sha256(raw).hexdigest() != allowed_raw_hash:
+            fail("AEI009", f"historical whitespace allowance hash mismatch: {label}")
+        return True
     return False
 
 
@@ -189,7 +198,8 @@ def validate_staged_diff_check(
             (
                 path
                 for path in whitespace_allowances
-                if line.startswith(f"{path}:") and line.endswith(": trailing whitespace.")
+                if line.startswith(f"{path}:")
+                and line.endswith((": trailing whitespace.", ": new blank line at EOF."))
             ),
             None,
         )

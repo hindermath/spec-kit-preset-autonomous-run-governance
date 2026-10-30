@@ -53,6 +53,7 @@ try {
     & git -C $Repo init --quiet
     & git -C $Repo config user.name Fixture
     & git -C $Repo config user.email fixture@example.invalid
+    & git -C $Repo config core.autocrlf false
     [IO.File]::WriteAllText((Join-Path $Repo 'tracked.txt'), "baseline`n", [Text.UTF8Encoding]::new($false))
     & git -C $Repo add tracked.txt
     & git -C $Repo commit --quiet -m baseline
@@ -112,6 +113,42 @@ try {
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended tracked.txt } 2 'Other staged whitespace rejection')
     [IO.File]::WriteAllText((Join-Path $Repo 'tracked.txt'), "changed`n", [Text.UTF8Encoding]::new($false))
     & git -C $Repo reset --quiet
+
+    # Preserve historical EOF bytes, but require an exact path/raw index hash.
+    $EofPath = Join-Path $Repo 'historical-eof.txt'
+    foreach ($EofText in @("history`n`n", "history`r`n`r`n")) {
+        [IO.File]::WriteAllText($EofPath, $EofText, [Text.UTF8Encoding]::new($false))
+        $EofHash = Get-RawHash $EofPath
+        $EofAllowance = "historical-eof.txt=${EofHash}"
+        [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended historical-eof.txt -AllowHistoricalWhitespace $EofAllowance } 0 'PowerShell historical EOF worktree pass')
+        & git -C $Repo add historical-eof.txt
+        $EofBefore = (& git -C $Repo status --porcelain=v1 --untracked-files=all --ignored) -join "`n"
+        [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended historical-eof.txt -AllowHistoricalWhitespace $EofAllowance } 0 'PowerShell exact historical EOF staged pass')
+        [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended historical-eof.txt } 2 'PowerShell unapproved EOF rejection')
+        [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended historical-eof.txt -AllowHistoricalWhitespace "historical-eof.txt=$('0' * 64)" } 2 'PowerShell EOF hash mismatch rejection')
+        if ($HasBash) {
+            [void](Invoke-Expected { & bash $DeliverySh --repo $Repo --staged --intended historical-eof.txt --allow-historical-whitespace $EofAllowance } 0 'Bash exact historical EOF staged pass')
+            [void](Invoke-Expected { & bash $DeliverySh --repo $Repo --staged --intended historical-eof.txt } 2 'Bash unapproved EOF rejection')
+            [void](Invoke-Expected { & bash $DeliverySh --repo $Repo --staged --intended historical-eof.txt --allow-historical-whitespace "historical-eof.txt=$('0' * 64)" } 2 'Bash EOF hash mismatch rejection')
+        }
+        $EofAfter = (& git -C $Repo status --porcelain=v1 --untracked-files=all --ignored) -join "`n"
+        Assert-EvidenceTest ($EofBefore -ceq $EofAfter) 'EOF checks changed index/worktree'
+        [IO.File]::WriteAllText($EofPath, "unreviewed`n`n", [Text.UTF8Encoding]::new($false))
+        [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended historical-eof.txt -AllowHistoricalWhitespace $EofAllowance } 0 'EOF staged proof ignores changed worktree bytes')
+        & git -C $Repo add historical-eof.txt
+        [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Staged -Intended historical-eof.txt -AllowHistoricalWhitespace $EofAllowance } 2 'EOF changed index bytes rejected')
+        & git -C $Repo reset --quiet
+    }
+    [IO.File]::WriteAllText($EofPath, "history`n`n", [Text.UTF8Encoding]::new($false))
+    $EofAllowance = 'historical-eof.txt=' + (Get-RawHash $EofPath)
+    [IO.File]::WriteAllText((Join-Path $Repo 'other-eof.txt'), "other`n`n", [Text.UTF8Encoding]::new($false))
+    & git -C $Repo add historical-eof.txt other-eof.txt
+    if ($HasBash) {
+        [void](Invoke-Expected { & bash $DeliverySh --repo $Repo --staged --intended historical-eof.txt --intended other-eof.txt --allow-historical-whitespace $EofAllowance } 2 'Unrelated EOF not hidden by historical allowance')
+    }
+    & git -C $Repo reset --quiet
+    [IO.File]::WriteAllText($EofPath, "history`n", [Text.UTF8Encoding]::new($false))
+    [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended historical-eof.txt -AllowHistoricalWhitespace $EofAllowance } 2 'EOF allowance not needed rejection')
 
     [IO.File]::WriteAllText((Join-Path $Repo 'conflict.txt'), "<<<<<<< HEAD`nvalue`n=======`nother`n>>>>>>> branch`n", [Text.UTF8Encoding]::new($false))
     & git -C $Repo add conflict.txt

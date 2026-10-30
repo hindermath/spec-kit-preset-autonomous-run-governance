@@ -1,6 +1,6 @@
 # User guide: autonomous-run-governance
 
-<!-- current-package: 0.4.7 -->
+<!-- current-package: 0.4.8 -->
 
 Package identity: **v0.4.7**. [Preparation and publication boundary](release-0.4.7-validation.md). The release page, not this preparation snapshot, proves publication and the external archive hash. Earlier version records below remain historical.
 

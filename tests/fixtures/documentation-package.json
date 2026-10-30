@@ -1,6 +1,6 @@
 {
   "id": "autonomous-run-governance",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "priority": 70,
   "readers": [
     "docs/user-guide.md",

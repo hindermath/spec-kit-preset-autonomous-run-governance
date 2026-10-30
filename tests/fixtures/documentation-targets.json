@@ -46,7 +46,7 @@
       "priority": 66
     },
     "autonomous-run-governance": {
-      "version": "0.4.7",
+      "version": "0.4.8",
       "priority": 70
     },
     "parallel-autonomous-run-governance": {

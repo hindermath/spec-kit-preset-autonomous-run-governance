@@ -21,7 +21,7 @@ Vor dem ersten Lauf muessen folgende Bedingungen erfuellt sein:
 Veröffentlichter Tag:
 
 ```bash
-specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.7.zip --priority 70
+specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.8.zip --priority 70
 ```
 
 Lokaler Entwicklungsstand:
@@ -108,7 +108,7 @@ Before the first run:
 Published tag:
 
 ```bash
-specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.7.zip --priority 70
+specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.8.zip --priority 70
 ```
 
 Development checkout:

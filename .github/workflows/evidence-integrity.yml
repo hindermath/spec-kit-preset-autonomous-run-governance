@@ -1,0 +1,27 @@
+name: Evidence integrity
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  evidence:
+    name: Evidence integrity (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2022]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Cross-shell exact-index and historical EOF fixtures
+        shell: pwsh
+        run: |
+          pwsh -NoProfile -File tests/test-autonomous-evidence-integrity.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git diff --exit-code
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (@(git status --porcelain --untracked-files=all).Count) { throw 'Evidence tests changed checkout' }
