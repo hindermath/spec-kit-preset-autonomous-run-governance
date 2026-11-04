@@ -1,5 +1,7 @@
 # Autonomous Run Governance
 
+[Model-Routing-Ausfuehrung / Model-routing execution](docs/model-routing-execution.md)
+
 <!-- current-package: 0.4.8 -->
 
 Paketkennung: **v0.4.8**. [Vorbereitung und Veröffentlichungsgrenze](docs/release-0.4.8-validation.md). Die Release-Seite und der externe Archivnachweis belegen die Veröffentlichung, nicht dieser Vorbereitungsstand. Frühere Versionsnachweise unten bleiben historisch.

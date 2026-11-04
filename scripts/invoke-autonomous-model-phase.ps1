@@ -296,12 +296,17 @@ function Invoke-AMRCommand {
         [Parameter(Mandatory)][string] $WorkingDirectory
     )
 
-    $arguments = ConvertTo-AMRArguments @($CommandProfile.arguments) $Values
+    $arguments = if (Get-Command Expand-MRExecutionArguments -ErrorAction SilentlyContinue) {
+        Expand-MRExecutionArguments -ExecutionProfile $CommandProfile -Values $Values
+    } else { ConvertTo-AMRArguments @($CommandProfile.arguments) $Values }
+    $previousPwd = [Environment]::GetEnvironmentVariable('PWD')
     Push-Location -LiteralPath $WorkingDirectory
     try {
+        $env:PWD = $WorkingDirectory
         $output = @(& ([string] $CommandProfile.executable) @arguments 2>&1)
         $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
     } finally {
+        [Environment]::SetEnvironmentVariable('PWD',$previousPwd)
         Pop-Location
     }
     return [ordered]@{
@@ -374,6 +379,12 @@ if ([string]::IsNullOrWhiteSpace($Worktree)) {
 $Worktree = [IO.Path]::GetFullPath($Worktree)
 Assert-AMRCondition (Test-Path -LiteralPath $Worktree -PathType Container) "Worktree fehlt: $Worktree"
 
+$executionPolicy = Join-Path $RoutingRoot 'model-routing-governance/scripts/execution-policy.psm1'
+if (Test-Path -LiteralPath $executionPolicy -PathType Leaf) {
+    Import-Module $executionPolicy -Force
+    $Worktree = Resolve-MRExecutionPath $Worktree
+}
+
 $catalog = Get-AMRRoutingCatalog ([IO.Path]::GetFullPath($RoutingRoot))
 Assert-AMRPhaseContract $stateData $catalog
 
@@ -418,7 +429,7 @@ if (-not [string]::IsNullOrWhiteSpace($PromptFile)) {
     $Prompt = Get-Content -LiteralPath $PromptFile -Raw -Encoding utf8
 }
 $fullPrompt = "Execute /$($phase.command) for the current repository. Follow the accepted feature artifacts and autonomous run state."
-$fullPrompt += "`nWrite the machine-readable phase result to the exact output file from the runner profile. Use autonomous-phase-result-template.json and report Completed only when task and gate evidence is complete."
+$fullPrompt += "`nUse autonomous-phase-result-template.json and report Completed only when task and gate evidence is complete."
 if (-not [string]::IsNullOrWhiteSpace($Prompt)) {
     $fullPrompt += "`n`nPhase input:`n$Prompt"
 }
@@ -430,6 +441,11 @@ $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 [void](New-Item -ItemType Directory -Path $OutputDirectory -Force)
 $outputFile = Join-Path $OutputDirectory "$PhaseId.result.json"
 $logFile = Join-Path $OutputDirectory "$PhaseId.log.txt"
+if ('-HarnessArgumentsJson' -cin @($runnerProfileData.arguments)) {
+    $fullPrompt += "`nReturn the phase-result JSON object on standard output; the configured result adapter owns writing the runner result file."
+} else {
+    $fullPrompt += "`nWrite the machine-readable phase-result JSON object to this exact runner-owned path: $outputFile"
+}
 $values = @{
     worktree = $Worktree
     phaseId = $PhaseId
