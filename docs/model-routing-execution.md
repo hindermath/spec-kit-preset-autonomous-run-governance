@@ -31,3 +31,16 @@ pwsh -NoProfile -File tests/test-model-routing.ps1 -ModelRoutingSource /path/to/
 ```
 
 Reevaluate after changes to routing roles, CLI permissions or result transport.
+
+DE: Nach Aenderungen am normalen Phasenrunner beide Live-Stufen gekoppelt
+aus der Model-Routing-Quelle ausfuehren: zuerst Smoke, danach normale Integration.
+Der kanonische Einstieg ist `tests/live/invoke-model-routing-validation.ps1`
+mit `-ConfirmLiveRun -MaxRetries 3 -AutonomousRunnerSource <diese Quelle>`.
+Regeln und Verbesserungsbacklog: `docs/validation-basis.md` im Routing-Preset.
+Offline-Pruefungen bleiben CI-faehig; Providerlaeufe bleiben manuell.
+
+EN: After production-runner changes, run both live stages from routing source:
+smoke first, then normal integration. The canonical entry is the validation
+script above with explicit live confirmation, retries and this source path.
+The routing preset owns `docs/validation-basis.md`, repeat rules and improvement
+backlog. Offline tests remain CI-safe; provider runs remain manual.
