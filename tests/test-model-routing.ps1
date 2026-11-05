@@ -1,6 +1,6 @@
 #Requires -Version 7.0
 [CmdletBinding()]
-param()
+param([string] $ModelRoutingSource = '')
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -34,6 +34,11 @@ $statePath = Join-Path $featureDirectory 'autonomous-run-state.json'
 $runnerConfig = Join-Path $temporaryRoot 'runner-profiles.json'
 
 try {
+    if ($ModelRoutingSource) {
+        $executionDirectory = Join-Path $allPresetRoot 'model-routing-governance/scripts'
+        [void](New-Item -ItemType Directory -Path $executionDirectory -Force)
+        Copy-Item (Join-Path $ModelRoutingSource 'scripts/execution-policy.psm1') $executionDirectory
+    }
     # Test the shipped contract without depending on unrelated sibling checkouts.
     # A weaker plan binding also proves that composition retains the strongest role.
     $autonomousCatalogRoot = Join-Path $allPresetRoot 'autonomous-run-governance'
