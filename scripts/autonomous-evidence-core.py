@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -139,8 +140,17 @@ def validate_text_whitespace(
     return validate_text_bytes(path.read_bytes(), label, allowed_raw_hash)
 
 
+def git_nul_fields(repo: Path, *arguments: str) -> list[str]:
+    # Git quotes names in line-oriented output; text mode also translates CR.
+    # Keep the byte/NUL boundary until each filesystem name is decoded.
+    raw = run_git_bytes(repo, *arguments)
+    if raw and not raw.endswith(b"\0"):
+        fail("AEI004", "incomplete NUL-delimited Git inventory")
+    return [os.fsdecode(field) for field in raw.split(b"\0")[:-1]]
+
+
 def staged_name_status(repo: Path) -> dict[str, str]:
-    fields = run_git(
+    fields = git_nul_fields(
         repo,
         "diff",
         "--cached",
@@ -149,7 +159,7 @@ def staged_name_status(repo: Path) -> dict[str, str]:
         "-z",
         "HEAD",
         "--",
-    ).split("\0")
+    )
     result: dict[str, str] = {}
     index = 0
     while index < len(fields) and fields[index]:
@@ -261,14 +271,8 @@ def delivery_command(args: argparse.Namespace) -> str:
             )
         whitespace_allowances[normalized] = expected_hash
 
-    tracked = [
-        line for line in run_git(repo, "diff", "--name-only", "HEAD", "--").splitlines() if line
-    ]
-    untracked = [
-        line
-        for line in run_git(repo, "ls-files", "--others", "--exclude-standard").splitlines()
-        if line
-    ]
+    tracked = git_nul_fields(repo, "diff", "--name-only", "-z", "HEAD", "--")
+    untracked = git_nul_fields(repo, "ls-files", "--others", "--exclude-standard", "-z")
     staged_status = staged_name_status(repo) if args.staged else {}
     staged_paths = sorted(staged_status)
     if args.staged:

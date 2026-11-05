@@ -1,5 +1,7 @@
 # Autonomous Run Governance
 
+[Git-Dateiinventar / Git path inventory](docs/git-path-inventory.md)
+
 [Model-Routing-Ausfuehrung / Model-routing execution](docs/model-routing-execution.md)
 
 <!-- current-package: 0.4.9 -->
