@@ -4,11 +4,11 @@
 
 [Model-Routing-Ausfuehrung / Model-routing execution](docs/model-routing-execution.md)
 
-<!-- current-package: 0.4.9 -->
+<!-- current-package: 0.4.10 -->
 
-Paketkennung: **v0.4.9**. [Vorbereitung und Veröffentlichungsgrenze](docs/release-0.4.9-validation.md). Die Release-Seite und der externe Archivnachweis belegen die Veröffentlichung, nicht dieser Vorbereitungsstand. Frühere Versionsnachweise unten bleiben historisch.
+Paketkennung: **v0.4.10**. [Vorbereitung und Veröffentlichungsgrenze](docs/release-0.4.10-validation.md). Die Release-Seite und der externe Archivnachweis belegen die Veröffentlichung, nicht dieser Vorbereitungsstand. Frühere Versionsnachweise unten bleiben historisch.
 
-<span lang="en">Package identity: v0.4.9. The release page and external archive evidence prove publication, not this preparation snapshot. Earlier version records below remain historical.</span>
+<span lang="en">Package identity: v0.4.10. The release page and external archive evidence prove publication, not this preparation snapshot. Earlier version records below remain historical.</span>
 
 [Release-Abschluss und Verbesserungsprofil / Publication closeout and improvement profile](docs/release-0.4.6-validation.md).
 
@@ -33,7 +33,15 @@ guide. Behavior and authority boundaries remain unchanged.*
 Permission-bounded, evidence-first governance for one explicitly delegated
 autonomous Spec Kit run.
 
-Version `0.4.9` | Priority `70` | Spec Kit `>=0.8.3`
+Version `0.4.10` | Priority `70` | Spec Kit `>=0.8.3`
+
+Version 0.4.10 prueft Git-Dateiinventare NUL-sicher. Dadurch bleiben auch
+versionierte Pfade mit Zeilenumbruechen oder anderen ungewoehnlichen Zeichen
+Teil der Evidence-Pruefung, statt unbemerkt aus dem Inventar zu fallen.
+
+*Version 0.4.10 parses Git path inventories with NUL delimiters. Tracked paths
+containing newlines or other unusual characters therefore remain part of the
+evidence check instead of silently disappearing from the inventory.*
 
 Version 0.4.9 bindet den normalen Phasenrunner an die rollenbezogene
 Ausfuehrungspolicy aus Model Routing Governance v0.2.4. Lesende Fast-Profile
@@ -202,7 +210,7 @@ have succeeded.
 1. Preset installieren:
 
    ```bash
-   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.9.zip --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.10.zip --priority 70
    ```
 
 2. Installation pruefen:
@@ -275,7 +283,7 @@ bypass, secret, or provider-administration authority.
 1. Install the preset:
 
    ```bash
-   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.9.zip --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.10.zip --priority 70
    ```
 
 2. Verify the installation:
