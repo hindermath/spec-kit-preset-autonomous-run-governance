@@ -20,6 +20,10 @@ jobs:
       - name: Cross-shell exact-index and historical EOF fixtures
         shell: pwsh
         run: |
+          pwsh -NoProfile -File tests/test-native-read-only-result.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pwsh -NoProfile -File tests/test-model-routing.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           pwsh -NoProfile -File tests/test-autonomous-evidence-integrity.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           git diff --exit-code

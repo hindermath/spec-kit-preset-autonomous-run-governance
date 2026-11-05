@@ -289,6 +289,14 @@ function ConvertTo-AMRArguments {
     return $resolved.ToArray()
 }
 
+function Write-AMRNativeReadOnlyResult {
+    param([Parameter(Mandatory)][object[]]$Output,[Parameter(Mandatory)][string]$Path)
+    $text=($Output|ForEach-Object{[string]$_}) -join "`n"
+    $value=$text|ConvertFrom-Json -AsHashtable -Depth 100
+    Assert-AMRCondition ($value -is [Collections.IDictionary]) 'Native read-only result must be one JSON object.'
+    Write-AMRJsonAtomic -Path $Path -Value $value
+}
+
 function Invoke-AMRCommand {
     param(
         [Parameter(Mandatory)][hashtable] $CommandProfile,
@@ -308,6 +316,12 @@ function Invoke-AMRCommand {
     } finally {
         [Environment]::SetEnvironmentVariable('PWD',$previousPwd)
         Pop-Location
+    }
+    if($exitCode -eq 0 -and $CommandProfile.ContainsKey('agentFamily') -and
+        [string]$CommandProfile.agentFamily -ceq 'Antigravity' -and [string]$CommandProfile.routingRole -ceq 'fast-mechanical'){
+        # The host owns result persistence; a read-only model must never need
+        # write_file permission merely to hand its structured phase result back.
+        Write-AMRNativeReadOnlyResult -Output $output -Path ([string]$Values.outputFile)
     }
     return [ordered]@{
         exitCode = $exitCode
@@ -441,7 +455,8 @@ $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 [void](New-Item -ItemType Directory -Path $OutputDirectory -Force)
 $outputFile = Join-Path $OutputDirectory "$PhaseId.result.json"
 $logFile = Join-Path $OutputDirectory "$PhaseId.log.txt"
-if ('-HarnessArgumentsJson' -cin @($runnerProfileData.arguments)) {
+if ('-HarnessArgumentsJson' -cin @($runnerProfileData.arguments) -or
+    ([string]$runnerProfileData.agentFamily -ceq 'Antigravity' -and [string]$runnerProfileData.routingRole -ceq 'fast-mechanical')) {
     $fullPrompt += "`nReturn the phase-result JSON object on standard output; the configured result adapter owns writing the runner result file."
 } else {
     $fullPrompt += "`nWrite the machine-readable phase-result JSON object to this exact runner-owned path: $outputFile"

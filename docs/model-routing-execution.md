@@ -39,6 +39,17 @@ mit `-ConfirmLiveRun -MaxRetries 3 -AutonomousRunnerSource <diese Quelle>`.
 Regeln und Verbesserungsbacklog: `docs/validation-basis.md` im Routing-Preset.
 Offline-Pruefungen bleiben CI-faehig; Providerlaeufe bleiben manuell.
 
+DE: Native agy-Fast-Profile liefern ihre JSON-Ergebnisse auf stdout; der Host
+persistiert das Ergebnis atomar. Das Modell erhaelt dafuer kein write_file-Recht.
+Claude-Fast-Ergebnisse werden ueber native structured_output-Envelopes im
+Model-Routing-Adapter transportiert. Details zur Read-only-Probe 2.0 stehen in
+`docs/fast-read-only-compatibility.md` der Routing-Quelle.
+
+EN: Native agy-fast profiles return JSON on stdout; the host persists results
+atomically without granting model write_file access. Claude-fast results use
+native structured_output envelopes through the routing adapter. Probe 2.0
+details live in the routing source's compatibility document.
+
 EN: After production-runner changes, run both live stages from routing source:
 smoke first, then normal integration. The canonical entry is the validation
 script above with explicit live confirmation, retries and this source path.
