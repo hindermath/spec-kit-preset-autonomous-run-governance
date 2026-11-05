@@ -274,6 +274,52 @@ try {
     $HistoryOutput = Invoke-Expected { & pwsh -NoProfile -File $GatePs -Requirements $Requirements -Evidence $HistoricalPath -Head $Head -Historical } 0 'Historical audit pass'
     Assert-EvidenceTest (($HistoryOutput -join "`n") -match 'HistoricalOnly') 'Historical evidence appeared merge-authorizing'
 
+    # Real Git inventories must preserve names before any content check.
+    # Windows forbids control characters/quotes; Unicode remains native there.
+    $Names = @('ordinary.md', 'space name.md', "unicode-$([char]0x00fc).md")
+    if (-not $IsWindows) { $Names += @("tab`tname.md", "line`nbreak.md", "carriage`rreturn.md", 'quote"name.md') }
+    $CaseNumber = 0
+    foreach ($Name in $Names) {
+        $CaseNumber++
+        $PathRepo = Join-Path $Root "path-case-$CaseNumber"
+        [void](New-Item -ItemType Directory -Path $PathRepo)
+        & git -C $PathRepo init --quiet
+        & git -C $PathRepo config user.name Fixture
+        & git -C $PathRepo config user.email fixture@example.invalid
+        & git -C $PathRepo config core.autocrlf false
+        & git -C $PathRepo config core.quotePath true
+        $NamedFile = Join-Path $PathRepo $Name
+        [IO.File]::WriteAllText($NamedFile, "clean`n")
+        & git -C $PathRepo add -- $Name
+        & git -C $PathRepo commit --quiet -m baseline
+        [IO.File]::WriteAllText($NamedFile, "bad trailing space `n")
+        $BadOutput = Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $PathRepo } 2 "Worktree path content: case $CaseNumber"
+        Assert-EvidenceTest (($BadOutput -join ' ') -match 'AEI007') 'Unusual name must reach content validation'
+        if ($HasBash) { [void](Invoke-Expected { & bash $DeliverySh --repo $PathRepo } 2 "Bash Worktree path content: case $CaseNumber") }
+        & git -C $PathRepo add -- $Name
+        [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $PathRepo -Staged -Intended $Name } 2 "Staged path content: case $CaseNumber")
+        if ($HasBash) { [void](Invoke-Expected { & bash $DeliverySh --repo $PathRepo --staged --intended $Name } 2 "Bash Staged path content: case $CaseNumber") }
+        [IO.File]::WriteAllText($NamedFile, "clean changed`n")
+        & git -C $PathRepo add -- $Name
+        $CleanOutput = Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $PathRepo -Staged -Intended $Name } 0 "Clean staged unusual name: case $CaseNumber"
+        $CleanReport = ($CleanOutput -join "`n") | ConvertFrom-Json
+        Assert-EvidenceTest ($CleanReport.checkedPaths -ccontains $Name) 'Staged inventory must retain the exact filename'
+        & git -C $PathRepo reset --quiet HEAD -- $Name
+        $CleanOutput = Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $PathRepo } 0 "Clean worktree unusual name: case $CaseNumber"
+        $CleanReport = ($CleanOutput -join "`n") | ConvertFrom-Json
+        Assert-EvidenceTest ($CleanReport.checkedPaths -ccontains $Name) 'Worktree inventory must retain the exact filename'
+        & git -C $PathRepo checkout -- $Name
+        & git -C $PathRepo rm --quiet -- $Name
+        & git -C $PathRepo commit --quiet -m remove
+        [IO.File]::WriteAllText($NamedFile, "bad untracked space `n")
+        [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $PathRepo -Intended $Name } 2 "Untracked path content: case $CaseNumber")
+        if ($HasBash) { [void](Invoke-Expected { & bash $DeliverySh --repo $PathRepo --intended $Name } 2 "Bash untracked path content: case $CaseNumber") }
+        [IO.File]::WriteAllText($NamedFile, "clean untracked`n")
+        $CleanOutput = Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $PathRepo -Intended $Name } 0 "Clean untracked unusual name: case $CaseNumber"
+        $CleanReport = ($CleanOutput -join "`n") | ConvertFrom-Json
+        Assert-EvidenceTest ($CleanReport.intendedUntrackedPaths -ccontains $Name) 'Untracked inventory must retain the exact filename'
+    }
+    Write-Output "PASS: $CaseNumber native Git-filename cases across Worktree, Staged and intended untracked content checks"
     Write-Output 'PASS: delivery-set, semantic phase-result, lifecycle evidence, historical mode, and cross-shell parity'
 } finally {
     Remove-Item -LiteralPath $Root -Recurse -Force -ErrorAction SilentlyContinue
