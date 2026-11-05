@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "presetId": "autonomous-run-governance",
+  "packageVersion": "0.4.10",
+  "historicalPublicationVersion": "0.4.6",
+  "previousReleaseVersion": "0.4.9",
+  "candidate_status": "Prepared",
+  "release_status": "NotEstablishedAtPreparation",
+  "preparedAt": "2026-11-05T14:17:41Z",
+  "runtimeChanged": true,
+  "runtimeChangeApproved": true,
+  "authorizationReference": "User explicitly authorized preparation and publication of v0.4.10 after merge of PR #32, followed by installation, Home sync and the four-repository rollout.",
+  "generatorSchemaChanged": false,
+  "changeKind": "NulSafeGitPathInventory",
+  "sourceCommit": "a560439b7121ae0c372561fc40c8c78336122e0b",
+  "validatedModelRoutingVersion": "0.2.6",
+  "validatedModelRoutingRelease": "https://github.com/hindermath/spec-kit-preset-model-routing-governance/releases/tag/v0.2.6",
+  "externalPublicationEvidence": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/releases/tag/v0.4.10"
+}

@@ -1,10 +1,10 @@
 # Nutzungsleitfaden: autonomous-run-governance
 
-<!-- current-package: 0.4.9 -->
+<!-- current-package: 0.4.10 -->
 
-Paketkennung: **v0.4.9**. [Vorbereitung und Veröffentlichungsgrenze](release-0.4.9-validation.md). Die Release-Seite und der externe Archivnachweis belegen die Veröffentlichung, nicht dieser Vorbereitungsstand. Frühere Versionsnachweise unten bleiben historisch.
+Paketkennung: **v0.4.10**. [Vorbereitung und Veröffentlichungsgrenze](release-0.4.10-validation.md). Die Release-Seite und der externe Archivnachweis belegen die Veröffentlichung, nicht dieser Vorbereitungsstand. Frühere Versionsnachweise unten bleiben historisch.
 
-<span lang="en">Package identity: v0.4.9. The release page and external archive evidence prove publication, not this preparation snapshot. Earlier version records below remain historical.</span>
+<span lang="en">Package identity: v0.4.10. The release page and external archive evidence prove publication, not this preparation snapshot. Earlier version records below remain historical.</span>
 
 [Release-Abschluss und Verbesserungsprofil / Publication closeout and improvement profile](release-0.4.6-validation.md).
 
