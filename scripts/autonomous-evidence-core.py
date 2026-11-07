@@ -104,7 +104,9 @@ def git_state(repo: Path) -> tuple[str, str]:
     return tree, hashlib.sha256(status.encode("utf-8")).hexdigest()
 
 
-def validate_text_bytes(raw: bytes, label: str, allowed_raw_hash: str = "") -> bool:
+def validate_text_bytes(
+    raw: bytes, label: str, allowed_raw_hash: str = "", *, staged: bool = False
+) -> bool:
     if b"\x00" in raw:
         return False
     try:
@@ -131,6 +133,11 @@ def validate_text_bytes(raw: bytes, label: str, allowed_raw_hash: str = "") -> b
         if hashlib.sha256(raw).hexdigest() != allowed_raw_hash:
             fail("AEI009", f"historical whitespace allowance hash mismatch: {label}")
         return True
+    # Git's text diagnostics use ':' between path and line. Since ':' is also
+    # legal in a POSIX path, check this staged condition against the exact
+    # index bytes before any diagnostic can be suppressed for another file.
+    if staged and normalized.endswith("\n\n"):
+        fail("AEI010", f"unapproved staged blank line at EOF: {label}")
     return False
 
 
@@ -188,41 +195,43 @@ def staged_file_mode(repo: Path, path_text: str) -> str:
 
 
 def validate_staged_diff_check(
-    repo: Path, whitespace_allowances: dict[str, str]
+    repo: Path, whitespace_allowances: dict[str, str], staged_paths: list[str]
 ) -> None:
-    result = subprocess.run(
-        ["git", "-C", str(repo), "diff", "--cached", "--check", "--"],
-        check=False,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    )
-    if result.returncode == 0:
-        return
-    lines = result.stdout.splitlines()
-    remaining: list[str] = []
-    index = 0
-    while index < len(lines):
-        line = lines[index]
-        allowed = next(
-            (
-                path
-                for path in whitespace_allowances
-                if line.startswith(f"{path}:")
-                and line.endswith((": trailing whitespace.", ": new blank line at EOF."))
-            ),
-            None,
+    # The ordinary case needs one Git check. With historical allowances, a
+    # diagnostic prefix cannot identify a path: ':' is legal in POSIX names.
+    # Check each exact literal path separately before suppressing its own
+    # approved whitespace diagnostic.
+    check_paths: list[str | None] = staged_paths if whitespace_allowances else [None]
+    for path in check_paths:
+        arguments = ["git", "-C", str(repo), "diff", "--cached", "--check", "--"]
+        if path is not None:
+            arguments.append(f":(literal){path}")
+        result = subprocess.run(
+            arguments, check=False, capture_output=True, text=True, encoding="utf-8"
         )
-        if allowed is not None:
-            index += 1
-            if index < len(lines) and lines[index].startswith("+"):
-                index += 1
+        if result.returncode == 0:
             continue
-        remaining.append(line)
-        index += 1
-    if remaining or result.stderr.strip():
-        detail = " | ".join(remaining + ([result.stderr.strip()] if result.stderr.strip() else []))
-        fail("AEI010", f"staged candidate failed git diff --cached --check: {detail}")
+        lines = result.stdout.splitlines()
+        remaining: list[str] = []
+        index = 0
+        while index < len(lines):
+            line = lines[index]
+            allowed = (
+                path is not None
+                and path in whitespace_allowances
+                and line.startswith(f"{path}:")
+                and line.endswith((": trailing whitespace.", ": new blank line at EOF."))
+            )
+            if allowed:
+                index += 1
+                if index < len(lines) and lines[index].startswith("+"):
+                    index += 1
+                continue
+            remaining.append(line)
+            index += 1
+        if remaining or result.stderr.strip():
+            detail = " | ".join(remaining + ([result.stderr.strip()] if result.stderr.strip() else []))
+            fail("AEI010", f"staged candidate failed git diff --cached --check: {detail}")
 
 
 def delivery_command(args: argparse.Namespace) -> str:
@@ -316,7 +325,9 @@ def delivery_command(args: argparse.Namespace) -> str:
                     f"{path_text} (mode {mode})",
                 )
             raw = run_git_bytes(repo, "show", f":{path_text}")
-            if validate_text_bytes(raw, path_text, whitespace_allowances.get(path_text, "")):
+            if validate_text_bytes(
+                raw, path_text, whitespace_allowances.get(path_text, ""), staged=True
+            ):
                 used_allowances.add(path_text)
         else:
             _, path = relative_path(repo, path_text)
@@ -334,7 +345,7 @@ def delivery_command(args: argparse.Namespace) -> str:
         )
 
     if args.staged:
-        validate_staged_diff_check(repo, whitespace_allowances)
+        validate_staged_diff_check(repo, whitespace_allowances, staged_paths)
 
     after = git_state(repo)
     if before != after:

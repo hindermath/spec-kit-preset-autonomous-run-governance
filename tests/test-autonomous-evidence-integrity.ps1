@@ -147,6 +147,25 @@ try {
         [void](Invoke-Expected { & bash $DeliverySh --repo $Repo --staged --intended historical-eof.txt --intended other-eof.txt --allow-historical-whitespace $EofAllowance } 2 'Unrelated EOF not hidden by historical allowance')
     }
     & git -C $Repo reset --quiet
+    if (-not $IsWindows) {
+        $ColonPath = 'historical-eof.txt:unapproved'
+        [IO.File]::WriteAllText((Join-Path $Repo $ColonPath), "unreviewed`n`n", [Text.UTF8Encoding]::new($false))
+        & git -C $Repo add historical-eof.txt $ColonPath
+        $ColonCommand = "& '$DeliveryPs' -Repo '$Repo' -Staged -Intended @('historical-eof.txt','$ColonPath') -AllowHistoricalWhitespace '$EofAllowance'; exit `$LASTEXITCODE"
+        [void](Invoke-Expected { & pwsh -NoProfile -Command $ColonCommand } 2 'Colon path cannot inherit a prefix-file EOF allowance')
+        if ($HasBash) {
+            [void](Invoke-Expected { & bash $DeliverySh --repo $Repo --staged --intended historical-eof.txt --intended $ColonPath --allow-historical-whitespace $EofAllowance } 2 'Bash colon path cannot inherit a prefix-file EOF allowance')
+        }
+        & git -C $Repo reset --quiet
+        [IO.File]::WriteAllBytes((Join-Path $Repo $ColonPath), [Text.Encoding]::UTF8.GetBytes("unreviewed`r`n"))
+        & git -C $Repo -c core.autocrlf=false add historical-eof.txt $ColonPath
+        [void](Invoke-Expected { & pwsh -NoProfile -Command $ColonCommand } 2 'Colon path cannot inherit a prefix-file CRLF diagnostic')
+        if ($HasBash) {
+            [void](Invoke-Expected { & bash $DeliverySh --repo $Repo --staged --intended historical-eof.txt --intended $ColonPath --allow-historical-whitespace $EofAllowance } 2 'Bash colon path cannot inherit a prefix-file CRLF diagnostic')
+        }
+        & git -C $Repo reset --quiet
+        Remove-Item -LiteralPath (Join-Path $Repo $ColonPath)
+    }
     [IO.File]::WriteAllText($EofPath, "history`n", [Text.UTF8Encoding]::new($false))
     [void](Invoke-Expected { & pwsh -NoProfile -File $DeliveryPs -Repo $Repo -Intended historical-eof.txt -AllowHistoricalWhitespace $EofAllowance } 2 'EOF allowance not needed rejection')
 
