@@ -14,6 +14,9 @@ Repository-Wurzel fuer den Payload-Pfad. Repository root for the payload path.
 Strukturierte JSON-Ergebnisdatei der Phase. Structured JSON phase-result file.
 .PARAMETER PhaseId
 Erwartete stabile Phasen-ID. Expected stable phase ID.
+.PARAMETER AttemptId
+Optionaler erwarteter Versuch; der Runner uebergibt ihn fuer Replay-Schutz.
+Optional expected attempt; the runner supplies it to prevent replay.
 .PARAMETER ExitCode
 Exitcode des bereits beendeten Phasenprozesses. Exit code of the completed phase process.
 .EXAMPLE
@@ -24,6 +27,7 @@ param(
     [Parameter(Mandatory)][string]$Repo,
     [Parameter(Mandatory)][string]$Result,
     [Parameter(Mandatory)][string]$PhaseId,
+    [string]$AttemptId = '',
     [Parameter(Mandatory)][int]$ExitCode
 )
 Set-StrictMode -Version Latest
@@ -31,5 +35,7 @@ $ErrorActionPreference = 'Stop'
 $Python = Get-Command python3 -ErrorAction SilentlyContinue
 if ($null -eq $Python) { $Python = Get-Command python -ErrorAction SilentlyContinue }
 if ($null -eq $Python) { Write-Error 'ERROR AEI001: python3 or python is required'; exit 2 }
-& $Python.Source (Join-Path $PSScriptRoot 'autonomous-evidence-core.py') phase --repo $Repo --result $Result --phase-id $PhaseId --exit-code $ExitCode
+$Arguments = @((Join-Path $PSScriptRoot 'autonomous-evidence-core.py'), 'phase', '--repo', $Repo, '--result', $Result, '--phase-id', $PhaseId, '--exit-code', [string]$ExitCode)
+if ($AttemptId) { $Arguments += @('--attempt-id', $AttemptId) }
+& $Python.Source @Arguments
 exit $LASTEXITCODE

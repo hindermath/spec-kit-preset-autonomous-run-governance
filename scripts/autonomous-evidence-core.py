@@ -381,7 +381,9 @@ def phase_command(args: argparse.Namespace) -> str:
         fail("AEI102", "phase result schemaVersion must be 1.0", 3)
     if require_text(result, "phaseId", "phase result") != args.phase_id:
         fail("AEI103", "phase result does not match the requested phase", 3)
-    require_text(result, "attemptId", "phase result")
+    attempt_id = require_text(result, "attemptId", "phase result")
+    if args.attempt_id and attempt_id != args.attempt_id:
+        fail("AEI103", "phase result attemptId does not match the active attempt", 3)
     outcome = require_text(result, "outcome", "phase result")
     if outcome == "Blocked":
         require_text(result, "blockedReason", "phase result")
@@ -584,6 +586,7 @@ def parser() -> argparse.ArgumentParser:
     phase.add_argument("--repo", required=True)
     phase.add_argument("--result", required=True)
     phase.add_argument("--phase-id", required=True)
+    phase.add_argument("--attempt-id", default="")
     phase.add_argument("--exit-code", required=True, type=int)
     gate = commands.add_parser("gate")
     gate.add_argument("--requirements", required=True)

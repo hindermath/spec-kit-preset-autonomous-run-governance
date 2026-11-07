@@ -6,6 +6,7 @@ validate-autonomous-phase-result \- validate semantic completion of one routed p
 .BR --repo " PATH"
 .BR --result " FILE"
 .BR --phase-id " ID"
+.RB [ --attempt-id " UUID"]
 .BR --exit-code " N"
 .SH DESCRIPTION
 A process exit code of zero is necessary but not sufficient. The command also
@@ -28,6 +29,10 @@ Structured JSON result emitted by the routed phase.
 .TP
 .B --phase-id ID
 Expected stable phase identifier.
+.TP
+.B --attempt-id UUID
+Expected attempt identifier. The routing runner supplies it to reject results
+from earlier attempts; standalone historical inspection may omit it.
 .TP
 .B --exit-code N
 Exit code of the completed phase process.

@@ -12,6 +12,9 @@ shell evaluation and never silently falls back to another model. Before Run
 starts, the operation is persisted as NeedsRevalidation. Exit code zero alone
 never completes the phase: a schema-1.0 structured result must pass semantic
 validation before the operation becomes Completed.
+Each Run writes to an attempt-specific result path and accepts only the exact
+attempt ID persisted before the child process starts. Routing run and phase IDs
+must be safe path components.
 .PP
 DE: Modellwechsel erfolgen nur zwischen Phasenprozessen. Konkrete Modellnamen
 bleiben in der lokalen Runner-Konfiguration und ausserhalb reproduzierbarer

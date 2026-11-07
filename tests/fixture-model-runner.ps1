@@ -3,6 +3,7 @@
 param(
     [string] $OutputFile = '',
     [string] $PhaseId = 'fixture',
+    [string] $AttemptId = '',
     [string] $Content = 'fixture',
     [int] $ExitCode = 0
 )
@@ -27,7 +28,7 @@ if (-not [string]::IsNullOrWhiteSpace($OutputFile)) {
     [ordered]@{
         schemaVersion = '1.0'
         phaseId = $PhaseId
-        attemptId = [guid]::NewGuid().ToString()
+        attemptId = if ($AttemptId) { $AttemptId } else { [guid]::NewGuid().ToString() }
         outcome = 'Completed'
         expectedTasks = 1
         completedTasks = 1

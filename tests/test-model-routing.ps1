@@ -115,7 +115,7 @@ try {
 
     $fixtureArguments = @(
         '-NoProfile', '-File', $fixtureRunner,
-        '-OutputFile', '{outputFile}', '-PhaseId', '{phaseId}', '-Content', '{command}'
+        '-OutputFile', '{outputFile}', '-PhaseId', '{phaseId}', '-AttemptId', '{attemptId}', '-Content', '{command}'
     )
     $profiles = [ordered]@{
         schemaVersion = '1.0'
@@ -148,6 +148,15 @@ try {
     }
     Write-RoutingJson $runnerConfig $profiles
 
+    $previewDirectory = Join-Path $temporaryRoot 'preview-only'
+    $previewStateHash = (Get-FileHash -LiteralPath $statePath -Algorithm SHA256).Hash
+    & pwsh -NoProfile -File $runner -Action Run -State $statePath -RunnerConfig $runnerConfig `
+        -RoutingRoot $allPresetRoot -PhaseId 'read-intake' -OutputDirectory $previewDirectory -WhatIf *> $null
+    Assert-RoutingTest ($LASTEXITCODE -eq 0) 'Routing WhatIf preview failed'
+    Assert-RoutingTest (-not (Test-Path -LiteralPath $previewDirectory)) 'Routing WhatIf created output directory'
+    Assert-RoutingTest ((Get-FileHash -LiteralPath $statePath -Algorithm SHA256).Hash -ceq $previewStateHash) `
+        'Routing WhatIf changed run state'
+
     $validation = @(& pwsh -NoProfile -File $runner -Action Validate -State $statePath `
         -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot 2>&1)
     Assert-RoutingTest ($LASTEXITCODE -eq 0) "Valid routing fixture failed: $($validation -join [Environment]::NewLine)"
@@ -167,6 +176,21 @@ try {
     Assert-RoutingTest ($afterSecond.routing.phases[1].status -eq 'Completed') 'Frontier phase did not complete'
     Assert-RoutingTest ($afterSecond.routing.phases[1].model -eq 'fixture-frontier-model') 'Frontier model metadata missing'
     Assert-RoutingTest ($afterSecond.routing.phases[1].resultSha256 -match '^[0-9a-f]{64}$') 'Result hash missing'
+
+    $unsafeRunPath = Join-Path $featureDirectory 'unsafe-run-id-state.json'
+    $unsafeRun = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable
+    $unsafeRun.runId = '../escape'
+    Write-RoutingJson $unsafeRunPath $unsafeRun
+    & pwsh -NoProfile -File $runner -Action Status -State $unsafeRunPath -RoutingRoot $allPresetRoot *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Unsafe runId reached routing output paths'
+
+    $unsafePhasePath = Join-Path $featureDirectory 'unsafe-phase-id-state.json'
+    $unsafePhase = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable
+    $unsafePhase.routing.phases[0].phaseId = '../escape'
+    Write-RoutingJson $unsafePhasePath $unsafePhase
+    & pwsh -NoProfile -File $runner -Action Validate -State $unsafePhasePath `
+        -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Unsafe phaseId reached routing output paths'
 
     $terminalPath = Join-Path $featureDirectory 'terminal-authority-state.json'
     $terminal = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable

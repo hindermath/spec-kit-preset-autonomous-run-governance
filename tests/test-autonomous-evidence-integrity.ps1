@@ -224,6 +224,8 @@ try {
     Write-JsonFile $PhaseResult $Phase
     [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 } 0 'PowerShell phase pass')
     if ($HasBash) { [void](Invoke-Expected { & bash $PhaseSh --repo $Repo --result $PhaseResult --phase-id implement --exit-code 0 } 0 'Bash phase pass') }
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -AttemptId ([guid]::NewGuid().ToString()) -ExitCode 0 } 3 'Replayed phase attempt rejection')
+    if ($HasBash) { [void](Invoke-Expected { & bash $PhaseSh --repo $Repo --result $PhaseResult --phase-id implement --attempt-id ([guid]::NewGuid().ToString()) --exit-code 0 } 3 'Bash replayed phase attempt rejection') }
     $Phase.outcome = 'Blocked'; $Phase.completedTasks = 3; $Phase.blockedReason = 'fixture blocker'
     Write-JsonFile $PhaseResult $Phase
     [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 } 3 'PowerShell semantic block')

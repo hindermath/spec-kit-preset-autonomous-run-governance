@@ -199,6 +199,7 @@ function Get-AMRPhase {
         Assert-AMRCondition ($phase -is [hashtable]) 'Jede Routing-Phase muss ein Objekt sein.'
         $currentId = [string] $phase.phaseId
         Assert-AMRCondition (-not [string]::IsNullOrWhiteSpace($currentId)) 'Routing phaseId fehlt.'
+        Assert-AMRCondition ($currentId -cmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$') "Routing phaseId ist kein sicherer Dateiname: $currentId"
         Assert-AMRCondition ($phaseIds.Add($currentId)) "Doppelte routing phaseId: $currentId"
         Assert-AMRCondition (-not [string]::IsNullOrWhiteSpace([string] $phase.command)) "Routing command fehlt: $currentId"
         Assert-AMRCondition ($script:AllowedRoles -contains [string] $phase.routingRole) "Ungueltige routingRole: $currentId"
@@ -383,6 +384,9 @@ function Write-AMRStatus {
 
 $statePath = [IO.Path]::GetFullPath($State)
 $stateData = Read-AMRJson $statePath
+$parsedRunId = [guid]::Empty
+Assert-AMRCondition ([guid]::TryParse([string]$stateData.runId, [ref]$parsedRunId) -and
+    $parsedRunId -ne [guid]::Empty) 'State.runId muss eine nichtleere UUID sein.'
 $repositoryRoot = Get-AMRRepositoryRoot $statePath
 if ([string]::IsNullOrWhiteSpace($RoutingRoot)) {
     $RoutingRoot = Join-Path $repositoryRoot '.specify/presets'
@@ -452,9 +456,10 @@ if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
     $OutputDirectory = Join-Path $repositoryRoot ".specify/runtime/autonomous-routing/$($stateData.runId)"
 }
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
-[void](New-Item -ItemType Directory -Path $OutputDirectory -Force)
-$outputFile = Join-Path $OutputDirectory "$PhaseId.result.json"
-$logFile = Join-Path $OutputDirectory "$PhaseId.log.txt"
+$attemptId = [guid]::NewGuid().ToString()
+$outputFile = Join-Path $OutputDirectory "$PhaseId.$attemptId.result.json"
+$logFile = Join-Path $OutputDirectory "$PhaseId.$attemptId.log.txt"
+$fullPrompt += "`nUse this exact attemptId in the phase-result JSON: $attemptId"
 if ('-HarnessArgumentsJson' -cin @($runnerProfileData.arguments) -or
     ([string]$runnerProfileData.agentFamily -ceq 'Antigravity' -and [string]$runnerProfileData.routingRole -ceq 'fast-mechanical')) {
     $fullPrompt += "`nReturn the phase-result JSON object on standard output; the configured result adapter owns writing the runner result file."
@@ -464,6 +469,7 @@ if ('-HarnessArgumentsJson' -cin @($runnerProfileData.arguments) -or
 $values = @{
     worktree = $Worktree
     phaseId = $PhaseId
+    attemptId = $attemptId
     command = [string] $phase.command
     prompt = $fullPrompt
     outputFile = $outputFile
@@ -486,6 +492,8 @@ if (-not $PSCmdlet.ShouldProcess("phase '$PhaseId'", "Run fail-closed model pref
     exit 0
 }
 
+[void](New-Item -ItemType Directory -Path $OutputDirectory -Force)
+
 try {
     $preflight = Invoke-AMRCommand $runnerProfileData.preflight $values $Worktree
     if ([int] $preflight.exitCode -ne 0) {
@@ -503,6 +511,7 @@ try {
 
     $timestamp = [DateTime]::UtcNow.ToString('o')
     $phase.status = 'Running'
+    $phase.attemptId = $attemptId
     $phase.runnerProfile = $profileName
     $phase.agentFamily = [string] $runnerProfileData.agentFamily
     $phase.model = [string] $runnerProfileData.model
@@ -534,7 +543,7 @@ try {
     }
     Assert-AMRCondition (Test-Path -LiteralPath $outputFile -PathType Leaf) "Phase '$PhaseId' produced no structured result."
     $validationOutput = @(& (Join-Path $PSScriptRoot 'validate-autonomous-phase-result.ps1') `
-        -Repo $repositoryRoot -Result $outputFile -PhaseId $PhaseId -ExitCode ([int] $execution.exitCode) 2>&1)
+        -Repo $repositoryRoot -Result $outputFile -PhaseId $PhaseId -AttemptId $attemptId -ExitCode ([int] $execution.exitCode) 2>&1)
     $validationExitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
     if ($validationExitCode -ne 0) {
         $reason = "Phase '$PhaseId' semantic result validation failed: $($validationOutput -join ' ')"
