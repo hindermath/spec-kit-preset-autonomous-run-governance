@@ -259,6 +259,13 @@ function Assert-AMRPhaseContract {
 
     [void](Get-AMRPhase $StateData '')
     foreach ($phase in @($StateData.routing.phases)) {
+        if ([string] $phase.routingRole -ne 'script-only') {
+            Assert-AMRCondition (($phase.expectedTasks -is [int] -or $phase.expectedTasks -is [long]) -and
+                [long] $phase.expectedTasks -gt 0) "Akzeptierte positive Aufgabenzahl fehlt: $($phase.phaseId)"
+            Assert-AMRCondition (-not [string]::IsNullOrWhiteSpace([string] $phase.expectedPayloadPath) -and
+                -not [IO.Path]::IsPathRooted([string] $phase.expectedPayloadPath) -and
+                [string] $phase.expectedPayloadPath -notmatch '(^|[/\\])\.\.([/\\]|$)') "Akzeptierter repository-relativer Payload-Pfad fehlt: $($phase.phaseId)"
+        }
         $commandName = [string] $phase.command
         Assert-AMRCondition $Catalog.commands.ContainsKey($commandName) "Kein Routing-Vertrag fuer Kommando: $commandName"
         $effectiveRole = [string] $Catalog.commands[$commandName]
@@ -301,12 +308,60 @@ function Get-AMRRunnerProfile {
     Assert-AMRCondition ($runnerProfileData.preflight -is [hashtable]) "preflight fehlt fuer fail-closed Profil: $profileName"
     Assert-AMRCondition (-not [string]::IsNullOrWhiteSpace([string] $runnerProfileData.preflight.executable)) "preflight.executable fehlt: $profileName"
     Assert-AMRCondition ($runnerProfileData.preflight.arguments -is [object[]]) "preflight.arguments muss ein Array sein: $profileName"
+    Assert-AMRCondition ($runnerProfileData.postflight -is [hashtable]) "postflight fehlt fuer unabhaengige Phasen-Gates: $profileName"
+    Assert-AMRCondition (-not [string]::IsNullOrWhiteSpace([string] $runnerProfileData.postflight.executable)) "postflight.executable fehlt: $profileName"
+    Assert-AMRCondition ($runnerProfileData.postflight.arguments -is [object[]]) "postflight.arguments muss ein Array sein: $profileName"
     Assert-AMRCondition ($null -ne (Get-Command ([string] $runnerProfileData.executable) -ErrorAction SilentlyContinue)) "Runner executable nicht gefunden: $($runnerProfileData.executable)"
     Assert-AMRCondition ($null -ne (Get-Command ([string] $runnerProfileData.preflight.executable) -ErrorAction SilentlyContinue)) "Preflight executable nicht gefunden: $($runnerProfileData.preflight.executable)"
+    Assert-AMRCondition ($null -ne (Get-Command ([string] $runnerProfileData.postflight.executable) -ErrorAction SilentlyContinue)) "Postflight executable nicht gefunden: $($runnerProfileData.postflight.executable)"
 
     return [ordered]@{
         name = $profileName
         data = $runnerProfileData
+    }
+}
+
+function Resolve-AMRPhysicalProgramPath {
+    param([string] $Path, [string] $Base, [int] $Depth = 0)
+    Assert-AMRCondition ($Depth -lt 16) 'Postflight-Programmpfad hat zu viele Symlinks.'
+    $full = [IO.Path]::GetFullPath($Path, $Base)
+    $root = [IO.Path]::GetPathRoot($full)
+    $current = $root
+    foreach ($part in $full.Substring($root.Length).Split([char[]]@('/', '\'), [StringSplitOptions]::RemoveEmptyEntries)) {
+        $current = Join-Path $current $part
+        $item = Get-Item -LiteralPath $current -Force -ErrorAction Stop
+        if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            $target = $item.ResolveLinkTarget($true)
+            Assert-AMRCondition ($null -ne $target) "Postflight-Programm hat unaufloesbaren Symlink: $current"
+            $current = Resolve-AMRPhysicalProgramPath $target.FullName $Base ($Depth + 1)
+        }
+    }
+    return [IO.Path]::GetFullPath($current)
+}
+
+function Assert-AMRPostflightBoundary {
+    param([hashtable] $Postflight, [string] $Worktree)
+    $comparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+    $workerPrefix = (Resolve-AMRPhysicalProgramPath $Worktree $Worktree).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+    $executable = (Get-Command ([string] $Postflight.executable) -ErrorAction Stop).Source
+    $arguments = @($Postflight.arguments | ForEach-Object { [string] $_ })
+    Assert-AMRCondition (@($arguments | Where-Object { $_ -cmatch '(^|\s)(-Command|-EncodedCommand|-c|-e)(\s|$)' }).Count -eq 0) `
+        'Postflight darf kein dynamisches Interpreter-Kommando ausfuehren.'
+    $candidates = @($executable)
+    foreach ($argument in $arguments) {
+        if ($argument -match '\.(ps1|sh|py|exe|dll)$') {
+            Assert-AMRCondition ($argument -notmatch '\{[^}]+\}') 'Postflight-Programm darf keine Pfad-Platzhalter verwenden.'
+            $candidates += $argument
+        }
+    }
+    $interpreter = [IO.Path]::GetFileNameWithoutExtension($executable).ToLowerInvariant()
+    if ($interpreter -in @('pwsh', 'powershell', 'bash', 'sh', 'python', 'python3', 'node')) {
+        Assert-AMRCondition ($candidates.Count -gt 1) 'Postflight-Interpreter braucht ein festes vertrauenswuerdiges Skript.'
+    }
+    foreach ($candidate in $candidates) {
+        $path = Resolve-AMRPhysicalProgramPath ([string] $candidate) $Worktree
+        Assert-AMRCondition (-not $path.StartsWith($workerPrefix, $comparison)) `
+            "Postflight-Programm liegt im beschreibbaren Worker-Worktree: $path"
     }
 }
 
@@ -454,7 +509,8 @@ $runnerData = Read-AMRJson ([IO.Path]::GetFullPath($RunnerConfig))
 if ($Action -eq 'Validate') {
     foreach ($phase in @($stateData.routing.phases)) {
         if ([string] $phase.routingRole -ne 'script-only') {
-            [void](Get-AMRRunnerProfile $runnerData $phase)
+            $checkedProfile = Get-AMRRunnerProfile $runnerData $phase
+            Assert-AMRPostflightBoundary $checkedProfile.data.postflight $Worktree
         }
     }
     [ordered]@{
@@ -470,6 +526,14 @@ Assert-AMRCondition (-not [string]::IsNullOrWhiteSpace($PhaseId)) 'PhaseId ist f
 Assert-AMRCondition (-not (-not [string]::IsNullOrWhiteSpace($Prompt) -and -not [string]::IsNullOrWhiteSpace($PromptFile))) 'Prompt und PromptFile duerfen nicht gemeinsam gesetzt werden.'
 $phase = Get-AMRPhase $stateData $PhaseId
 Assert-AMRCondition ([string] $phase.status -in @('Pending', 'Blocked', 'NeedsRevalidation')) "Phase '$PhaseId' ist nicht startbar: $($phase.status)"
+$expectedTasks = [int] $phase.expectedTasks
+if ([string] $phase.command -eq 'speckit.implement') {
+    $expectedTasks = [int] $stateData.tasks.total
+    Assert-AMRCondition ($expectedTasks -gt 0 -and -not [string]::IsNullOrWhiteSpace([string] $stateData.tasks.path) -and
+        [string] $stateData.tasks.path -ne 'N/A') 'Implementierung benoetigt ein akzeptiertes tasks.md mit positiver Aufgabenzahl.'
+}
+Assert-AMRCondition ($expectedTasks -gt 0) "Akzeptierte Aufgabenzahl muss positiv sein: $PhaseId"
+Assert-AMRCondition (-not [string]::IsNullOrWhiteSpace([string] $phase.expectedPayloadPath)) "Akzeptierter Payload-Pfad fehlt: $PhaseId"
 foreach ($dependency in @(if ($phase.ContainsKey('dependsOn')) { $phase.dependsOn } else { @() })) {
     $dependencyPhase = @($stateData.routing.phases | Where-Object { [string] $_.phaseId -eq [string] $dependency })[0]
     Assert-AMRCondition ([string] $dependencyPhase.status -eq 'Completed') "Abhaengige Phase '$dependency' ist nicht Completed."
@@ -478,6 +542,7 @@ foreach ($dependency in @(if ($phase.ContainsKey('dependsOn')) { $phase.dependsO
 $profileResult = Get-AMRRunnerProfile $runnerData $phase
 $profileName = [string] $profileResult.name
 $runnerProfileData = $profileResult.data
+Assert-AMRPostflightBoundary $runnerProfileData.postflight $Worktree
 
 if (-not [string]::IsNullOrWhiteSpace($PromptFile)) {
     Assert-AMRCondition (Test-Path -LiteralPath $PromptFile -PathType Leaf) "PromptFile fehlt: $PromptFile"
@@ -496,6 +561,20 @@ $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 $attemptId = [guid]::NewGuid().ToString()
 $outputFile = Join-Path $OutputDirectory "$PhaseId.$attemptId.result.json"
 $logFile = Join-Path $OutputDirectory "$PhaseId.$attemptId.log.txt"
+$expectedPayload = ([string] $phase.expectedPayloadPath).Replace('{runId}', [string] $stateData.runId).Replace('{phaseId}', $PhaseId).Replace('{attemptId}', $attemptId)
+Assert-AMRCondition (-not [IO.Path]::IsPathRooted($expectedPayload) -and $expectedPayload -notmatch '(^|[/\\])\.\.([/\\]|$)') "Akzeptierter Payload-Pfad ist nicht repository-relativ: $PhaseId"
+$taskManifest = if ([string] $phase.command -eq 'speckit.implement') { [string] $stateData.tasks.path } else { '' }
+$taskInventorySha = ''
+if ($taskManifest) {
+    $python = Get-Command python3 -ErrorAction SilentlyContinue
+    if ($null -eq $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
+    Assert-AMRCondition ($null -ne $python) 'Python fehlt fuer den Task-Manifest-Vertrag.'
+    $contractOutput = @(& $python.Source (Join-Path $PSScriptRoot 'autonomous-evidence-core.py') task-contract `
+        --repo $Worktree --task-manifest $taskManifest --expected-tasks $expectedTasks `
+        --accepted-hash ([string] $stateData.tasks.sha256) 2>&1)
+    Assert-AMRCondition ($LASTEXITCODE -eq 0) "Akzeptiertes Task-Manifest ist ungueltig: $($contractOutput -join ' ')"
+    $taskInventorySha = [string] (($contractOutput -join "`n" | ConvertFrom-Json).taskInventorySha256)
+}
 $fullPrompt += "`nUse this exact attemptId in the phase-result JSON: $attemptId"
 if ('-HarnessArgumentsJson' -cin @($runnerProfileData.arguments) -or
     ([string]$runnerProfileData.agentFamily -ceq 'Antigravity' -and [string]$runnerProfileData.routingRole -ceq 'fast-mechanical')) {
@@ -513,6 +592,7 @@ $values = @{
     prompt = $fullPrompt
     outputFile = $outputFile
     logFile = $logFile
+    payloadPath = Join-Path $Worktree $expectedPayload
     model = [string] $runnerProfileData.model
     reasoningEffort = [string] $runnerProfileData.reasoningEffort
 }
@@ -598,8 +678,13 @@ try {
     }
 
     Assert-AMRCondition (Test-Path -LiteralPath $outputFile -PathType Leaf) "Phase '$PhaseId' produced no structured result."
+    # The locally configured postflight runs after the model and supplies the
+    # gate decision; the model's gatesSatisfied flag cannot grant completion.
+    $gate = Invoke-AMRCommand $runnerProfileData.postflight $values $Worktree
     $validationOutput = @(& (Join-Path $PSScriptRoot 'validate-autonomous-phase-result.ps1') `
-        -Repo $repositoryRoot -Result $outputFile -PhaseId $PhaseId -AttemptId $attemptId -ExitCode ([int] $execution.exitCode) 2>&1)
+        -Repo $Worktree -Result $outputFile -PhaseId $PhaseId -AttemptId $attemptId -ExitCode ([int] $execution.exitCode) `
+        -ExpectedTasks $expectedTasks -ExpectedPayload $expectedPayload -GateExitCode ([int] $gate.exitCode) `
+        -TaskManifest $taskManifest -TaskInventorySha $taskInventorySha 2>&1)
     $validationExitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
     if ($validationExitCode -ne 0) {
         $reason = "Phase '$PhaseId' semantic result validation failed: $($validationOutput -join ' ')"

@@ -13,6 +13,12 @@
           "replace-with-read-only-model-preflight"
         ]
       },
+      "postflight": {
+        "executable": "replace-with-local-gate-validator",
+        "arguments": [
+          "replace-with-read-only-phase-gate-check"
+        ]
+      },
       "arguments": [
         "replace-with-phase-runner-arguments"
       ]

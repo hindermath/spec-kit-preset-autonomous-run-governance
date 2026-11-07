@@ -10,11 +10,18 @@ param(
     [string] $StatePath = '',
     [string] $StateTempSymlinkTarget = '',
     [string] $CoordinatorPid = '',
+    [string] $CheckPayload = '',
     [int] $ExitCode = 0
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+if ($CheckPayload) {
+    if (-not (Test-Path -LiteralPath $CheckPayload -PathType Leaf) -or
+        [IO.File]::ReadAllText($CheckPayload).Trim() -cne $Content) { exit 1 }
+    exit 0
+}
 
 if (-not [string]::IsNullOrWhiteSpace($OutputFile)) {
     if ($LogSymlinkTarget -and -not $IsWindows) {

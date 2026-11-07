@@ -392,20 +392,33 @@ def phase_command(args: argparse.Namespace) -> str:
         fail("AEI104", f"phase outcome is not Completed: {outcome}", 3)
     expected = result.get("expectedTasks")
     completed = result.get("completedTasks")
-    if not isinstance(expected, int) or isinstance(expected, bool) or expected < 0:
-        fail("AEI105", "expectedTasks must be a non-negative integer", 3)
+    if not isinstance(expected, int) or isinstance(expected, bool) or expected < 1:
+        fail("AEI105", "expectedTasks must be a positive integer", 3)
+    if expected != args.expected_tasks or args.expected_tasks < 1:
+        fail("AEI105", "expectedTasks differs from the accepted phase contract", 3)
     if not isinstance(completed, int) or isinstance(completed, bool) or completed != expected:
         fail("AEI105", "completedTasks must equal expectedTasks", 3)
-    if result.get("gatesSatisfied") is not True:
-        fail("AEI106", "gatesSatisfied must be true", 3)
+    if result.get("gatesSatisfied") is not True or args.gate_exit_code != 0:
+        fail("AEI106", "independent phase gate did not pass", 3)
     payload_text = require_text(result, "payloadPath", "phase result")
     payload_hash = require_text(result, "payloadSha256", "phase result").lower()
     repo = Path(args.repo).resolve()
-    _, payload_path = relative_path(repo, payload_text)
+    payload_name, payload_path = relative_path(repo, payload_text)
+    expected_name, _ = relative_path(repo, args.expected_payload)
+    if payload_name != expected_name:
+        fail("AEI107", "phase payload differs from the accepted artifact", 3)
     if not payload_path.is_file():
         fail("AEI107", f"phase payload is missing: {payload_text}", 3)
     if normalized_hash(payload_path) != payload_hash:
         fail("AEI107", "phase payload hash does not match", 3)
+    if args.task_manifest:
+        _, task_path = relative_path(repo, args.task_manifest)
+        if not task_path.is_file():
+            fail("AEI105", "accepted task manifest is missing", 3)
+        task_lines, inventory_hash = task_inventory(task_path)
+        if (len(task_lines) != expected or any(mark == " " for mark, _ in task_lines)
+                or inventory_hash != args.task_inventory_sha):
+            fail("AEI105", "task manifest does not prove all expected tasks complete", 3)
     return json.dumps(
         {
             "schemaVersion": "1.0",
@@ -416,6 +429,28 @@ def phase_command(args: argparse.Namespace) -> str:
         },
         indent=2,
     )
+
+
+def task_inventory(path: Path) -> tuple[list[tuple[str, str]], str]:
+    lines = re.findall(
+        r"(?m)^\s*-\s*\[([ xX])\]\s+(.+?)\s*$",
+        normalized_bytes(path).decode("utf-8"),
+    )
+    inventory = "\n".join(text.strip() for _, text in lines).encode("utf-8")
+    return lines, hashlib.sha256(inventory).hexdigest()
+
+
+def task_contract_command(args: argparse.Namespace) -> str:
+    repo = Path(args.repo).resolve()
+    _, path = relative_path(repo, args.task_manifest)
+    if not path.is_file():
+        fail("AEI105", "accepted task manifest is missing", 3)
+    lines, inventory_hash = task_inventory(path)
+    if len(lines) != args.expected_tasks or args.expected_tasks < 1:
+        fail("AEI105", "accepted task count differs from the task manifest", 3)
+    if normalized_hash(path) != args.accepted_hash:
+        fail("AEI105", "task manifest differs from the accepted state hash", 3)
+    return json.dumps({"taskInventorySha256": inventory_hash}, indent=2)
 
 
 def validate_requirements(path: Path) -> tuple[dict, str]:
@@ -588,6 +623,16 @@ def parser() -> argparse.ArgumentParser:
     phase.add_argument("--phase-id", required=True)
     phase.add_argument("--attempt-id", default="")
     phase.add_argument("--exit-code", required=True, type=int)
+    phase.add_argument("--expected-tasks", required=True, type=int)
+    phase.add_argument("--expected-payload", required=True)
+    phase.add_argument("--gate-exit-code", required=True, type=int)
+    phase.add_argument("--task-manifest", default="")
+    phase.add_argument("--task-inventory-sha", default="")
+    task_contract = commands.add_parser("task-contract")
+    task_contract.add_argument("--repo", required=True)
+    task_contract.add_argument("--task-manifest", required=True)
+    task_contract.add_argument("--expected-tasks", required=True, type=int)
+    task_contract.add_argument("--accepted-hash", required=True)
     gate = commands.add_parser("gate")
     gate.add_argument("--requirements", required=True)
     gate.add_argument("--evidence", required=True)
@@ -604,6 +649,8 @@ def main() -> int:
             output = delivery_command(args)
         elif args.command == "phase":
             output = phase_command(args)
+        elif args.command == "task-contract":
+            output = task_contract_command(args)
         else:
             output = gate_command(args)
         print(output)

@@ -86,6 +86,8 @@ try {
                     command = 'speckit.intake-read'
                     routingRole = 'fast-mechanical'
                     runnerProfile = 'N/A'
+                    expectedTasks = 1
+                    expectedPayloadPath = '.specify/runtime/autonomous-routing/{runId}/{phaseId}.{attemptId}.result.payload.txt'
                     dependsOn = @()
                     status = 'Pending'
                 },
@@ -94,6 +96,8 @@ try {
                     command = 'speckit.plan'
                     routingRole = 'frontier-reasoning'
                     runnerProfile = 'N/A'
+                    expectedTasks = 1
+                    expectedPayloadPath = '.specify/runtime/autonomous-routing/{runId}/{phaseId}.{attemptId}.result.payload.txt'
                     dependsOn = @('read-intake')
                     status = 'Pending'
                 }
@@ -139,6 +143,10 @@ try {
                     executable = 'pwsh'
                     arguments = @('-NoProfile', '-File', $fixtureRunner)
                 }
+                postflight = [ordered]@{
+                    executable = 'pwsh'
+                    arguments = @('-NoProfile', '-File', $fixtureRunner, '-CheckPayload', '{payloadPath}', '-Content', '{command}')
+                }
                 arguments = $fixtureArguments
             }
             'fixture-frontier' = [ordered]@{
@@ -150,6 +158,10 @@ try {
                 preflight = [ordered]@{
                     executable = 'pwsh'
                     arguments = @('-NoProfile', '-File', $fixtureRunner)
+                }
+                postflight = [ordered]@{
+                    executable = 'pwsh'
+                    arguments = @('-NoProfile', '-File', $fixtureRunner, '-CheckPayload', '{payloadPath}', '-Content', '{command}')
                 }
                 arguments = $fixtureArguments
             }
@@ -169,6 +181,29 @@ try {
     $validation = @(& pwsh -NoProfile -File $runner -Action Validate -State $statePath `
         -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot 2>&1)
     Assert-RoutingTest ($LASTEXITCODE -eq 0) "Valid routing fixture failed: $($validation -join [Environment]::NewLine)"
+    $workerGate = Join-Path $repository 'worker-gate.ps1'
+    'exit 0' | Set-Content -LiteralPath $workerGate -Encoding utf8NoBOM
+    $profiles.profiles['fixture-fast'].postflight.arguments = @('-NoProfile', '-File', $workerGate)
+    Write-RoutingJson $runnerConfig $profiles
+    $badGateValidation = @(& pwsh -NoProfile -File $runner -Action Validate -State $statePath `
+        -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot 2>&1)
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) "Worker-writable postflight gate was accepted: $($badGateValidation -join ' ')"
+    $profiles.profiles['fixture-fast'].postflight.arguments = @('-NoProfile', '-File', '{worktree}/worker-gate.ps1')
+    Write-RoutingJson $runnerConfig $profiles
+    & pwsh -NoProfile -File $runner -Action Validate -State $statePath `
+        -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Placeholder postflight gate was accepted'
+    if (-not $IsWindows) {
+        $linkedWorker = Join-Path $temporaryRoot 'linked-worker'
+        [void](New-Item -ItemType SymbolicLink -Path $linkedWorker -Target $repository)
+        $profiles.profiles['fixture-fast'].postflight.arguments = @('-NoProfile', '-File', (Join-Path $linkedWorker 'worker-gate.ps1'))
+        Write-RoutingJson $runnerConfig $profiles
+        & pwsh -NoProfile -File $runner -Action Validate -State $statePath `
+            -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
+        Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Symlinked postflight gate was accepted'
+    }
+    $profiles.profiles['fixture-fast'].postflight.arguments = @('-NoProfile', '-File', $fixtureRunner, '-CheckPayload', '{payloadPath}', '-Content', '{command}')
+    Write-RoutingJson $runnerConfig $profiles
 
     $first = @(& pwsh -NoProfile -File $runner -Action Run -State $statePath `
         -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot -PhaseId 'read-intake' 2>&1)

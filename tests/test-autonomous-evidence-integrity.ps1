@@ -221,32 +221,49 @@ try {
         outcome = 'Completed'; expectedTasks = 4; completedTasks = 4; blockedReason = ''
         gatesSatisfied = $true; payloadPath = 'phase.payload.txt'; payloadSha256 = (Get-NormalizedHash $Payload)
     }
+    $PhaseContract = @{ ExpectedTasks = 4; ExpectedPayload = 'phase.payload.txt'; GateExitCode = 0 }
+    $PhaseBashContract = @('--expected-tasks', '4', '--expected-payload', 'phase.payload.txt', '--gate-exit-code', '0')
     Write-JsonFile $PhaseResult $Phase
-    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 } 0 'PowerShell phase pass')
-    if ($HasBash) { [void](Invoke-Expected { & bash $PhaseSh --repo $Repo --result $PhaseResult --phase-id implement --exit-code 0 } 0 'Bash phase pass') }
-    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -AttemptId ([guid]::NewGuid().ToString()) -ExitCode 0 } 3 'Replayed phase attempt rejection')
-    if ($HasBash) { [void](Invoke-Expected { & bash $PhaseSh --repo $Repo --result $PhaseResult --phase-id implement --attempt-id ([guid]::NewGuid().ToString()) --exit-code 0 } 3 'Bash replayed phase attempt rejection') }
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 @PhaseContract } 0 'PowerShell phase pass')
+    if ($HasBash) { [void](Invoke-Expected { & bash $PhaseSh --repo $Repo --result $PhaseResult --phase-id implement --exit-code 0 @PhaseBashContract } 0 'Bash phase pass') }
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -AttemptId ([guid]::NewGuid().ToString()) -ExitCode 0 @PhaseContract } 3 'Replayed phase attempt rejection')
+    if ($HasBash) { [void](Invoke-Expected { & bash $PhaseSh --repo $Repo --result $PhaseResult --phase-id implement --attempt-id ([guid]::NewGuid().ToString()) --exit-code 0 @PhaseBashContract } 3 'Bash replayed phase attempt rejection') }
+    $Phase.expectedTasks = 0; $Phase.completedTasks = 0; Write-JsonFile $PhaseResult $Phase
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 @PhaseContract } 3 'Zero-task forged completion rejection')
+    $Phase.expectedTasks = 4; $Phase.completedTasks = 4; Write-JsonFile $PhaseResult $Phase
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 -ExpectedTasks 4 -ExpectedPayload phase.payload.txt -GateExitCode 1 } 3 'Independent gate failure rejection')
+    $Tasks = Join-Path $Repo 'phase-tasks.md'
+    [IO.File]::WriteAllText($Tasks, "- [x] One`n- [x] Two`n- [x] Three`n- [x] Four`n", [Text.UTF8Encoding]::new($false))
+    $Core = Join-Path $Scripts 'autonomous-evidence-core.py'
+    $AcceptedTaskHash = Get-NormalizedHash $Tasks
+    [void](Invoke-Expected { & python3 $Core task-contract --repo $Repo --task-manifest phase-tasks.md --expected-tasks 4 --accepted-hash $AcceptedTaskHash } 0 'Accepted task contract pass')
+    [void](Invoke-Expected { & python3 $Core task-contract --repo $Repo --task-manifest phase-tasks.md --expected-tasks 1 --accepted-hash $AcceptedTaskHash } 3 'Stale accepted task count rejection')
+    $InventoryHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
+        [Text.Encoding]::UTF8.GetBytes("One`nTwo`nThree`nFour"))).ToLowerInvariant()
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 -TaskManifest phase-tasks.md -TaskInventorySha $InventoryHash @PhaseContract } 0 'Accepted task checklist pass')
+    [IO.File]::WriteAllText($Tasks, "- [x] One`n- [x] Two`n- [ ] Three`n- [x] Four`n", [Text.UTF8Encoding]::new($false))
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 -TaskManifest phase-tasks.md -TaskInventorySha $InventoryHash @PhaseContract } 3 'Incomplete accepted checklist rejection')
     $Phase.outcome = 'Blocked'; $Phase.completedTasks = 3; $Phase.blockedReason = 'fixture blocker'
     Write-JsonFile $PhaseResult $Phase
-    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 } 3 'PowerShell semantic block')
-    if ($HasBash) { [void](Invoke-Expected { & bash $PhaseSh --repo $Repo --result $PhaseResult --phase-id implement --exit-code 0 } 3 'Bash semantic block') }
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 @PhaseContract } 3 'PowerShell semantic block')
+    if ($HasBash) { [void](Invoke-Expected { & bash $PhaseSh --repo $Repo --result $PhaseResult --phase-id implement --exit-code 0 @PhaseBashContract } 3 'Bash semantic block') }
     $Phase.outcome = 'Completed'; $Phase.completedTasks = 4; $Phase.blockedReason = ''; $Phase.payloadSha256 = ('0' * 64)
     Write-JsonFile $PhaseResult $Phase
-    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 } 3 'Payload hash rejection')
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 @PhaseContract } 3 'Payload hash rejection')
     $Phase.payloadSha256 = (Get-NormalizedHash $Payload); Write-JsonFile $PhaseResult $Phase
-    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId wrong-phase -ExitCode 0 } 3 'Wrong phase rejection')
-    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 1 } 3 'Non-zero process rejection')
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId wrong-phase -ExitCode 0 @PhaseContract } 3 'Wrong phase rejection')
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 1 @PhaseContract } 3 'Non-zero process rejection')
     $MissingResult = Join-Path $Repo 'missing-result.json'
-    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $MissingResult -PhaseId implement -ExitCode 0 } 2 'Missing result rejection')
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $MissingResult -PhaseId implement -ExitCode 0 @PhaseContract } 2 'Missing result rejection')
     [IO.File]::WriteAllText($PhaseResult, '', [Text.UTF8Encoding]::new($false))
-    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 } 2 'Empty result rejection')
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 @PhaseContract } 2 'Empty result rejection')
     [IO.File]::WriteAllText($PhaseResult, '{not-json}', [Text.UTF8Encoding]::new($false))
-    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 } 2 'Malformed result rejection')
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 @PhaseContract } 2 'Malformed result rejection')
     [IO.File]::WriteAllText($PhaseResult, '{"schemaVersion":', [Text.UTF8Encoding]::new($false))
-    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 } 2 'Truncated result rejection')
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 @PhaseContract } 2 'Truncated result rejection')
     $PhaseText = ($Phase | ConvertTo-Json -Depth 10).Replace("`n", "`r`n")
     [IO.File]::WriteAllText($PhaseResult, $PhaseText, [Text.UTF8Encoding]::new($true))
-    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 } 0 'BOM and CRLF phase pass')
+    [void](Invoke-Expected { & pwsh -NoProfile -File $PhasePs -Repo $Repo -Result $PhaseResult -PhaseId implement -ExitCode 0 @PhaseContract } 0 'BOM and CRLF phase pass')
 
     $Requirements = Join-Path $Repo 'requirements.json'
     $RequirementData = [ordered]@{ schemaVersion = '1.0'; gates = @(
