@@ -433,6 +433,15 @@ def validate_requirements(path: Path) -> tuple[dict, str]:
         applicability = require_text(gate, "applicability", gate_id)
         if applicability not in ("Applicable", "N/A"):
             fail("AEI201", f"invalid applicability for {gate_id}")
+        if applicability == "Applicable":
+            commands = gate.get("requiredCommandTokens")
+            runners = gate.get("requiredRunnerOrPlatformTokens")
+            if (not isinstance(commands, list) or not commands or
+                    any(not isinstance(token, str) or not token.strip() for token in commands)):
+                fail("AEI201", f"Applicable gate needs nonempty requiredCommandTokens: {gate_id}")
+            if (not isinstance(runners, list) or
+                    any(not isinstance(token, str) or not token.strip() for token in runners)):
+                fail("AEI201", f"requiredRunnerOrPlatformTokens must be a string array: {gate_id}")
         by_id[gate_id] = gate
     return by_id, normalized_hash(path)
 
@@ -527,9 +536,11 @@ def gate_command(args: argparse.Namespace) -> str:
         if merge_commit or pre_hash:
             fail("AEI204", "PreMerge evidence cannot claim merge facts")
     else:
+        if not re.fullmatch(r"(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})", args.merge_commit):
+            fail("AEI205", "PostMerge requires an independently supplied expected merge commit")
         if not re.fullmatch(r"(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})", merge_commit):
             fail("AEI205", "PostMerge mergeCommit must be a full Git object ID")
-        if args.merge_commit and merge_commit.lower() != args.merge_commit.lower():
+        if merge_commit.lower() != args.merge_commit.lower():
             fail("AEI205", "PostMerge mergeCommit does not match expected merge")
         if not isinstance(changed_paths, list) or changed_paths:
             fail("AEI205", "PostMerge changedPaths must be empty")
@@ -544,6 +555,11 @@ def gate_command(args: argparse.Namespace) -> str:
             fail("AEI205", "accepted evidence is not a schema-2.0 PreMerge snapshot")
         if str(pre.get("reviewedHead", "")).lower() != args.head.lower():
             fail("AEI205", "accepted PreMerge reviewedHead mismatch")
+        if str(pre.get("requirementsSha256", "")).lower() != requirements_hash:
+            fail("AEI205", "accepted PreMerge requirements mismatch")
+        if pre.get("mergeCommit") or pre.get("acceptedPreMergeSha256"):
+            fail("AEI205", "accepted PreMerge snapshot contains merge facts")
+        validate_gate_entries(pre, requirements, args.head)
     return json.dumps(
         {
             "schemaVersion": "2.0",

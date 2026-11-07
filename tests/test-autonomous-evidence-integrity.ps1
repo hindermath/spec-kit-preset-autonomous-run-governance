@@ -262,6 +262,15 @@ try {
     Write-JsonFile $PrePath $Pre
     [void](Invoke-Expected { & pwsh -NoProfile -File $GatePs -Requirements $Requirements -Evidence $PrePath -Head $Head } 0 'PowerShell PreMerge pass')
     if ($HasBash) { [void](Invoke-Expected { & bash $GateSh --requirements $Requirements --evidence $PrePath --head $Head } 0 'Bash PreMerge pass') }
+    $RequirementData.gates[0].requiredCommandTokens = @()
+    Write-JsonFile $Requirements $RequirementData
+    [void](Invoke-Expected { & pwsh -NoProfile -File $GatePs -Requirements $Requirements -Evidence $PrePath -Head $Head } 2 'Empty required command tokens rejection')
+    $RequirementData.gates[0].requiredCommandTokens = @('verify')
+    $RequirementData.gates[0].requiredRunnerOrPlatformTokens = @('')
+    Write-JsonFile $Requirements $RequirementData
+    [void](Invoke-Expected { & pwsh -NoProfile -File $GatePs -Requirements $Requirements -Evidence $PrePath -Head $Head } 2 'Blank required runner token rejection')
+    $RequirementData.gates[0].requiredRunnerOrPlatformTokens = @()
+    Write-JsonFile $Requirements $RequirementData
     $Pre.mergeCommit = $Head; Write-JsonFile $PrePath $Pre
     [void](Invoke-Expected { & pwsh -NoProfile -File $GatePs -Requirements $Requirements -Evidence $PrePath -Head $Head } 2 'Premature merge rejection')
     $Pre.mergeCommit = ''; Write-JsonFile $PrePath $Pre
@@ -275,7 +284,19 @@ try {
     Write-JsonFile $PostPath $Post
     [void](Invoke-Expected { & pwsh -NoProfile -File $GatePs -Requirements $Requirements -Evidence $PostPath -Head $Head -MergeCommit $Head } 0 'PowerShell PostMerge pass')
     if ($HasBash) { [void](Invoke-Expected { & bash $GateSh --requirements $Requirements --evidence $PostPath --head $Head --merge-commit $Head } 0 'Bash PostMerge pass') }
+    [void](Invoke-Expected { & pwsh -NoProfile -File $GatePs -Requirements $Requirements -Evidence $PostPath -Head $Head } 2 'Missing expected merge rejection')
+    if ($HasBash) { [void](Invoke-Expected { & bash $GateSh --requirements $Requirements --evidence $PostPath --head $Head } 2 'Bash missing expected merge rejection') }
     [void](Invoke-Expected { & pwsh -NoProfile -File $GatePs -Requirements $Requirements -Evidence $PostPath -Head $Head -MergeCommit ('0' * 40) } 2 'Merge commit mismatch rejection')
+    $Pre.requirementsSha256 = ('0' * 64); Write-JsonFile $PrePath $Pre
+    $Post.acceptedPreMergeSha256 = (Get-NormalizedHash $PrePath); Write-JsonFile $PostPath $Post
+    [void](Invoke-Expected { & pwsh -NoProfile -File $GatePs -Requirements $Requirements -Evidence $PostPath -Head $Head -MergeCommit $Head } 2 'PreMerge requirements revalidation')
+    $Pre.requirementsSha256 = (Get-NormalizedHash $Requirements); Write-JsonFile $PrePath $Pre
+    $Post = Get-Content -LiteralPath $PostPath -Raw | ConvertFrom-Json -AsHashtable
+    $Pre.entries[0].result = 'Failed'; Write-JsonFile $PrePath $Pre
+    $Post.acceptedPreMergeSha256 = (Get-NormalizedHash $PrePath); Write-JsonFile $PostPath $Post
+    [void](Invoke-Expected { & pwsh -NoProfile -File $GatePs -Requirements $Requirements -Evidence $PostPath -Head $Head -MergeCommit $Head } 2 'PreMerge gate revalidation')
+    $Pre.entries[0].result = 'Pass'; Write-JsonFile $PrePath $Pre
+    $Post.acceptedPreMergeSha256 = (Get-NormalizedHash $PrePath); Write-JsonFile $PostPath $Post
     $Post.acceptedPreMergeSha256 = ('f' * 64); Write-JsonFile $PostPath $Post
     [void](Invoke-Expected { & pwsh -NoProfile -File $GatePs -Requirements $Requirements -Evidence $PostPath -Head $Head -MergeCommit $Head } 2 'PreMerge hash rejection')
     $Post.acceptedPreMergeSha256 = (Get-NormalizedHash $PrePath); $Post.changedPaths = @('unexpected.txt'); Write-JsonFile $PostPath $Post

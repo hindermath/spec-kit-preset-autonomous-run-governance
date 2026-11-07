@@ -22,7 +22,7 @@ while [ "$#" -gt 0 ]; do
       shift
       ;;
     -h|--help)
-      printf '%s\n' 'Usage: validate-autonomous-gate-evidence.sh --requirements FILE --evidence FILE --head SHA [--merge-commit SHA] [--historical]'
+      printf '%s\n' 'Usage: validate-autonomous-gate-evidence.sh --requirements FILE --evidence FILE --head SHA [--merge-commit SHA (required for PostMerge)] [--historical]'
       exit 0
       ;;
     *) printf 'ERROR AEI001: unknown option: %s\n' "$1" >&2; exit 2 ;;
