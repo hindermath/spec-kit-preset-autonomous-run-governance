@@ -113,9 +113,18 @@ try {
     }
     Write-RoutingJson $statePath $state
 
+    $outsideLog = Join-Path $temporaryRoot 'outside-log.txt'
+    'unchanged outside log' | Set-Content -LiteralPath $outsideLog -Encoding utf8NoBOM
+    $outsideLogHash = (Get-FileHash -LiteralPath $outsideLog -Algorithm SHA256).Hash
+    $outsideState = Join-Path $temporaryRoot 'outside-state.txt'
+    'unchanged outside state' | Set-Content -LiteralPath $outsideState -Encoding utf8NoBOM
+    $outsideStateHash = (Get-FileHash -LiteralPath $outsideState -Algorithm SHA256).Hash
     $fixtureArguments = @(
         '-NoProfile', '-File', $fixtureRunner,
-        '-OutputFile', '{outputFile}', '-PhaseId', '{phaseId}', '-AttemptId', '{attemptId}', '-Content', '{command}'
+        '-OutputFile', '{outputFile}', '-PhaseId', '{phaseId}', '-AttemptId', '{attemptId}', '-Content', '{command}',
+        '-LogFile', '{logFile}', '-LogSymlinkTarget', $outsideLog,
+        '-StatePath', '{statePath}', '-StateTempSymlinkTarget', $outsideState,
+        '-CoordinatorPid', '{coordinatorPid}'
     )
     $profiles = [ordered]@{
         schemaVersion = '1.0'
@@ -163,11 +172,27 @@ try {
 
     $first = @(& pwsh -NoProfile -File $runner -Action Run -State $statePath `
         -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot -PhaseId 'read-intake' 2>&1)
-    Assert-RoutingTest ($LASTEXITCODE -eq 0) "Fast phase failed: $($first -join [Environment]::NewLine)"
+    if ($LASTEXITCODE -ne 0) {
+        $logText = @(Get-ChildItem -LiteralPath $repository -Filter '*.log.txt' -File -Recurse -ErrorAction SilentlyContinue |
+            ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -ErrorAction SilentlyContinue }) -join [Environment]::NewLine
+        throw "Fast phase failed: $($first -join [Environment]::NewLine); runner log: $logText"
+    }
     $afterFirst = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
     Assert-RoutingTest ($afterFirst.routing.phases[0].status -eq 'Completed') 'Fast phase did not complete'
     Assert-RoutingTest ($afterFirst.routing.phases[0].model -eq 'fixture-fast-model') 'Fast model metadata missing'
     Assert-RoutingTest ($afterFirst.routing.phases[1].status -eq 'Pending') 'Dependent phase changed prematurely'
+    Assert-RoutingTest ((Get-FileHash -LiteralPath $outsideLog -Algorithm SHA256).Hash -ceq $outsideLogHash) `
+        'Runner redirected coordinator log output through a symlink'
+    Assert-RoutingTest ((Get-FileHash -LiteralPath $outsideState -Algorithm SHA256).Hash -ceq $outsideStateHash) `
+        'Runner redirected atomic state write through a predictable temp path'
+    if (-not $IsWindows) {
+        $firstLog = Join-Path $repository ".specify/runtime/autonomous-routing/$($afterFirst.runId)/read-intake.$($afterFirst.routing.phases[0].attemptId).log.txt"
+        Assert-RoutingTest ((Get-Item -LiteralPath $firstLog -Force).LinkType -eq 'SymbolicLink') `
+            'Malicious fixture did not replace the log pathname'
+        $legacyLinks = @(Get-ChildItem -LiteralPath $featureDirectory -Filter 'autonomous-run-state.json.tmp.*' -Force |
+            Where-Object { $_.LinkType -eq 'SymbolicLink' })
+        Assert-RoutingTest ($legacyLinks.Count -ge 1) 'Malicious fixture did not create the predictable temp symlink'
+    }
 
     $second = @(& pwsh -NoProfile -File $runner -Action Run -State $statePath `
         -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot -PhaseId 'plan' 2>&1)
@@ -176,6 +201,10 @@ try {
     Assert-RoutingTest ($afterSecond.routing.phases[1].status -eq 'Completed') 'Frontier phase did not complete'
     Assert-RoutingTest ($afterSecond.routing.phases[1].model -eq 'fixture-frontier-model') 'Frontier model metadata missing'
     Assert-RoutingTest ($afterSecond.routing.phases[1].resultSha256 -match '^[0-9a-f]{64}$') 'Result hash missing'
+    Assert-RoutingTest ((Get-FileHash -LiteralPath $outsideLog -Algorithm SHA256).Hash -ceq $outsideLogHash) `
+        'Second runner redirected coordinator log output through a symlink'
+    Assert-RoutingTest ((Get-FileHash -LiteralPath $outsideState -Algorithm SHA256).Hash -ceq $outsideStateHash) `
+        'Second runner redirected atomic state write through a predictable temp path'
 
     $unsafeRunPath = Join-Path $featureDirectory 'unsafe-run-id-state.json'
     $unsafeRun = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable

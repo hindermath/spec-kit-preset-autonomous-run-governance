@@ -123,9 +123,18 @@ function Write-AMRJsonAtomic {
     if ($parent) {
         [void](New-Item -ItemType Directory -Path $parent -Force)
     }
-    $temporaryPath = "${Path}.tmp.$PID"
+    $temporaryPath = "${Path}.tmp.$([guid]::NewGuid().ToString('N'))"
     try {
-        $Value | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $temporaryPath -Encoding utf8NoBOM
+        $json = ($Value | ConvertTo-Json -Depth 30) + [Environment]::NewLine
+        $bytes = [Text.UTF8Encoding]::new($false).GetBytes($json)
+        $stream = [IO.FileStream]::new($temporaryPath, [IO.FileMode]::CreateNew,
+            [IO.FileAccess]::Write, [IO.FileShare]::None)
+        try {
+            $stream.Write($bytes, 0, $bytes.Length)
+            $stream.Flush($true)
+        } finally {
+            $stream.Dispose()
+        }
         Move-Item -LiteralPath $temporaryPath -Destination $Path -Force
     } finally {
         Remove-Item -LiteralPath $temporaryPath -Force -ErrorAction SilentlyContinue
@@ -138,6 +147,34 @@ function Get-AMRRepositoryRoot {
     $featureDirectory = Split-Path -Parent ([IO.Path]::GetFullPath($StatePath))
     $specsDirectory = Split-Path -Parent $featureDirectory
     return Split-Path -Parent $specsDirectory
+}
+
+function Assert-AMROutputDirectoryBoundary {
+    param(
+        [Parameter(Mandatory)][string] $Repository,
+        [Parameter(Mandatory)][string] $Output
+    )
+
+    $root = [IO.Path]::GetFullPath($Repository)
+    $full = [IO.Path]::GetFullPath($Output)
+    $comparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+    $prefix = $root.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+    if (-not $full.StartsWith($prefix, $comparison)) {
+        # An explicit external output directory is an operator-selected location.
+        $entry = Get-Item -LiteralPath $full -Force -ErrorAction SilentlyContinue
+        Assert-AMRCondition ($null -eq $entry -or
+            ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) `
+            "OutputDirectory ist ein Symlink oder Reparse Point: $full"
+        return
+    }
+    $current = $root
+    foreach ($segment in $full.Substring($prefix.Length).Split([char[]]@('/', '\'), [StringSplitOptions]::RemoveEmptyEntries)) {
+        $current = Join-Path $current $segment
+        $entry = Get-Item -LiteralPath $current -Force -ErrorAction SilentlyContinue
+        Assert-AMRCondition ($null -eq $entry -or
+            ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) `
+            "OutputDirectory enthaelt Symlink oder Reparse Point: $current"
+    }
 }
 
 function Get-AMRRoutingCatalog {
@@ -468,6 +505,8 @@ if ('-HarnessArgumentsJson' -cin @($runnerProfileData.arguments) -or
 }
 $values = @{
     worktree = $Worktree
+    statePath = $statePath
+    coordinatorPid = $PID
     phaseId = $PhaseId
     attemptId = $attemptId
     command = [string] $phase.command
@@ -492,7 +531,15 @@ if (-not $PSCmdlet.ShouldProcess("phase '$PhaseId'", "Run fail-closed model pref
     exit 0
 }
 
+Assert-AMROutputDirectoryBoundary $repositoryRoot $OutputDirectory
 [void](New-Item -ItemType Directory -Path $OutputDirectory -Force)
+Assert-AMROutputDirectoryBoundary $repositoryRoot $OutputDirectory
+$outputDirectoryEntry = Get-Item -LiteralPath $OutputDirectory -Force
+Assert-AMRCondition (($outputDirectoryEntry.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) `
+    "OutputDirectory ist ein Symlink oder Reparse Point: $OutputDirectory"
+# Open before either untrusted preflight or runner can replace the pathname.
+$logStream = [IO.FileStream]::new($logFile, [IO.FileMode]::CreateNew,
+    [IO.FileAccess]::Write, [IO.FileShare]::None)
 
 try {
     $preflight = Invoke-AMRCommand $runnerProfileData.preflight $values $Worktree
@@ -529,7 +576,19 @@ try {
     $stateData.updatedAt = $timestamp
     Write-AMRJsonAtomic $statePath $stateData
 
-    $execution = Invoke-AMRCommand $runnerProfileData $values $Worktree
+    # Hold the original inode while the runner sees the log path. A runner can
+    # unlink the name, but it cannot redirect our write through a replacement link.
+    try {
+        $execution = Invoke-AMRCommand $runnerProfileData $values $Worktree
+        if (@($execution.output).Count -gt 0) {
+            $logText = (@($execution.output) -join [Environment]::NewLine) + [Environment]::NewLine
+            $logBytes = [Text.UTF8Encoding]::new($false).GetBytes($logText)
+            $logStream.Write($logBytes, 0, $logBytes.Length)
+        }
+        $logStream.Flush($true)
+    } finally {
+        $logStream.Dispose()
+    }
     if ([int] $execution.exitCode -ne 0) {
         $reason = "Phase '$PhaseId' failed with exit code $($execution.exitCode)."
         Set-AMRBlockedState $stateData $phase $reason "ModelRoutingPhase:$PhaseId"
@@ -538,9 +597,6 @@ try {
         throw $reason
     }
 
-    if (@($execution.output).Count -gt 0) {
-        @($execution.output) | Set-Content -LiteralPath $logFile -Encoding utf8NoBOM
-    }
     Assert-AMRCondition (Test-Path -LiteralPath $outputFile -PathType Leaf) "Phase '$PhaseId' produced no structured result."
     $validationOutput = @(& (Join-Path $PSScriptRoot 'validate-autonomous-phase-result.ps1') `
         -Repo $repositoryRoot -Result $outputFile -PhaseId $PhaseId -AttemptId $attemptId -ExitCode ([int] $execution.exitCode) 2>&1)
@@ -588,4 +644,6 @@ try {
         Write-AMRJsonAtomic $statePath $stateData
     }
     throw
+} finally {
+    $logStream.Dispose()
 }

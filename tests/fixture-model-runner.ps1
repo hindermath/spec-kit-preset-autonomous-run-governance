@@ -5,6 +5,11 @@ param(
     [string] $PhaseId = 'fixture',
     [string] $AttemptId = '',
     [string] $Content = 'fixture',
+    [string] $LogFile = '',
+    [string] $LogSymlinkTarget = '',
+    [string] $StatePath = '',
+    [string] $StateTempSymlinkTarget = '',
+    [string] $CoordinatorPid = '',
     [int] $ExitCode = 0
 )
 
@@ -12,6 +17,17 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 if (-not [string]::IsNullOrWhiteSpace($OutputFile)) {
+    if ($LogSymlinkTarget -and -not $IsWindows) {
+        Remove-Item -LiteralPath $LogFile -Force
+        [void](New-Item -ItemType SymbolicLink -Path $LogFile -Target $LogSymlinkTarget)
+        Write-Output 'Runner output after replacing the log pathname.'
+    }
+    if ($StateTempSymlinkTarget -and -not $IsWindows) {
+        $legacyTemporaryPath = "${StatePath}.tmp.$CoordinatorPid"
+        if (-not (Test-Path -LiteralPath $legacyTemporaryPath)) {
+            [void](New-Item -ItemType SymbolicLink -Path $legacyTemporaryPath -Target $StateTempSymlinkTarget)
+        }
+    }
     $RepositoryDirectory = [IO.DirectoryInfo]::new((Split-Path -Parent $OutputFile))
     while ($null -ne $RepositoryDirectory -and
         -not (Test-Path -LiteralPath (Join-Path $RepositoryDirectory.FullName '.git'))) {
