@@ -168,6 +168,26 @@ try {
     Assert-RoutingTest ($afterSecond.routing.phases[1].model -eq 'fixture-frontier-model') 'Frontier model metadata missing'
     Assert-RoutingTest ($afterSecond.routing.phases[1].resultSha256 -match '^[0-9a-f]{64}$') 'Result hash missing'
 
+    $terminalPath = Join-Path $featureDirectory 'terminal-authority-state.json'
+    $terminal = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable
+    $terminal.status = 'Completed'
+    $terminal.nextExactAction = 'N/A'
+    $terminal.closeout.finalValidation = 'Completed'
+    $terminal.authorityRevalidationRequired = $true
+    Write-RoutingJson $terminalPath $terminal
+    $statePs = Join-Path $presetRoot 'scripts/validate-autonomous-run-state.ps1'
+    $stateSh = Join-Path $presetRoot 'scripts/validate-autonomous-run-state.sh'
+    & pwsh -NoProfile -File $statePs -State $terminalPath *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Completed PowerShell state retained authority marker'
+    & bash $stateSh --state $terminalPath *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Completed Bash state retained authority marker'
+    $terminal.authorityRevalidationRequired = $false
+    Write-RoutingJson $terminalPath $terminal
+    & pwsh -NoProfile -File $statePs -State $terminalPath *> $null
+    Assert-RoutingTest ($LASTEXITCODE -eq 0) 'Completed PowerShell state rejected cleared authority marker'
+    & bash $stateSh --state $terminalPath *> $null
+    Assert-RoutingTest ($LASTEXITCODE -eq 0) 'Completed Bash state rejected cleared authority marker'
+
     $invalidStatePath = Join-Path $featureDirectory 'invalid-role-state.json'
     $invalidState = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable
     $invalidState.routing.phases[1].routingRole = 'fast-mechanical'
