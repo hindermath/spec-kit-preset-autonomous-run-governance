@@ -83,7 +83,10 @@ enthalten. Erst dessen Exitcode 0 und der Vergleich mit dem akzeptierten
 Artefakt erlauben `Completed`. Bestehende Profile und Phasen ohne diese
 Angaben muessen vor dem naechsten Lauf ergaenzt werden.
 Das Postflight-Programm muss ausserhalb des beschreibbaren Worker-Worktrees
-liegen; der Worker darf es nicht veraendern koennen.
+liegen; der Worker darf es nicht veraendern koennen. Interpreter-Profile
+verwenden einen festen Skriptpfad (`pwsh -File`, beziehungsweise ein direktes
+Bash-, Python- oder Node-Skript); dynamische Interpreter-Befehle gelten nicht
+als unabhaengiger Gate-Nachweis.
 
 *A zero process exit is necessary but insufficient. Before launch the wrapper
 sets the operation to `NeedsRevalidation`. Only a matching structured result
@@ -100,7 +103,9 @@ tasks. The same task identities must be complete afterward. The local runner pro
 independent read-only `postflight` command. Only its successful exit and a
 match with the accepted artifact allow `Completed`. Existing profiles and
 phases need these fields before their next run. The postflight program must
-reside outside the worker-writable worktree.*
+reside outside the worker-writable worktree. Interpreter profiles use a fixed
+script path (`pwsh -File`, or a direct Bash, Python, or Node script); dynamic
+interpreter commands are not independent gate evidence.*
 
 `model-routing.json` ordnet Preset-Kommandos stabilen Rollen zu. Wenn mehrere
 aktive Presets dasselbe Kommando klassifizieren, gewinnt die staerkste Rolle:

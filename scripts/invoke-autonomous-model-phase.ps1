@@ -345,18 +345,28 @@ function Assert-AMRPostflightBoundary {
     $workerPrefix = (Resolve-AMRPhysicalProgramPath $Worktree $Worktree).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
     $executable = (Get-Command ([string] $Postflight.executable) -ErrorAction Stop).Source
     $arguments = @($Postflight.arguments | ForEach-Object { [string] $_ })
-    Assert-AMRCondition (@($arguments | Where-Object { $_ -cmatch '(^|\s)(-Command|-EncodedCommand|-c|-e)(\s|$)' }).Count -eq 0) `
-        'Postflight darf kein dynamisches Interpreter-Kommando ausfuehren.'
-    $candidates = @($executable)
-    foreach ($argument in $arguments) {
-        if ($argument -match '\.(ps1|sh|py|exe|dll)$') {
-            Assert-AMRCondition ($argument -notmatch '\{[^}]+\}') 'Postflight-Programm darf keine Pfad-Platzhalter verwenden.'
-            $candidates += $argument
-        }
-    }
     $interpreter = [IO.Path]::GetFileNameWithoutExtension($executable).ToLowerInvariant()
-    if ($interpreter -in @('pwsh', 'powershell', 'bash', 'sh', 'python', 'python3', 'node')) {
-        Assert-AMRCondition ($candidates.Count -gt 1) 'Postflight-Interpreter braucht ein festes vertrauenswuerdiges Skript.'
+    $scriptIndex = -1
+    if ($interpreter -in @('pwsh', 'powershell')) {
+        $index = 0
+        while ($index -lt $arguments.Count -and $arguments[$index] -in @('-NoProfile', '-NoLogo', '-NonInteractive')) {
+            $index++
+        }
+        Assert-AMRCondition ($index + 1 -lt $arguments.Count -and $arguments[$index] -ceq '-File' -and
+            $arguments[$index + 1] -match '\.ps1$') 'Postflight-PowerShell muss ein festes Skript mit -File ausfuehren.'
+        $scriptIndex = $index + 1
+    } elseif ($interpreter -in @('bash', 'sh', 'python', 'python3', 'node')) {
+        $extension = if ($interpreter -in @('bash', 'sh')) { 'sh' } elseif ($interpreter -eq 'node') { 'js' } else { 'py' }
+        Assert-AMRCondition ($arguments.Count -gt 0 -and $arguments[0] -match "\.$extension`$") `
+            'Postflight-Interpreter muss als erstes Argument ein festes Skript ausfuehren.'
+        $scriptIndex = 0
+    } else {
+        Assert-AMRCondition ($interpreter -notin @('env', 'xargs')) 'Postflight darf keinen allgemeinen Programm-Wrapper verwenden.'
+    }
+    $candidates = @($executable)
+    if ($scriptIndex -ge 0) {
+        Assert-AMRCondition ($arguments[$scriptIndex] -notmatch '\{[^}]+\}') 'Postflight-Programm darf keine Pfad-Platzhalter verwenden.'
+        $candidates += $arguments[$scriptIndex]
     }
     foreach ($candidate in $candidates) {
         $path = Resolve-AMRPhysicalProgramPath ([string] $candidate) $Worktree

@@ -193,6 +193,11 @@ try {
     & pwsh -NoProfile -File $runner -Action Validate -State $statePath `
         -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
     Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Placeholder postflight gate was accepted'
+    $profiles.profiles['fixture-fast'].postflight.arguments = @('-NoProfile', '-com', 'Write-Output BYPASS', $fixtureRunner)
+    Write-RoutingJson $runnerConfig $profiles
+    & pwsh -NoProfile -File $runner -Action Validate -State $statePath `
+        -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'PowerShell abbreviated dynamic command bypassed postflight gate'
     if (-not $IsWindows) {
         $linkedWorker = Join-Path $temporaryRoot 'linked-worker'
         [void](New-Item -ItemType SymbolicLink -Path $linkedWorker -Target $repository)
