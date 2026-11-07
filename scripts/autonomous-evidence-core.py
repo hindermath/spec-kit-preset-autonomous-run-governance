@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Read-only evidence validators for autonomous Spec Kit delivery."""
+"""Evidence validators and anchored State writes for autonomous delivery."""
 
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import json
 import os
 import re
+import stat
 import subprocess
 import sys
+import uuid
 from pathlib import Path, PurePosixPath
 
 
@@ -453,6 +456,104 @@ def task_contract_command(args: argparse.Namespace) -> str:
     return json.dumps({"taskInventorySha256": inventory_hash}, indent=2)
 
 
+def write_state_command(args: argparse.Namespace) -> str:
+    """Write through a pinned parent, so a worker cannot swap its pathname."""
+    repo = Path(args.repo_root)
+    raw_parts = args.relative_state.split("/")
+    relative = PurePosixPath(args.relative_state)
+    if (not repo.is_absolute() or relative.is_absolute() or len(relative.parts) < 3
+            or relative.parts[0] != "specs" or "\\" in args.relative_state
+            or any(part in ("", ".", "..") or ":" in part for part in raw_parts)):
+        fail("AEI601", "State must be feature-local under the trusted repository")
+    data = sys.stdin.buffer.read()
+    try:
+        parsed = json.loads(data.decode("utf-8-sig", errors="strict"))
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        fail("AEI601", f"State write input is not UTF-8 JSON: {exc}")
+    if not isinstance(parsed, dict):
+        fail("AEI601", "State write input must be one JSON object")
+    basename = relative.parts[-1]
+    parent_parts = relative.parts[:-1]
+    temporary = f".{basename}.tmp.{uuid.uuid4().hex}"
+    if os.name == "posix":
+        flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+        directory = os.open(repo, flags)
+        try:
+            for part in parent_parts:
+                next_directory = os.open(part, flags, dir_fd=directory)
+                os.close(directory)
+                directory = next_directory
+            target = os.stat(basename, dir_fd=directory, follow_symlinks=False)
+            if not stat.S_ISREG(target.st_mode):
+                fail("AEI601", "State target is not an existing regular file")
+            created = False
+            try:
+                stream = os.open(
+                    temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                    0o600, dir_fd=directory,
+                )
+                created = True
+                with os.fdopen(stream, "wb") as output:
+                    output.write(data)
+                    output.flush()
+                    os.fsync(output.fileno())
+                os.replace(temporary, basename, src_dir_fd=directory, dst_dir_fd=directory)
+                created = False
+                try:
+                    os.fsync(directory)
+                except OSError as exc:
+                    # Some mounted filesystems do not support directory fsync.
+                    if exc.errno not in (errno.EINVAL, errno.ENOTSUP, errno.EOPNOTSUPP):
+                        raise
+            finally:
+                if created:
+                    os.unlink(temporary, dir_fd=directory)
+        finally:
+            os.close(directory)
+    else:
+        # Keep every Windows ancestor open without FILE_SHARE_DELETE while the
+        # pathname-based replace runs; reject junctions and other reparse points.
+        import ctypes
+        from ctypes import wintypes
+
+        kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel.CreateFileW.argtypes = (
+            wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, wintypes.LPVOID,
+            wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE,
+        )
+        kernel.CreateFileW.restype = wintypes.HANDLE
+        kernel.GetFileAttributesW.argtypes = (wintypes.LPCWSTR,)
+        kernel.GetFileAttributesW.restype = wintypes.DWORD
+        kernel.CloseHandle.argtypes = (wintypes.HANDLE,)
+        handles = []
+        parent = repo
+        try:
+            for directory_path in (repo, *(repo.joinpath(*parent_parts[:i]) for i in range(1, len(parent_parts) + 1))):
+                handle = kernel.CreateFileW(str(directory_path), 0, 3, None, 3, 0x02200000, None)
+                if handle == wintypes.HANDLE(-1).value:
+                    raise OSError(ctypes.get_last_error(), f"Cannot pin State directory: {directory_path}")
+                handles.append(handle)
+                if kernel.GetFileAttributesW(str(directory_path)) & 0x400:
+                    fail("AEI601", "State directory is a reparse point")
+                parent = directory_path
+            target_path = parent / basename
+            if not target_path.is_file() or kernel.GetFileAttributesW(str(target_path)) & 0x400:
+                fail("AEI601", "State target is missing or a reparse point")
+            temporary_path = parent / temporary
+            try:
+                with temporary_path.open("xb") as output:
+                    output.write(data)
+                    output.flush()
+                    os.fsync(output.fileno())
+                os.replace(temporary_path, target_path)
+            finally:
+                temporary_path.unlink(missing_ok=True)
+        finally:
+            for handle in reversed(handles):
+                kernel.CloseHandle(handle)
+    return ""
+
+
 def validate_requirements(path: Path) -> tuple[dict, str]:
     data = load_json(path, "requirements")
     if data.get("schemaVersion") != "1.0":
@@ -633,6 +734,9 @@ def parser() -> argparse.ArgumentParser:
     task_contract.add_argument("--task-manifest", required=True)
     task_contract.add_argument("--expected-tasks", required=True, type=int)
     task_contract.add_argument("--accepted-hash", required=True)
+    state_write = commands.add_parser("state-write")
+    state_write.add_argument("--repo-root", required=True)
+    state_write.add_argument("--relative-state", required=True)
     gate = commands.add_parser("gate")
     gate.add_argument("--requirements", required=True)
     gate.add_argument("--evidence", required=True)
@@ -651,9 +755,12 @@ def main() -> int:
             output = phase_command(args)
         elif args.command == "task-contract":
             output = task_contract_command(args)
+        elif args.command == "state-write":
+            output = write_state_command(args)
         else:
             output = gate_command(args)
-        print(output)
+        if output:
+            print(output)
         return 0
     except EvidenceError as exc:
         print(f"ERROR {exc.code}: {exc}", file=sys.stderr)

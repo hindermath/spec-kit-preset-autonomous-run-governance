@@ -9,6 +9,7 @@ param(
     [string] $LogSymlinkTarget = '',
     [string] $StatePath = '',
     [string] $StateTempSymlinkTarget = '',
+    [string] $StateParentSymlinkTarget = '',
     [string] $CoordinatorPid = '',
     [string] $CheckPayload = '',
     [int] $ExitCode = 0
@@ -34,6 +35,11 @@ if (-not [string]::IsNullOrWhiteSpace($OutputFile)) {
         if (-not (Test-Path -LiteralPath $legacyTemporaryPath)) {
             [void](New-Item -ItemType SymbolicLink -Path $legacyTemporaryPath -Target $StateTempSymlinkTarget)
         }
+    }
+    if ($StateParentSymlinkTarget -and -not $IsWindows) {
+        $parent = Split-Path -Parent $StatePath
+        Move-Item -LiteralPath $parent -Destination "${parent}.held"
+        [void](New-Item -ItemType SymbolicLink -Path $parent -Target $StateParentSymlinkTarget)
     }
     $RepositoryDirectory = [IO.DirectoryInfo]::new((Split-Path -Parent $OutputFile))
     while ($null -ne $RepositoryDirectory -and

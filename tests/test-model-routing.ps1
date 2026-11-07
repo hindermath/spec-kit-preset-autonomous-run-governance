@@ -364,6 +364,32 @@ try {
         ) "Unexpected effective role for $($expectedRole.Key)"
     }
 
+    if (-not $IsWindows) {
+        $outsideParent = Join-Path $temporaryRoot 'outside-state-parent'
+        [void](New-Item -ItemType Directory -Path $outsideParent)
+        $outsideStateFile = Join-Path $outsideParent 'parent-swap-state.json'
+        Copy-Item -LiteralPath $statePath -Destination $outsideStateFile
+        $sentinelHash = (Get-FileHash -LiteralPath $outsideStateFile -Algorithm SHA256).Hash
+        $swapStatePath = Join-Path $featureDirectory 'parent-swap-state.json'
+        $swapState = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable
+        $swapState.routing.phases[0].status = 'Pending'
+        Write-RoutingJson $swapStatePath $swapState
+        $profiles.profiles['fixture-fast'].arguments += @('-StateParentSymlinkTarget', $outsideParent)
+        Write-RoutingJson $runnerConfig $profiles
+        & pwsh -NoProfile -File $runner -Action Run -State $swapStatePath `
+            -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot -PhaseId 'read-intake' *> $null
+        Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Worker-controlled State parent redirection was accepted'
+        Assert-RoutingTest ((Get-FileHash -LiteralPath $outsideStateFile -Algorithm SHA256).Hash -ceq $sentinelHash) `
+            'Coordinator wrote State through the worker-controlled parent symlink'
+        Assert-RoutingTest (@(Get-ChildItem -LiteralPath $outsideParent -Filter 'parent-swap-state.json.tmp.*').Count -eq 0) `
+            'Coordinator created a State temporary file outside the worktree'
+        & pwsh -NoProfile -File $runner -Action Status -State $swapStatePath `
+            -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
+        Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Preexisting external State parent symlink was accepted'
+        Remove-Item -LiteralPath $featureDirectory -Force
+        Move-Item -LiteralPath "${featureDirectory}.held" -Destination $featureDirectory
+    }
+
     $compositionCatalog.commands['speckit.plan'] = 'invalid-role'
     Write-RoutingJson $compositionCatalogPath $compositionCatalog
     & pwsh -NoProfile -File $runner -Action Validate -State $statePath `

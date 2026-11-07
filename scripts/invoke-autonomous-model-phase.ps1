@@ -120,7 +120,28 @@ function Write-AMRJsonAtomic {
     )
 
     $parent = Split-Path -Parent $Path
-    if ($parent) {
+    if ($script:TrustedStatePath -and [string]::Equals([IO.Path]::GetFullPath($Path),
+            $script:TrustedStatePath, [StringComparison]::Ordinal)) {
+        # A worker may replace the feature directory after its process exits.
+        # Never create a missing State parent or follow a redirected one.
+        $currentParent = Resolve-AMRPhysicalProgramPath $parent $parent
+        $comparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+        Assert-AMRCondition ([string]::Equals($currentParent, $script:TrustedStateParent, $comparison)) `
+            "State-Elternverzeichnis wurde nach dem Start umgeleitet: $parent"
+        $stateEntry = Get-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+        Assert-AMRCondition ($null -eq $stateEntry -or
+            ($stateEntry.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) `
+            "State-Datei darf kein Symlink oder Reparse Point sein: $Path"
+        $python = Get-Command python3 -ErrorAction SilentlyContinue
+        if ($null -eq $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
+        Assert-AMRCondition ($null -ne $python) 'Python fehlt fuer den verankerten State-Schreibzugriff.'
+        $relativeState = [IO.Path]::GetRelativePath($repositoryRoot, $Path).Replace('\', '/')
+        $json = ($Value | ConvertTo-Json -Depth 30) + [Environment]::NewLine
+        $json | & $python.Source (Join-Path $PSScriptRoot 'autonomous-evidence-core.py') state-write `
+            --repo-root $script:TrustedRepositoryRoot --relative-state $relativeState
+        Assert-AMRCondition ($LASTEXITCODE -eq 0) "State konnte nicht sicher geschrieben werden: $Path"
+        return
+    } elseif ($parent) {
         [void](New-Item -ItemType Directory -Path $parent -Force)
     }
     $temporaryPath = "${Path}.tmp.$([guid]::NewGuid().ToString('N'))"
@@ -485,11 +506,21 @@ function Write-AMRStatus {
 }
 
 $statePath = [IO.Path]::GetFullPath($State)
+$repositoryRoot = Get-AMRRepositoryRoot $statePath
+$script:TrustedRepositoryRoot = Resolve-AMRPhysicalProgramPath $repositoryRoot $repositoryRoot
+$script:TrustedStateParent = Resolve-AMRPhysicalProgramPath (Split-Path -Parent $statePath) (Split-Path -Parent $statePath)
+$stateComparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+$statePrefix = $script:TrustedRepositoryRoot.TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+Assert-AMRCondition ($script:TrustedStateParent.StartsWith($statePrefix, $stateComparison)) `
+    'State-Elternverzeichnis muss physisch im Repository liegen.'
+$stateEntry = Get-Item -LiteralPath $statePath -Force -ErrorAction Stop
+Assert-AMRCondition (($stateEntry.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) `
+    'State-Datei darf kein Symlink oder Reparse Point sein.'
 $stateData = Read-AMRJson $statePath
+$script:TrustedStatePath = $statePath
 $parsedRunId = [guid]::Empty
 Assert-AMRCondition ([guid]::TryParse([string]$stateData.runId, [ref]$parsedRunId) -and
     $parsedRunId -ne [guid]::Empty) 'State.runId muss eine nichtleere UUID sein.'
-$repositoryRoot = Get-AMRRepositoryRoot $statePath
 if ([string]::IsNullOrWhiteSpace($RoutingRoot)) {
     $RoutingRoot = Join-Path $repositoryRoot '.specify/presets'
 }
