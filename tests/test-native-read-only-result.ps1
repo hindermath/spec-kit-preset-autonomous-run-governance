@@ -14,6 +14,7 @@ param()
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $runner=Join-Path $PSScriptRoot '../scripts/invoke-autonomous-model-phase.ps1'
+$script:TrustedStatePath = $null
 $tokens=$null;$parseErrors=$null
 $ast=[Management.Automation.Language.Parser]::ParseFile($runner,[ref]$tokens,[ref]$parseErrors)
 foreach($name in @('Assert-AMRCondition','Write-AMRJsonAtomic','Write-AMRNativeReadOnlyResult')){

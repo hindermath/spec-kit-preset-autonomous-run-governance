@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "presetId": "autonomous-run-governance",
+  "packageVersion": "0.4.11",
+  "historicalPublicationVersion": "0.4.6",
+  "candidate_status": "Prepared",
+  "release_status": "NotEstablishedAtPreparation",
+  "sourceCommit": "2dfd1c80aa4181a6b4b86764e9123ac5f83040a9",
+  "previousReleaseVersion": "0.4.10",
+  "externalPublicationEvidence": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/releases/tag/v0.4.11",
+  "runtimeChanged": true,
+  "metadataCorrectionApproved": true,
+  "runtimeChangeApproved": true,
+  "changeKind": "SecurityHardening",
+  "authorizationReference": "Thorsten Hindermann, 2026-11-08: publish all affected security-fixed presets; DeliveryMode MergeAndSync with Admin-Bypass.",
+  "generatorSchemaChanged": false,
+  "preparedAt": "2026-11-08T00:04:12.525197+00:00"
+}
