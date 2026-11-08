@@ -328,6 +328,9 @@ function Test-AutonomousRunState {
     if ($Status -eq 'Completed' -and $NextAction -ne 'N/A') {
         $Errors.Add('Completed state requires nextExactAction N/A')
     }
+    if ($Status -eq 'Completed' -and $Authority) {
+        $Errors.Add('Completed state cannot retain authorityRevalidationRequired')
+    }
     if ($SchemaVersion -eq '1.1' -and $Status -eq 'Completed') {
         if ($CloseoutValues['finalValidation'] -ne 'Completed') {
             $Errors.Add('Completed state requires closeout.finalValidation Completed')

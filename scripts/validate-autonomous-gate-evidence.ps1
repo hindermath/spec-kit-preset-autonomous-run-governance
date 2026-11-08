@@ -10,7 +10,7 @@ PreMerge-, PostMerge- oder historische Evidence. Lifecycle or historical evidenc
 .PARAMETER Head
 Vollstaendiger gepruefter Git-Head. Full reviewed Git head.
 .PARAMETER MergeCommit
-Erwarteter Merge-Commit fuer PostMerge. Expected merge commit for PostMerge.
+Erwarteter Merge-Commit, fuer PostMerge verpflichtend. Expected merge commit, required for PostMerge.
 .PARAMETER Historical
 Erlaubt Schema 1.0 ausschliesslich fuer Audit, nie als Mergefreigabe.
 #>

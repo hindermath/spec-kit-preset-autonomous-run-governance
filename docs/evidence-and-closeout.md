@@ -68,17 +68,23 @@ Das Gate-Requirements-Artefakt beschreibt fuer jedes Gate:
 - Begruendung und Re-Evaluierungs-Trigger bei `N/A`,
 - Besitzer und Evidence-Pfad.
 
+Fuer jedes `Applicable`-Gate ist mindestens ein nichtleeres Befehls-Token
+Pflicht. Runner-/Plattform-Tokens sind eine Liste nichtleerer Texte und koennen
+leer sein, wenn keine zusaetzliche Bindung erforderlich ist.
+
 ```bash
 bash .specify/presets/autonomous-run-governance/scripts/validate-autonomous-gate-evidence.sh \
   --requirements specs/042-feature/autonomous-run-gate-requirements.json \
-  --evidence /tmp/042-gate-evidence.json
+  --evidence /tmp/042-gate-evidence.json \
+  --head '<reviewed-head-sha>'
 ```
 
 ```powershell
 pwsh -NoProfile -File `
   .specify/presets/autonomous-run-governance/scripts/validate-autonomous-gate-evidence.ps1 `
-  -RequirementsPath specs/042-feature/autonomous-run-gate-requirements.json `
-  -EvidencePath /tmp/042-gate-evidence.json
+  -Requirements specs/042-feature/autonomous-run-gate-requirements.json `
+  -Evidence /tmp/042-gate-evidence.json `
+  -Head '<reviewed-head-sha>'
 ```
 
 ### Exact-Head-Evidence
@@ -86,7 +92,9 @@ pwsh -NoProfile -File `
 Neue Laeufe verwenden Schema 2.0. `PreMerge` bindet den geprueften Head und die
 Anforderungen, enthaelt aber keine Merge-Behauptung. `PostMerge` bindet den
 normalisierten PreMerge-Hash und den tatsaechlichen Merge-Commit; seine
-`changedPaths` bleiben leer. Historisches Schema 1.0 ist nur im expliziten
+`changedPaths` bleiben leer. Fuer `PostMerge` muss der erwartete Merge-Commit
+zusaetzlich als `--merge-commit` beziehungsweise `-MergeCommit` uebergeben
+werden. Historisches Schema 1.0 ist nur im expliziten
 Auditmodus gueltig.
 
 Vor einem Merge muss jede Primary-Evidence-Zeile zum vollstaendigen aktuellen
@@ -122,6 +130,9 @@ meldet.
 The gate-requirements artifact records `Applicable` or `N/A`, required command
 and runner tokens, rationale and re-evaluation trigger for `N/A`, owner, and
 evidence path for every gate.
+Every `Applicable` gate requires at least one nonblank command token.
+Runner or platform tokens form an array of nonblank strings, which may be
+empty when no additional binding is required.
 
 Use the installed Bash or PowerShell validator before remote closeout. A
 successful validator exit proves contract consistency, but grants no remote
@@ -132,7 +143,8 @@ authority.
 New runs use schema 2.0. `PreMerge` binds the reviewed head and requirements but
 contains no merge claim. `PostMerge` binds the normalized pre-merge hash and the
 actual merge commit, with empty `changedPaths`. Historical schema 1.0 is valid
-only in explicit audit mode.
+only in explicit audit mode. PostMerge requires the expected merge commit as
+`--merge-commit` or `-MergeCommit`.
 
 Before merge, every primary evidence row must match the full current reviewed
 head. Supplemental rows reference their primary row. Check, workflow, or job

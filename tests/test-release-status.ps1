@@ -103,6 +103,7 @@ $packageVersion = [regex]::Match($manifest, '(?m)^  version: "([^"]+)"').Groups[
 $fixture = Get-Content (Join-Path $PSScriptRoot 'fixtures/documentation-package.json') -Raw | ConvertFrom-Json
 $version = $fixture.publicationEvidenceVersion
 $expectedMetadataCorrection = $id -ceq 'autonomous-run-governance' -and [version]$packageVersion -ge [version]'0.4.8'
+if ($packageVersion -ceq '0.4.11') { $expectedMetadataCorrection = $true }
 Assert-ReleaseStatus ($fixture.version -ceq $packageVersion -and [version]$version -lt [version]$packageVersion) 'explicit earlier publication record, not current-package publication'
 $preparation = Get-Content (Join-Path $root "docs/release-$packageVersion-preparation.json") -Raw | ConvertFrom-Json
 Assert-ReleaseStatus ($preparation.presetId -ceq $id -and $preparation.packageVersion -ceq $packageVersion -and

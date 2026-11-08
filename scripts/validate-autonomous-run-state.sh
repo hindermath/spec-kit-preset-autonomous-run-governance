@@ -321,6 +321,8 @@ if status == "Interrupted" and operation_state not in ("Failed", "NeedsRevalidat
     errors.append("Interrupted state cannot claim the last operation completed")
 if status == "Completed" and next_action != "N/A":
     errors.append("Completed state requires nextExactAction N/A")
+if status == "Completed" and authority is not False:
+    errors.append("Completed state cannot retain authorityRevalidationRequired")
 if schema_version == "1.1" and status == "Completed":
     if closeout_values.get("finalValidation") != "Completed":
         errors.append("Completed state requires closeout.finalValidation Completed")

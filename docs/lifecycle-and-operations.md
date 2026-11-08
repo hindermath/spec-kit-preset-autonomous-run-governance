@@ -72,11 +72,40 @@ erfuellten Gates und gueltigem Payload-Hash schliesst die Phase ab. Fehlende
 oder widerspruechliche Evidence fuehrt zu `Blocked` und verlangt einen
 expliziten Resume-Audit.
 
+Vor dem Modelllauf legt die akzeptierte Routing-Phase `expectedTasks` (> 0)
+und `expectedPayloadPath` (repository-relativ; Platzhalter `{runId}`,
+`{phaseId}`, `{attemptId}`) fest. Bei `speckit.implement` stammt die Zahl aus
+`state.tasks.total`; die Checkliste in `state.tasks.path` muss vor dem Modelllauf
+zum akzeptierten SHA-256 passen und genau diese Aufgaben enthalten. Danach
+muessen dieselben Aufgaben erledigt sein. Das lokale Runner-Profil muss
+einen unabhaengigen, lesenden `postflight` mit `executable` und `arguments`
+enthalten. Erst dessen Exitcode 0 und der Vergleich mit dem akzeptierten
+Artefakt erlauben `Completed`. Bestehende Profile und Phasen ohne diese
+Angaben muessen vor dem naechsten Lauf ergaenzt werden.
+Das Postflight-Programm muss ausserhalb des beschreibbaren Worker-Worktrees
+liegen; der Worker darf es nicht veraendern koennen. Interpreter-Profile
+verwenden einen festen Skriptpfad (`pwsh -File`, beziehungsweise ein direktes
+Bash-, Python- oder Node-Skript); dynamische Interpreter-Befehle gelten nicht
+als unabhaengiger Gate-Nachweis.
+
 *A zero process exit is necessary but insufficient. Before launch the wrapper
 sets the operation to `NeedsRevalidation`. Only a matching structured result
 with completed tasks, satisfied gates, and a valid payload hash closes the
 phase. Missing or contradictory evidence becomes `Blocked` and requires an
 explicit resume audit.*
+
+*Before the model runs, the accepted routing phase fixes `expectedTasks` (> 0)
+and a repository-relative `expectedPayloadPath` (supporting `{runId}`,
+`{phaseId}`, `{attemptId}`). For `speckit.implement`, the task count comes
+from `state.tasks.total`; before the model runs, the checklist at
+`state.tasks.path` must match the accepted SHA-256 and contain exactly those
+tasks. The same task identities must be complete afterward. The local runner profile needs an
+independent read-only `postflight` command. Only its successful exit and a
+match with the accepted artifact allow `Completed`. Existing profiles and
+phases need these fields before their next run. The postflight program must
+reside outside the worker-writable worktree. Interpreter profiles use a fixed
+script path (`pwsh -File`, or a direct Bash, Python, or Node script); dynamic
+interpreter commands are not independent gate evidence.*
 
 `model-routing.json` ordnet Preset-Kommandos stabilen Rollen zu. Wenn mehrere
 aktive Presets dasselbe Kommando klassifizieren, gewinnt die staerkste Rolle:

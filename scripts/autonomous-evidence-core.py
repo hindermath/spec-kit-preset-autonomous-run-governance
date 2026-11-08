@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Read-only evidence validators for autonomous Spec Kit delivery."""
+"""Evidence validators and anchored State writes for autonomous delivery."""
 
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import json
 import os
 import re
+import stat
 import subprocess
 import sys
+import uuid
 from pathlib import Path, PurePosixPath
 
 
@@ -104,7 +107,9 @@ def git_state(repo: Path) -> tuple[str, str]:
     return tree, hashlib.sha256(status.encode("utf-8")).hexdigest()
 
 
-def validate_text_bytes(raw: bytes, label: str, allowed_raw_hash: str = "") -> bool:
+def validate_text_bytes(
+    raw: bytes, label: str, allowed_raw_hash: str = "", *, staged: bool = False
+) -> bool:
     if b"\x00" in raw:
         return False
     try:
@@ -131,6 +136,11 @@ def validate_text_bytes(raw: bytes, label: str, allowed_raw_hash: str = "") -> b
         if hashlib.sha256(raw).hexdigest() != allowed_raw_hash:
             fail("AEI009", f"historical whitespace allowance hash mismatch: {label}")
         return True
+    # Git's text diagnostics use ':' between path and line. Since ':' is also
+    # legal in a POSIX path, check this staged condition against the exact
+    # index bytes before any diagnostic can be suppressed for another file.
+    if staged and normalized.endswith("\n\n"):
+        fail("AEI010", f"unapproved staged blank line at EOF: {label}")
     return False
 
 
@@ -188,41 +198,43 @@ def staged_file_mode(repo: Path, path_text: str) -> str:
 
 
 def validate_staged_diff_check(
-    repo: Path, whitespace_allowances: dict[str, str]
+    repo: Path, whitespace_allowances: dict[str, str], staged_paths: list[str]
 ) -> None:
-    result = subprocess.run(
-        ["git", "-C", str(repo), "diff", "--cached", "--check", "--"],
-        check=False,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    )
-    if result.returncode == 0:
-        return
-    lines = result.stdout.splitlines()
-    remaining: list[str] = []
-    index = 0
-    while index < len(lines):
-        line = lines[index]
-        allowed = next(
-            (
-                path
-                for path in whitespace_allowances
-                if line.startswith(f"{path}:")
-                and line.endswith((": trailing whitespace.", ": new blank line at EOF."))
-            ),
-            None,
+    # The ordinary case needs one Git check. With historical allowances, a
+    # diagnostic prefix cannot identify a path: ':' is legal in POSIX names.
+    # Check each exact literal path separately before suppressing its own
+    # approved whitespace diagnostic.
+    check_paths: list[str | None] = staged_paths if whitespace_allowances else [None]
+    for path in check_paths:
+        arguments = ["git", "-C", str(repo), "diff", "--cached", "--check", "--"]
+        if path is not None:
+            arguments.append(f":(literal){path}")
+        result = subprocess.run(
+            arguments, check=False, capture_output=True, text=True, encoding="utf-8"
         )
-        if allowed is not None:
-            index += 1
-            if index < len(lines) and lines[index].startswith("+"):
-                index += 1
+        if result.returncode == 0:
             continue
-        remaining.append(line)
-        index += 1
-    if remaining or result.stderr.strip():
-        detail = " | ".join(remaining + ([result.stderr.strip()] if result.stderr.strip() else []))
-        fail("AEI010", f"staged candidate failed git diff --cached --check: {detail}")
+        lines = result.stdout.splitlines()
+        remaining: list[str] = []
+        index = 0
+        while index < len(lines):
+            line = lines[index]
+            allowed = (
+                path is not None
+                and path in whitespace_allowances
+                and line.startswith(f"{path}:")
+                and line.endswith((": trailing whitespace.", ": new blank line at EOF."))
+            )
+            if allowed:
+                index += 1
+                if index < len(lines) and lines[index].startswith("+"):
+                    index += 1
+                continue
+            remaining.append(line)
+            index += 1
+        if remaining or result.stderr.strip():
+            detail = " | ".join(remaining + ([result.stderr.strip()] if result.stderr.strip() else []))
+            fail("AEI010", f"staged candidate failed git diff --cached --check: {detail}")
 
 
 def delivery_command(args: argparse.Namespace) -> str:
@@ -316,7 +328,9 @@ def delivery_command(args: argparse.Namespace) -> str:
                     f"{path_text} (mode {mode})",
                 )
             raw = run_git_bytes(repo, "show", f":{path_text}")
-            if validate_text_bytes(raw, path_text, whitespace_allowances.get(path_text, "")):
+            if validate_text_bytes(
+                raw, path_text, whitespace_allowances.get(path_text, ""), staged=True
+            ):
                 used_allowances.add(path_text)
         else:
             _, path = relative_path(repo, path_text)
@@ -334,7 +348,7 @@ def delivery_command(args: argparse.Namespace) -> str:
         )
 
     if args.staged:
-        validate_staged_diff_check(repo, whitespace_allowances)
+        validate_staged_diff_check(repo, whitespace_allowances, staged_paths)
 
     after = git_state(repo)
     if before != after:
@@ -370,7 +384,9 @@ def phase_command(args: argparse.Namespace) -> str:
         fail("AEI102", "phase result schemaVersion must be 1.0", 3)
     if require_text(result, "phaseId", "phase result") != args.phase_id:
         fail("AEI103", "phase result does not match the requested phase", 3)
-    require_text(result, "attemptId", "phase result")
+    attempt_id = require_text(result, "attemptId", "phase result")
+    if args.attempt_id and attempt_id != args.attempt_id:
+        fail("AEI103", "phase result attemptId does not match the active attempt", 3)
     outcome = require_text(result, "outcome", "phase result")
     if outcome == "Blocked":
         require_text(result, "blockedReason", "phase result")
@@ -379,20 +395,33 @@ def phase_command(args: argparse.Namespace) -> str:
         fail("AEI104", f"phase outcome is not Completed: {outcome}", 3)
     expected = result.get("expectedTasks")
     completed = result.get("completedTasks")
-    if not isinstance(expected, int) or isinstance(expected, bool) or expected < 0:
-        fail("AEI105", "expectedTasks must be a non-negative integer", 3)
+    if not isinstance(expected, int) or isinstance(expected, bool) or expected < 1:
+        fail("AEI105", "expectedTasks must be a positive integer", 3)
+    if expected != args.expected_tasks or args.expected_tasks < 1:
+        fail("AEI105", "expectedTasks differs from the accepted phase contract", 3)
     if not isinstance(completed, int) or isinstance(completed, bool) or completed != expected:
         fail("AEI105", "completedTasks must equal expectedTasks", 3)
-    if result.get("gatesSatisfied") is not True:
-        fail("AEI106", "gatesSatisfied must be true", 3)
+    if result.get("gatesSatisfied") is not True or args.gate_exit_code != 0:
+        fail("AEI106", "independent phase gate did not pass", 3)
     payload_text = require_text(result, "payloadPath", "phase result")
     payload_hash = require_text(result, "payloadSha256", "phase result").lower()
     repo = Path(args.repo).resolve()
-    _, payload_path = relative_path(repo, payload_text)
+    payload_name, payload_path = relative_path(repo, payload_text)
+    expected_name, _ = relative_path(repo, args.expected_payload)
+    if payload_name != expected_name:
+        fail("AEI107", "phase payload differs from the accepted artifact", 3)
     if not payload_path.is_file():
         fail("AEI107", f"phase payload is missing: {payload_text}", 3)
     if normalized_hash(payload_path) != payload_hash:
         fail("AEI107", "phase payload hash does not match", 3)
+    if args.task_manifest:
+        _, task_path = relative_path(repo, args.task_manifest)
+        if not task_path.is_file():
+            fail("AEI105", "accepted task manifest is missing", 3)
+        task_lines, inventory_hash = task_inventory(task_path)
+        if (len(task_lines) != expected or any(mark == " " for mark, _ in task_lines)
+                or inventory_hash != args.task_inventory_sha):
+            fail("AEI105", "task manifest does not prove all expected tasks complete", 3)
     return json.dumps(
         {
             "schemaVersion": "1.0",
@@ -403,6 +432,126 @@ def phase_command(args: argparse.Namespace) -> str:
         },
         indent=2,
     )
+
+
+def task_inventory(path: Path) -> tuple[list[tuple[str, str]], str]:
+    lines = re.findall(
+        r"(?m)^\s*-\s*\[([ xX])\]\s+(.+?)\s*$",
+        normalized_bytes(path).decode("utf-8"),
+    )
+    inventory = "\n".join(text.strip() for _, text in lines).encode("utf-8")
+    return lines, hashlib.sha256(inventory).hexdigest()
+
+
+def task_contract_command(args: argparse.Namespace) -> str:
+    repo = Path(args.repo).resolve()
+    _, path = relative_path(repo, args.task_manifest)
+    if not path.is_file():
+        fail("AEI105", "accepted task manifest is missing", 3)
+    lines, inventory_hash = task_inventory(path)
+    if len(lines) != args.expected_tasks or args.expected_tasks < 1:
+        fail("AEI105", "accepted task count differs from the task manifest", 3)
+    if normalized_hash(path) != args.accepted_hash:
+        fail("AEI105", "task manifest differs from the accepted state hash", 3)
+    return json.dumps({"taskInventorySha256": inventory_hash}, indent=2)
+
+
+def write_state_command(args: argparse.Namespace) -> str:
+    """Write through a pinned parent, so a worker cannot swap its pathname."""
+    repo = Path(args.repo_root)
+    raw_parts = args.relative_state.split("/")
+    relative = PurePosixPath(args.relative_state)
+    if (not repo.is_absolute() or relative.is_absolute() or len(relative.parts) < 3
+            or relative.parts[0] != "specs" or "\\" in args.relative_state
+            or any(part in ("", ".", "..") or ":" in part for part in raw_parts)):
+        fail("AEI601", "State must be feature-local under the trusted repository")
+    data = sys.stdin.buffer.read()
+    try:
+        parsed = json.loads(data.decode("utf-8-sig", errors="strict"))
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        fail("AEI601", f"State write input is not UTF-8 JSON: {exc}")
+    if not isinstance(parsed, dict):
+        fail("AEI601", "State write input must be one JSON object")
+    basename = relative.parts[-1]
+    parent_parts = relative.parts[:-1]
+    temporary = f".{basename}.tmp.{uuid.uuid4().hex}"
+    if os.name == "posix":
+        flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+        directory = os.open(repo, flags)
+        try:
+            for part in parent_parts:
+                next_directory = os.open(part, flags, dir_fd=directory)
+                os.close(directory)
+                directory = next_directory
+            target = os.stat(basename, dir_fd=directory, follow_symlinks=False)
+            if not stat.S_ISREG(target.st_mode):
+                fail("AEI601", "State target is not an existing regular file")
+            created = False
+            try:
+                stream = os.open(
+                    temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                    0o600, dir_fd=directory,
+                )
+                created = True
+                with os.fdopen(stream, "wb") as output:
+                    output.write(data)
+                    output.flush()
+                    os.fsync(output.fileno())
+                os.replace(temporary, basename, src_dir_fd=directory, dst_dir_fd=directory)
+                created = False
+                try:
+                    os.fsync(directory)
+                except OSError as exc:
+                    # Some mounted filesystems do not support directory fsync.
+                    if exc.errno not in (errno.EINVAL, errno.ENOTSUP, errno.EOPNOTSUPP):
+                        raise
+            finally:
+                if created:
+                    os.unlink(temporary, dir_fd=directory)
+        finally:
+            os.close(directory)
+    else:
+        # Keep every Windows ancestor open without FILE_SHARE_DELETE while the
+        # pathname-based replace runs; reject junctions and other reparse points.
+        import ctypes
+        from ctypes import wintypes
+
+        kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel.CreateFileW.argtypes = (
+            wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, wintypes.LPVOID,
+            wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE,
+        )
+        kernel.CreateFileW.restype = wintypes.HANDLE
+        kernel.GetFileAttributesW.argtypes = (wintypes.LPCWSTR,)
+        kernel.GetFileAttributesW.restype = wintypes.DWORD
+        kernel.CloseHandle.argtypes = (wintypes.HANDLE,)
+        handles = []
+        parent = repo
+        try:
+            for directory_path in (repo, *(repo.joinpath(*parent_parts[:i]) for i in range(1, len(parent_parts) + 1))):
+                handle = kernel.CreateFileW(str(directory_path), 0, 3, None, 3, 0x02200000, None)
+                if handle == wintypes.HANDLE(-1).value:
+                    raise OSError(ctypes.get_last_error(), f"Cannot pin State directory: {directory_path}")
+                handles.append(handle)
+                if kernel.GetFileAttributesW(str(directory_path)) & 0x400:
+                    fail("AEI601", "State directory is a reparse point")
+                parent = directory_path
+            target_path = parent / basename
+            if not target_path.is_file() or kernel.GetFileAttributesW(str(target_path)) & 0x400:
+                fail("AEI601", "State target is missing or a reparse point")
+            temporary_path = parent / temporary
+            try:
+                with temporary_path.open("xb") as output:
+                    output.write(data)
+                    output.flush()
+                    os.fsync(output.fileno())
+                os.replace(temporary_path, target_path)
+            finally:
+                temporary_path.unlink(missing_ok=True)
+        finally:
+            for handle in reversed(handles):
+                kernel.CloseHandle(handle)
+    return ""
 
 
 def validate_requirements(path: Path) -> tuple[dict, str]:
@@ -422,6 +571,15 @@ def validate_requirements(path: Path) -> tuple[dict, str]:
         applicability = require_text(gate, "applicability", gate_id)
         if applicability not in ("Applicable", "N/A"):
             fail("AEI201", f"invalid applicability for {gate_id}")
+        if applicability == "Applicable":
+            commands = gate.get("requiredCommandTokens")
+            runners = gate.get("requiredRunnerOrPlatformTokens")
+            if (not isinstance(commands, list) or not commands or
+                    any(not isinstance(token, str) or not token.strip() for token in commands)):
+                fail("AEI201", f"Applicable gate needs nonempty requiredCommandTokens: {gate_id}")
+            if (not isinstance(runners, list) or
+                    any(not isinstance(token, str) or not token.strip() for token in runners)):
+                fail("AEI201", f"requiredRunnerOrPlatformTokens must be a string array: {gate_id}")
         by_id[gate_id] = gate
     return by_id, normalized_hash(path)
 
@@ -516,9 +674,11 @@ def gate_command(args: argparse.Namespace) -> str:
         if merge_commit or pre_hash:
             fail("AEI204", "PreMerge evidence cannot claim merge facts")
     else:
+        if not re.fullmatch(r"(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})", args.merge_commit):
+            fail("AEI205", "PostMerge requires an independently supplied expected merge commit")
         if not re.fullmatch(r"(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})", merge_commit):
             fail("AEI205", "PostMerge mergeCommit must be a full Git object ID")
-        if args.merge_commit and merge_commit.lower() != args.merge_commit.lower():
+        if merge_commit.lower() != args.merge_commit.lower():
             fail("AEI205", "PostMerge mergeCommit does not match expected merge")
         if not isinstance(changed_paths, list) or changed_paths:
             fail("AEI205", "PostMerge changedPaths must be empty")
@@ -533,6 +693,11 @@ def gate_command(args: argparse.Namespace) -> str:
             fail("AEI205", "accepted evidence is not a schema-2.0 PreMerge snapshot")
         if str(pre.get("reviewedHead", "")).lower() != args.head.lower():
             fail("AEI205", "accepted PreMerge reviewedHead mismatch")
+        if str(pre.get("requirementsSha256", "")).lower() != requirements_hash:
+            fail("AEI205", "accepted PreMerge requirements mismatch")
+        if pre.get("mergeCommit") or pre.get("acceptedPreMergeSha256"):
+            fail("AEI205", "accepted PreMerge snapshot contains merge facts")
+        validate_gate_entries(pre, requirements, args.head)
     return json.dumps(
         {
             "schemaVersion": "2.0",
@@ -557,7 +722,21 @@ def parser() -> argparse.ArgumentParser:
     phase.add_argument("--repo", required=True)
     phase.add_argument("--result", required=True)
     phase.add_argument("--phase-id", required=True)
+    phase.add_argument("--attempt-id", default="")
     phase.add_argument("--exit-code", required=True, type=int)
+    phase.add_argument("--expected-tasks", required=True, type=int)
+    phase.add_argument("--expected-payload", required=True)
+    phase.add_argument("--gate-exit-code", required=True, type=int)
+    phase.add_argument("--task-manifest", default="")
+    phase.add_argument("--task-inventory-sha", default="")
+    task_contract = commands.add_parser("task-contract")
+    task_contract.add_argument("--repo", required=True)
+    task_contract.add_argument("--task-manifest", required=True)
+    task_contract.add_argument("--expected-tasks", required=True, type=int)
+    task_contract.add_argument("--accepted-hash", required=True)
+    state_write = commands.add_parser("state-write")
+    state_write.add_argument("--repo-root", required=True)
+    state_write.add_argument("--relative-state", required=True)
     gate = commands.add_parser("gate")
     gate.add_argument("--requirements", required=True)
     gate.add_argument("--evidence", required=True)
@@ -574,9 +753,14 @@ def main() -> int:
             output = delivery_command(args)
         elif args.command == "phase":
             output = phase_command(args)
+        elif args.command == "task-contract":
+            output = task_contract_command(args)
+        elif args.command == "state-write":
+            output = write_state_command(args)
         else:
             output = gate_command(args)
-        print(output)
+        if output:
+            print(output)
         return 0
     except EvidenceError as exc:
         print(f"ERROR {exc.code}: {exc}", file=sys.stderr)

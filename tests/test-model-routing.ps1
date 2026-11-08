@@ -86,6 +86,8 @@ try {
                     command = 'speckit.intake-read'
                     routingRole = 'fast-mechanical'
                     runnerProfile = 'N/A'
+                    expectedTasks = 1
+                    expectedPayloadPath = '.specify/runtime/autonomous-routing/{runId}/{phaseId}.{attemptId}.result.payload.txt'
                     dependsOn = @()
                     status = 'Pending'
                 },
@@ -94,6 +96,8 @@ try {
                     command = 'speckit.plan'
                     routingRole = 'frontier-reasoning'
                     runnerProfile = 'N/A'
+                    expectedTasks = 1
+                    expectedPayloadPath = '.specify/runtime/autonomous-routing/{runId}/{phaseId}.{attemptId}.result.payload.txt'
                     dependsOn = @('read-intake')
                     status = 'Pending'
                 }
@@ -113,9 +117,18 @@ try {
     }
     Write-RoutingJson $statePath $state
 
+    $outsideLog = Join-Path $temporaryRoot 'outside-log.txt'
+    'unchanged outside log' | Set-Content -LiteralPath $outsideLog -Encoding utf8NoBOM
+    $outsideLogHash = (Get-FileHash -LiteralPath $outsideLog -Algorithm SHA256).Hash
+    $outsideState = Join-Path $temporaryRoot 'outside-state.txt'
+    'unchanged outside state' | Set-Content -LiteralPath $outsideState -Encoding utf8NoBOM
+    $outsideStateHash = (Get-FileHash -LiteralPath $outsideState -Algorithm SHA256).Hash
     $fixtureArguments = @(
         '-NoProfile', '-File', $fixtureRunner,
-        '-OutputFile', '{outputFile}', '-PhaseId', '{phaseId}', '-Content', '{command}'
+        '-OutputFile', '{outputFile}', '-PhaseId', '{phaseId}', '-AttemptId', '{attemptId}', '-Content', '{command}',
+        '-LogFile', '{logFile}', '-LogSymlinkTarget', $outsideLog,
+        '-StatePath', '{statePath}', '-StateTempSymlinkTarget', $outsideState,
+        '-CoordinatorPid', '{coordinatorPid}'
     )
     $profiles = [ordered]@{
         schemaVersion = '1.0'
@@ -130,6 +143,10 @@ try {
                     executable = 'pwsh'
                     arguments = @('-NoProfile', '-File', $fixtureRunner)
                 }
+                postflight = [ordered]@{
+                    executable = 'pwsh'
+                    arguments = @('-NoProfile', '-File', $fixtureRunner, '-CheckPayload', '{payloadPath}', '-Content', '{command}')
+                }
                 arguments = $fixtureArguments
             }
             'fixture-frontier' = [ordered]@{
@@ -142,23 +159,80 @@ try {
                     executable = 'pwsh'
                     arguments = @('-NoProfile', '-File', $fixtureRunner)
                 }
+                postflight = [ordered]@{
+                    executable = 'pwsh'
+                    arguments = @('-NoProfile', '-File', $fixtureRunner, '-CheckPayload', '{payloadPath}', '-Content', '{command}')
+                }
                 arguments = $fixtureArguments
             }
         }
     }
     Write-RoutingJson $runnerConfig $profiles
 
+    $previewDirectory = Join-Path $temporaryRoot 'preview-only'
+    $previewStateHash = (Get-FileHash -LiteralPath $statePath -Algorithm SHA256).Hash
+    & pwsh -NoProfile -File $runner -Action Run -State $statePath -RunnerConfig $runnerConfig `
+        -RoutingRoot $allPresetRoot -PhaseId 'read-intake' -OutputDirectory $previewDirectory -WhatIf *> $null
+    Assert-RoutingTest ($LASTEXITCODE -eq 0) 'Routing WhatIf preview failed'
+    Assert-RoutingTest (-not (Test-Path -LiteralPath $previewDirectory)) 'Routing WhatIf created output directory'
+    Assert-RoutingTest ((Get-FileHash -LiteralPath $statePath -Algorithm SHA256).Hash -ceq $previewStateHash) `
+        'Routing WhatIf changed run state'
+
     $validation = @(& pwsh -NoProfile -File $runner -Action Validate -State $statePath `
         -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot 2>&1)
     Assert-RoutingTest ($LASTEXITCODE -eq 0) "Valid routing fixture failed: $($validation -join [Environment]::NewLine)"
+    $workerGate = Join-Path $repository 'worker-gate.ps1'
+    'exit 0' | Set-Content -LiteralPath $workerGate -Encoding utf8NoBOM
+    $profiles.profiles['fixture-fast'].postflight.arguments = @('-NoProfile', '-File', $workerGate)
+    Write-RoutingJson $runnerConfig $profiles
+    $badGateValidation = @(& pwsh -NoProfile -File $runner -Action Validate -State $statePath `
+        -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot 2>&1)
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) "Worker-writable postflight gate was accepted: $($badGateValidation -join ' ')"
+    $profiles.profiles['fixture-fast'].postflight.arguments = @('-NoProfile', '-File', '{worktree}/worker-gate.ps1')
+    Write-RoutingJson $runnerConfig $profiles
+    & pwsh -NoProfile -File $runner -Action Validate -State $statePath `
+        -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Placeholder postflight gate was accepted'
+    $profiles.profiles['fixture-fast'].postflight.arguments = @('-NoProfile', '-com', 'Write-Output BYPASS', $fixtureRunner)
+    Write-RoutingJson $runnerConfig $profiles
+    & pwsh -NoProfile -File $runner -Action Validate -State $statePath `
+        -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'PowerShell abbreviated dynamic command bypassed postflight gate'
+    if (-not $IsWindows) {
+        $linkedWorker = Join-Path $temporaryRoot 'linked-worker'
+        [void](New-Item -ItemType SymbolicLink -Path $linkedWorker -Target $repository)
+        $profiles.profiles['fixture-fast'].postflight.arguments = @('-NoProfile', '-File', (Join-Path $linkedWorker 'worker-gate.ps1'))
+        Write-RoutingJson $runnerConfig $profiles
+        & pwsh -NoProfile -File $runner -Action Validate -State $statePath `
+            -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
+        Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Symlinked postflight gate was accepted'
+    }
+    $profiles.profiles['fixture-fast'].postflight.arguments = @('-NoProfile', '-File', $fixtureRunner, '-CheckPayload', '{payloadPath}', '-Content', '{command}')
+    Write-RoutingJson $runnerConfig $profiles
 
     $first = @(& pwsh -NoProfile -File $runner -Action Run -State $statePath `
         -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot -PhaseId 'read-intake' 2>&1)
-    Assert-RoutingTest ($LASTEXITCODE -eq 0) "Fast phase failed: $($first -join [Environment]::NewLine)"
+    if ($LASTEXITCODE -ne 0) {
+        $logText = @(Get-ChildItem -LiteralPath $repository -Filter '*.log.txt' -File -Recurse -ErrorAction SilentlyContinue |
+            ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -ErrorAction SilentlyContinue }) -join [Environment]::NewLine
+        throw "Fast phase failed: $($first -join [Environment]::NewLine); runner log: $logText"
+    }
     $afterFirst = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
     Assert-RoutingTest ($afterFirst.routing.phases[0].status -eq 'Completed') 'Fast phase did not complete'
     Assert-RoutingTest ($afterFirst.routing.phases[0].model -eq 'fixture-fast-model') 'Fast model metadata missing'
     Assert-RoutingTest ($afterFirst.routing.phases[1].status -eq 'Pending') 'Dependent phase changed prematurely'
+    Assert-RoutingTest ((Get-FileHash -LiteralPath $outsideLog -Algorithm SHA256).Hash -ceq $outsideLogHash) `
+        'Runner redirected coordinator log output through a symlink'
+    Assert-RoutingTest ((Get-FileHash -LiteralPath $outsideState -Algorithm SHA256).Hash -ceq $outsideStateHash) `
+        'Runner redirected atomic state write through a predictable temp path'
+    if (-not $IsWindows) {
+        $firstLog = Join-Path $repository ".specify/runtime/autonomous-routing/$($afterFirst.runId)/read-intake.$($afterFirst.routing.phases[0].attemptId).log.txt"
+        Assert-RoutingTest ((Get-Item -LiteralPath $firstLog -Force).LinkType -eq 'SymbolicLink') `
+            'Malicious fixture did not replace the log pathname'
+        $legacyLinks = @(Get-ChildItem -LiteralPath $featureDirectory -Filter 'autonomous-run-state.json.tmp.*' -Force |
+            Where-Object { $_.LinkType -eq 'SymbolicLink' })
+        Assert-RoutingTest ($legacyLinks.Count -ge 1) 'Malicious fixture did not create the predictable temp symlink'
+    }
 
     $second = @(& pwsh -NoProfile -File $runner -Action Run -State $statePath `
         -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot -PhaseId 'plan' 2>&1)
@@ -167,6 +241,45 @@ try {
     Assert-RoutingTest ($afterSecond.routing.phases[1].status -eq 'Completed') 'Frontier phase did not complete'
     Assert-RoutingTest ($afterSecond.routing.phases[1].model -eq 'fixture-frontier-model') 'Frontier model metadata missing'
     Assert-RoutingTest ($afterSecond.routing.phases[1].resultSha256 -match '^[0-9a-f]{64}$') 'Result hash missing'
+    Assert-RoutingTest ((Get-FileHash -LiteralPath $outsideLog -Algorithm SHA256).Hash -ceq $outsideLogHash) `
+        'Second runner redirected coordinator log output through a symlink'
+    Assert-RoutingTest ((Get-FileHash -LiteralPath $outsideState -Algorithm SHA256).Hash -ceq $outsideStateHash) `
+        'Second runner redirected atomic state write through a predictable temp path'
+
+    $unsafeRunPath = Join-Path $featureDirectory 'unsafe-run-id-state.json'
+    $unsafeRun = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable
+    $unsafeRun.runId = '../escape'
+    Write-RoutingJson $unsafeRunPath $unsafeRun
+    & pwsh -NoProfile -File $runner -Action Status -State $unsafeRunPath -RoutingRoot $allPresetRoot *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Unsafe runId reached routing output paths'
+
+    $unsafePhasePath = Join-Path $featureDirectory 'unsafe-phase-id-state.json'
+    $unsafePhase = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable
+    $unsafePhase.routing.phases[0].phaseId = '../escape'
+    Write-RoutingJson $unsafePhasePath $unsafePhase
+    & pwsh -NoProfile -File $runner -Action Validate -State $unsafePhasePath `
+        -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Unsafe phaseId reached routing output paths'
+
+    $terminalPath = Join-Path $featureDirectory 'terminal-authority-state.json'
+    $terminal = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable
+    $terminal.status = 'Completed'
+    $terminal.nextExactAction = 'N/A'
+    $terminal.closeout.finalValidation = 'Completed'
+    $terminal.authorityRevalidationRequired = $true
+    Write-RoutingJson $terminalPath $terminal
+    $statePs = Join-Path $presetRoot 'scripts/validate-autonomous-run-state.ps1'
+    $stateSh = Join-Path $presetRoot 'scripts/validate-autonomous-run-state.sh'
+    & pwsh -NoProfile -File $statePs -State $terminalPath *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Completed PowerShell state retained authority marker'
+    & bash $stateSh --state $terminalPath *> $null
+    Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Completed Bash state retained authority marker'
+    $terminal.authorityRevalidationRequired = $false
+    Write-RoutingJson $terminalPath $terminal
+    & pwsh -NoProfile -File $statePs -State $terminalPath *> $null
+    Assert-RoutingTest ($LASTEXITCODE -eq 0) 'Completed PowerShell state rejected cleared authority marker'
+    & bash $stateSh --state $terminalPath *> $null
+    Assert-RoutingTest ($LASTEXITCODE -eq 0) 'Completed Bash state rejected cleared authority marker'
 
     $invalidStatePath = Join-Path $featureDirectory 'invalid-role-state.json'
     $invalidState = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable
@@ -249,6 +362,32 @@ try {
         Assert-RoutingTest (
             [string] $effectiveRoles[[string] $expectedRole.Key] -eq [string] $expectedRole.Value
         ) "Unexpected effective role for $($expectedRole.Key)"
+    }
+
+    if (-not $IsWindows) {
+        $outsideParent = Join-Path $temporaryRoot 'outside-state-parent'
+        [void](New-Item -ItemType Directory -Path $outsideParent)
+        $outsideStateFile = Join-Path $outsideParent 'parent-swap-state.json'
+        Copy-Item -LiteralPath $statePath -Destination $outsideStateFile
+        $sentinelHash = (Get-FileHash -LiteralPath $outsideStateFile -Algorithm SHA256).Hash
+        $swapStatePath = Join-Path $featureDirectory 'parent-swap-state.json'
+        $swapState = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json -AsHashtable
+        $swapState.routing.phases[0].status = 'Pending'
+        Write-RoutingJson $swapStatePath $swapState
+        $profiles.profiles['fixture-fast'].arguments += @('-StateParentSymlinkTarget', $outsideParent)
+        Write-RoutingJson $runnerConfig $profiles
+        & pwsh -NoProfile -File $runner -Action Run -State $swapStatePath `
+            -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot -PhaseId 'read-intake' *> $null
+        Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Worker-controlled State parent redirection was accepted'
+        Assert-RoutingTest ((Get-FileHash -LiteralPath $outsideStateFile -Algorithm SHA256).Hash -ceq $sentinelHash) `
+            'Coordinator wrote State through the worker-controlled parent symlink'
+        Assert-RoutingTest (@(Get-ChildItem -LiteralPath $outsideParent -Filter 'parent-swap-state.json.tmp.*').Count -eq 0) `
+            'Coordinator created a State temporary file outside the worktree'
+        & pwsh -NoProfile -File $runner -Action Status -State $swapStatePath `
+            -RunnerConfig $runnerConfig -RoutingRoot $allPresetRoot *> $null
+        Assert-RoutingTest ($LASTEXITCODE -ne 0) 'Preexisting external State parent symlink was accepted'
+        Remove-Item -LiteralPath $featureDirectory -Force
+        Move-Item -LiteralPath "${featureDirectory}.held" -Destination $featureDirectory
     }
 
     $compositionCatalog.commands['speckit.plan'] = 'invalid-role'

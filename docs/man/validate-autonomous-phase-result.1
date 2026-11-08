@@ -6,11 +6,19 @@ validate-autonomous-phase-result \- validate semantic completion of one routed p
 .BR --repo " PATH"
 .BR --result " FILE"
 .BR --phase-id " ID"
+.RB [ --attempt-id " UUID"]
 .BR --exit-code " N"
+.BR --expected-tasks " N"
+.BR --expected-payload " PATH"
+.BR --gate-exit-code " N"
+.RB [ --task-manifest " PATH"]
+.RB [ --task-inventory-sha " SHA256"]
 .SH DESCRIPTION
 A process exit code of zero is necessary but not sufficient. The command also
 checks the structured result schema, phase and attempt identity, task
 completion, gate result, payload path, and normalized payload SHA-256.
+The accepted task count and payload path must be fixed before the model runs;
+the gate exit code must come from an independent postflight check.
 .PP
 DE: Fehlende, leere, abgeschnittene, blockierte oder fachlich unvollstaendige
 Ergebnisse bleiben fehlgeschlossen und duerfen nicht als Completed gespeichert
@@ -29,8 +37,27 @@ Structured JSON result emitted by the routed phase.
 .B --phase-id ID
 Expected stable phase identifier.
 .TP
+.B --attempt-id UUID
+Expected attempt identifier. The routing runner supplies it to reject results
+from earlier attempts; standalone historical inspection may omit it.
+.TP
 .B --exit-code N
 Exit code of the completed phase process.
+.TP
+.B --expected-tasks N
+Positive task count accepted before runner execution.
+.TP
+.B --expected-payload PATH
+Repository-relative path of the accepted phase artifact.
+.TP
+.B --gate-exit-code N
+Exit code of an independent phase gate check.
+.TP
+.B --task-manifest PATH
+Optional accepted implementation checklist; its item count and completion are verified.
+.TP
+.B --task-inventory-sha SHA256
+Hash of the task identities captured before runner execution; required with a task manifest.
 .SH EXIT STATUS
 Zero means semantic completion passed. Two means invocation or malformed input
 failed. Three means process or semantic phase completion failed.

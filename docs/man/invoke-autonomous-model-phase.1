@@ -12,6 +12,9 @@ shell evaluation and never silently falls back to another model. Before Run
 starts, the operation is persisted as NeedsRevalidation. Exit code zero alone
 never completes the phase: a schema-1.0 structured result must pass semantic
 validation before the operation becomes Completed.
+Each Run writes to an attempt-specific result path and accepts only the exact
+attempt ID persisted before the child process starts. Routing run and phase IDs
+must be safe path components.
 .PP
 DE: Modellwechsel erfolgen nur zwischen Phasenprozessen. Konkrete Modellnamen
 bleiben in der lokalen Runner-Konfiguration und ausserhalb reproduzierbarer
@@ -48,5 +51,14 @@ Missing routing, profile, executable, model, effort, successful preflight, or a
 valid structured result blocks execution. Script-only commands are never
 started through a model profile. Success grants no commit, push, merge, bypass,
 secret, deployment, or provider-administration authority.
+.PP
+DE: Die State-Datei und ihr Elternverzeichnis muessen physisch im Repository
+liegen. Ein nach dem Start umgeleitetes Elternverzeichnis oder
+ein State-Symlink blockiert das Schreiben. Die State-Aktualisierung verwendet
+ein verankertes Verzeichnis, damit Worker keinen externen Pfad einschleusen.
+.PP
+EN: The State file and its parent must physically remain inside the repository.
+A redirected parent or State symlink blocks writing. State updates
+use a pinned directory so workers cannot redirect writes outside the repository.
 .SH SEE ALSO
 validate-autonomous-phase-result(1), validate-autonomous-run-state(1), orchestrate-parallel-autonomous-runs(1)
