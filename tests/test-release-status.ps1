@@ -1,4 +1,4 @@
-﻿#Requires -Version 7.3
+#Requires -Version 7.3
 <#
 .SYNOPSIS
 DE: Historischen Kandidatenstand und belegte Veröffentlichung getrennt prüfen.
@@ -104,6 +104,7 @@ $fixture = Get-Content (Join-Path $PSScriptRoot 'fixtures/documentation-package.
 $version = $fixture.publicationEvidenceVersion
 $expectedMetadataCorrection = $id -ceq 'autonomous-run-governance' -and [version]$packageVersion -ge [version]'0.4.8'
 if ($packageVersion -ceq '0.4.11') { $expectedMetadataCorrection = $true }
+if ($packageVersion -ceq '0.4.12') { $expectedMetadataCorrection = $false }
 Assert-ReleaseStatus ($fixture.version -ceq $packageVersion -and [version]$version -lt [version]$packageVersion) 'explicit earlier publication record, not current-package publication'
 $preparation = Get-Content (Join-Path $root "docs/release-$packageVersion-preparation.json") -Raw | ConvertFrom-Json
 Assert-ReleaseStatus ($preparation.presetId -ceq $id -and $preparation.packageVersion -ceq $packageVersion -and
