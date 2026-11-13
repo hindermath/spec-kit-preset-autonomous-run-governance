@@ -4,11 +4,11 @@
 
 [Model-Routing-Ausfuehrung / Model-routing execution](docs/model-routing-execution.md)
 
-<!-- current-package: 0.4.11 -->
+<!-- current-package: 0.4.12 -->
 
-Paketkennung: **v0.4.11**. [Vorbereitung und Veröffentlichungsgrenze](docs/release-0.4.11-validation.md). Die Release-Seite und der externe Archivnachweis belegen die Veröffentlichung, nicht dieser Vorbereitungsstand. Frühere Versionsnachweise unten bleiben historisch.
+Paketkennung: **v0.4.12**. [Vorbereitung und Veröffentlichungsgrenze](docs/release-0.4.12-validation.md). Die Release-Seite und der externe Archivnachweis belegen die Veröffentlichung, nicht dieser Vorbereitungsstand. Frühere Versionsnachweise unten bleiben historisch.
 
-<span lang="en">Package identity: v0.4.11. The release page and external archive evidence prove publication, not this preparation snapshot. Earlier version records below remain historical.</span>
+<span lang="en">Package identity: v0.4.12. The release page and external archive evidence prove publication, not this preparation snapshot. Earlier version records below remain historical.</span>
 
 [Release-Abschluss und Verbesserungsprofil / Publication closeout and improvement profile](docs/release-0.4.6-validation.md).
 
@@ -210,7 +210,7 @@ have succeeded.
 1. Preset installieren:
 
    ```bash
-   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.11.zip --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.12.zip --priority 70
    ```
 
 2. Installation pruefen:
@@ -283,7 +283,7 @@ bypass, secret, or provider-administration authority.
 1. Install the preset:
 
    ```bash
-   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.11.zip --priority 70
+   specify preset add --from https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/archive/refs/tags/v0.4.12.zip --priority 70
    ```
 
 2. Verify the installation:

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "presetId": "autonomous-run-governance",
+  "packageVersion": "0.4.12",
+  "historicalPublicationVersion": "0.4.6",
+  "candidate_status": "Prepared",
+  "release_status": "NotEstablishedAtPreparation",
+  "sourceCommit": "4f6968cd152ac5dbcca699992a7e00714008742d",
+  "previousReleaseVersion": "0.4.11",
+  "externalPublicationEvidence": "https://github.com/hindermath/spec-kit-preset-autonomous-run-governance/releases/tag/v0.4.12",
+  "runtimeChanged": false,
+  "generatorSchemaChanged": false,
+  "changeKind": "SecurityPolicyDocumentation",
+  "authorizationReference": "Thorsten Hindermann, 2026-11-13: implement security baseline and publish current presets, including controlled Level-0/Home/Level-2 rollout; MergeAndSync with formal-review-only Admin-Bypass.",
+  "preparedAt": "2026-11-13T08:24:34.5206680+00:00"
+}
